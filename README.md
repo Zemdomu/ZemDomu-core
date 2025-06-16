@@ -45,6 +45,10 @@ console.log(results);
 //   }
 // ]
 
+// Custom rules can be supplied via the `customRules` option
+// const myRule = { name: 'demo', checkHtml: () => [] };
+// lint(html, { customRules: [myRule] });
+
 📖 API
 
 lint(content: string, options?: LinterOptions): LintResult[]
@@ -53,7 +57,8 @@ Parameters:
 
 content — HTML, JSX, or TSX string input
 
-options.rules — toggles for individual rules
+options.rules — toggles for built-in rules
+options.customRules — array of additional rules
 
 Example LinterOptions
 
@@ -62,6 +67,7 @@ interface LinterOptions {
     requireAltText: boolean;
     // ...more rules to come
   };
+  customRules?: Rule[];
 }
 
 Example LintResult
