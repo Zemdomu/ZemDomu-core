@@ -2,10 +2,10 @@
   "name": "zemdomu-core",
   "version": "1.0.0",
   "description": "Hello",
-  "main": "./out/index.js",
+  "main": "out/index.js",
   "scripts": {
-    "compile": "tsc -p tsconfig.json",
-    "test": "npm run compile && node tests/linter-labels.test.js && node tests/unique-ids.test.js"
+    "build": "tsc -p tsconfig.json",
+        "test": "npm run build && node tests/linter-labels.test.js && node tests/unique-ids.test.js"
   },
   "keywords": [],
   "author": "",
