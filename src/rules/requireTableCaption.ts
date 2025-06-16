@@ -22,13 +22,13 @@ export default function requireTableCaption(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'table') stack.push({found:false});
       if (tag === 'caption' && stack.length) stack[stack.length-1].found = true;
       return [];
     },
-    exitJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'table') {
         const entry = stack.pop();

@@ -23,12 +23,12 @@ export default function requireLinkText(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'a') stack.push({found:false});
       return [];
     },
-    exitJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'a') {
         const entry = stack.pop();

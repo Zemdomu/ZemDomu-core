@@ -25,12 +25,12 @@ export default function preventEmptyInlineTags(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (inlineTags.has(tag)) stack.push({tag, found:false});
       return [];
     },
-    exitJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (inlineTags.has(tag)) {
         const e = stack.pop();

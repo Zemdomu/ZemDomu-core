@@ -17,6 +17,7 @@ export function getJsxAttr(
   return attr && t.isStringLiteral(attr.value) ? attr.value.value : undefined;
 }
 
-export function getTag(path: NodePath<t.JSXOpeningElement>): string {
-  return t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+export function getTag(path: NodePath<t.JSXElement>): string {
+  const opening = path.node.openingElement;
+  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
 }

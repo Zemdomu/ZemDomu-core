@@ -16,15 +16,16 @@ export default function requireImageInputAlt(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'input') {
-        const type = getJsxAttr(path.node, 'type');
+        const type = getJsxAttr(opening, 'type');
         if (type && type.toLowerCase() === 'image') {
-          const alt = getJsxAttr(path.node, 'alt');
+          const alt = getJsxAttr(opening, 'alt');
           if (!alt || !alt.trim()) {
-            const line = (path.node.loc?.start.line ?? 1) - 1;
-            const column = path.node.loc?.start.column ?? 0;
+            const line = (opening.loc?.start.line ?? 1) - 1;
+            const column = opening.loc?.start.column ?? 0;
             return [{ line, column, message: '<input type="image"> missing alt attribute', rule: 'requireImageInputAlt' }];
           }
         }

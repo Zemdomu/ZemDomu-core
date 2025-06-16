@@ -26,7 +26,7 @@ export default function enforceListNesting(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'li') {
         const parent = path.parentPath?.parentPath?.node as t.JSXElement | undefined;

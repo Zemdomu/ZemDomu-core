@@ -26,13 +26,14 @@ export default function requireButtonText(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'button') {
-        const aria = getJsxAttr(path.node, 'aria-label');
+        const aria = getJsxAttr(opening, 'aria-label');
         if (!aria || !aria.trim()) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
           return [{ line, column, message: '<button> missing accessible text', rule: 'requireButtonText' }];
         }
       }

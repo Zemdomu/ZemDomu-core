@@ -19,13 +19,14 @@ export default function requireIframeTitle(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'iframe') {
-        const title = getJsxAttr(path.node, 'title');
+        const title = getJsxAttr(opening, 'title');
         if (!title || !title.trim()) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
           return [{ line, column, message: '<iframe> missing title attribute', rule: 'requireIframeTitle' }];
         }
       }

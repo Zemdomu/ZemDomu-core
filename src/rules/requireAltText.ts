@@ -23,17 +23,18 @@ export default function requireAltText(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const name = t.isJSXIdentifier(path.node.name) ? path.node.name.name : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const name = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (name !== 'img') return [];
-      const altAttr = path.node.attributes.find(
+      const altAttr = opening.attributes.find(
         (a): a is t.JSXAttribute =>
           t.isJSXAttribute(a) &&
           t.isJSXIdentifier(a.name) &&
           a.name.name === 'alt'
       );
       if (!altAttr || !t.isStringLiteral(altAttr.value) || altAttr.value.value.trim() === '') {
-        const loc = path.node.loc!.start;
+        const loc = opening.loc!.start;
         return [
           {
             line: loc.line - 1,

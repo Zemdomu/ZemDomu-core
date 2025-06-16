@@ -16,13 +16,14 @@ export default function requireHrefOnAnchors(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'a') {
-        const href = getJsxAttr(path.node, 'href');
+        const href = getJsxAttr(opening, 'href');
         if (!href || !href.trim()) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
           return [{ line, column, message: '<a> tag missing non-empty href attribute', rule: 'requireHrefOnAnchors' }];
         }
       }
