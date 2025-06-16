@@ -21,14 +21,15 @@ export default function requireHtmlLang(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (!seen && tag === 'html') {
         seen = true;
-        const lang = getJsxAttr(path.node, 'lang');
+        const lang = getJsxAttr(opening, 'lang');
         if (lang === undefined || !lang.trim()) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
           return [{ line, column, message: '<html> element missing lang attribute', rule: 'requireHtmlLang' }];
         }
       }

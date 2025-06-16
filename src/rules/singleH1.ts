@@ -18,13 +18,13 @@ export default function singleH1(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'h1') {
         count++;
         if (count > 1) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (path.node.openingElement.loc?.start.line ?? 1) - 1;
+          const column = path.node.openingElement.loc?.start.column ?? 0;
           return [{ line, column, message: 'Only one <h1> allowed per document', rule: 'singleH1' }];
         }
       }

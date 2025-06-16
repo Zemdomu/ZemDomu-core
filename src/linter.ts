@@ -51,8 +51,8 @@ export interface Rule {
   init?: () => void;
   enterHtml?: (node: Node) => LintResult[];
   exitHtml?: (node: Node) => LintResult[];
-  enterJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
-  exitJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
+  enterJsx?: (path: NodePath<t.JSXElement>) => LintResult[];
+  exitJsx?: (path: NodePath<t.JSXElement>) => LintResult[];
   /** Called after traversal finishes */
   end?: () => LintResult[];
 }
@@ -121,7 +121,7 @@ export function lint(
 
   if (ast) {
     traverse(ast, {
-      JSXOpeningElement: {
+      JSXElement: {
         enter(path) {
           for (const rule of activeRules) {
             if (rule.enterJsx) {

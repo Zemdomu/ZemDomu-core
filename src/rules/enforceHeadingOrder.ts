@@ -21,7 +21,7 @@ export default function enforceHeadingOrder(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (/^h[1-6]$/.test(tag)) {
         const lvl = parseInt(tag.charAt(1), 10);

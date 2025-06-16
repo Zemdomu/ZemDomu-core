@@ -18,12 +18,12 @@ export default function uniqueIds(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const id = getJsxAttr(path.node, 'id');
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const id = getJsxAttr(path.node.openingElement, 'id');
       if (id) {
         if (ids.has(id)) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (path.node.openingElement.loc?.start.line ?? 1) - 1;
+          const column = path.node.openingElement.loc?.start.column ?? 0;
           return [{ line, column, message: `Duplicate id "${id}"`, rule: 'uniqueIds' }];
         }
         ids.add(id);

@@ -22,18 +22,19 @@ export default function requireLabelForFormControls(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
-      const tag = t.isJSXIdentifier(path.node.name) ? path.node.name.name.toLowerCase() : '';
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'label') {
-        const htmlFor = getJsxAttr(path.node, 'for');
+        const htmlFor = getJsxAttr(opening, 'for');
         if (htmlFor) labels.add(htmlFor);
       }
       if (['input','select','textarea'].includes(tag)) {
-        const id = getJsxAttr(path.node, 'id');
-        const aria = getJsxAttr(path.node, 'aria-label');
+        const id = getJsxAttr(opening, 'id');
+        const aria = getJsxAttr(opening, 'aria-label');
         if (!aria || !aria.trim()) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
           if (!id) return [{ line, column, message: 'Form control missing id or aria-label', rule: 'requireLabelForFormControls' }];
           if (!labels.has(id)) return [{ line, column, message: `Form control with id="${id}" missing <label for="${id}">`, rule: 'requireLabelForFormControls' }];
         }

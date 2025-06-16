@@ -22,13 +22,13 @@ export default function requireSectionHeading(): Rule {
       }
       return [];
     },
-    enterJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'section') stack.push({found:false});
       if (/^h[1-6]$/.test(tag) && stack.length) stack[stack.length-1].found = true;
       return [];
     },
-    exitJsx(path: NodePath<t.JSXOpeningElement>): LintResult[] {
+    exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'section') {
         const s = stack.pop();
