@@ -1,8 +1,12 @@
-import { parse as parseHtmlDom } from './simpleHtmlParser';
+import { parse as parseHtmlDom, ElementNode } from './simpleHtmlParser';
 import { parse as parseJs } from '@babel/parser';
-import traverse from '@babel/traverse';
+import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import requireAltText from './rules/requireAltText';
+
+const builtInRules: Record<string, Rule> = {
+  requireAltText,
+};
 
 export interface LintResult {
   line: number;
@@ -11,17 +15,22 @@ export interface LintResult {
   rule: string;
 }
 
+export interface Rule {
+  name: string;
+  checkHtml?: (node: ElementNode) => LintResult[];
+  checkJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
+}
+
 export interface LinterOptions {
-  rules: {
-    requireAltText: boolean;
-    // add more rules here
-  };
+  rules?: Record<string, boolean>;
+  customRules?: Rule[];
 }
 
 const defaultOptions: LinterOptions = {
   rules: {
     requireAltText: true,
   },
+  customRules: [],
 };
 
 /**
@@ -31,42 +40,57 @@ export function lint(
   content: string,
   options: LinterOptions = defaultOptions
 ): LintResult[] {
-  // very simplified example
+  const opts: LinterOptions = {
+    rules: { ...defaultOptions.rules, ...(options.rules || {}) },
+    customRules: options.customRules ?? defaultOptions.customRules,
+  };
+
   const results: LintResult[] = [];
 
-  // parse JSX/TSX
+  const activeRules: Rule[] = [];
+  for (const name in opts.rules) {
+    const enabled = opts.rules[name];
+    if (enabled && builtInRules[name]) {
+      activeRules.push(builtInRules[name]);
+    }
+  }
+  if (opts.customRules) activeRules.push(...opts.customRules);
+
+  let ast: t.File | null = null;
   try {
-    const ast = parseJs(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
+    ast = parseJs(content, {
+      sourceType: 'module',
+      plugins: ['typescript', 'jsx'],
+    });
+  } catch {
+    ast = null;
+  }
+
+  if (ast) {
     traverse(ast, {
       JSXOpeningElement(path) {
-        if (!options.rules.requireAltText) return;
-        const name = t.isJSXIdentifier(path.node.name) ? path.node.name.name : '';
-        if (name === 'img') {
-          const altAttr = path.node.attributes.find(
-            (a) => t.isJSXAttribute(a) && t.isJSXIdentifier(a.name) && a.name.name === 'alt'
-          ) as t.JSXAttribute | undefined;
-
-          if (
-            !altAttr ||
-            !t.isStringLiteral(altAttr.value) ||
-            altAttr.value.value.trim() === ''
-          ) {
-            const loc = path.node.loc!.start;
-            results.push({
-              line: loc.line - 1,
-              column: loc.column,
-              message: '<img> tag missing alt attribute',
-              rule: 'requireAltText',
-            });
+        for (const rule of activeRules) {
+          if (rule.checkJsx) {
+            results.push(...rule.checkJsx(path));
           }
         }
       },
     });
     return results;
-  } catch {
-    // fallback to plain HTML parser
-    const root = parseHtmlDom(content);
-    // walk the tree and invoke rules; omitted for brevity
-    return results;
   }
+
+  const root = parseHtmlDom(content);
+  const walk = (node: ElementNode) => {
+    for (const rule of activeRules) {
+      if (rule.checkHtml) {
+        results.push(...rule.checkHtml(node));
+      }
+    }
+    for (const child of node.children) {
+      if (child.type === 'element') walk(child);
+    }
+  };
+  walk(root);
+
+  return results;
 }
