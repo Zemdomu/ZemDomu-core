@@ -1,11 +1,41 @@
-import { parse as parseHtmlDom, ElementNode } from './simpleHtmlParser';
+import { parse as parseHtmlDom, ElementNode, Node } from './simpleHtmlParser';
 import { parse as parseJs } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import requireAltText from './rules/requireAltText';
+import requireSectionHeading from './rules/requireSectionHeading';
+import enforceHeadingOrder from './rules/enforceHeadingOrder';
+import singleH1 from './rules/singleH1';
+import requireLabelForFormControls from './rules/requireLabelForFormControls';
+import enforceListNesting from './rules/enforceListNesting';
+import requireLinkText from './rules/requireLinkText';
+import requireTableCaption from './rules/requireTableCaption';
+import preventEmptyInlineTags from './rules/preventEmptyInlineTags';
+import requireHrefOnAnchors from './rules/requireHrefOnAnchors';
+import requireButtonText from './rules/requireButtonText';
+import requireIframeTitle from './rules/requireIframeTitle';
+import requireHtmlLang from './rules/requireHtmlLang';
+import requireImageInputAlt from './rules/requireImageInputAlt';
+import requireNavLinks from './rules/requireNavLinks';
+import uniqueIds from './rules/uniqueIds';
 
-const builtInRules: Record<string, Rule> = {
+const builtInRules: Record<string, () => Rule> = {
+  requireSectionHeading,
+  enforceHeadingOrder,
+  singleH1,
   requireAltText,
+  requireLabelForFormControls,
+  enforceListNesting,
+  requireLinkText,
+  requireTableCaption,
+  preventEmptyInlineTags,
+  requireHrefOnAnchors,
+  requireButtonText,
+  requireIframeTitle,
+  requireHtmlLang,
+  requireImageInputAlt,
+  requireNavLinks,
+  uniqueIds,
 };
 
 export interface LintResult {
@@ -17,8 +47,14 @@ export interface LintResult {
 
 export interface Rule {
   name: string;
-  checkHtml?: (node: ElementNode) => LintResult[];
-  checkJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
+  /** Called before traversal begins */
+  init?: () => void;
+  enterHtml?: (node: Node) => LintResult[];
+  exitHtml?: (node: Node) => LintResult[];
+  enterJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
+  exitJsx?: (path: NodePath<t.JSXOpeningElement>) => LintResult[];
+  /** Called after traversal finishes */
+  end?: () => LintResult[];
 }
 
 export interface LinterOptions {
@@ -28,7 +64,22 @@ export interface LinterOptions {
 
 const defaultOptions: LinterOptions = {
   rules: {
+    requireSectionHeading: true,
+    enforceHeadingOrder: true,
+    singleH1: true,
     requireAltText: true,
+    requireLabelForFormControls: true,
+    enforceListNesting: true,
+    requireLinkText: true,
+    requireTableCaption: true,
+    preventEmptyInlineTags: true,
+    requireHrefOnAnchors: true,
+    requireButtonText: true,
+    requireIframeTitle: true,
+    requireHtmlLang: true,
+    requireImageInputAlt: true,
+    requireNavLinks: true,
+    uniqueIds: true,
   },
   customRules: [],
 };
@@ -51,10 +102,12 @@ export function lint(
   for (const name in opts.rules) {
     const enabled = opts.rules[name];
     if (enabled && builtInRules[name]) {
-      activeRules.push(builtInRules[name]);
+      activeRules.push(builtInRules[name]());
     }
   }
   if (opts.customRules) activeRules.push(...opts.customRules);
+
+  activeRules.forEach(r => r.init && r.init());
 
   let ast: t.File | null = null;
   try {
@@ -68,29 +121,47 @@ export function lint(
 
   if (ast) {
     traverse(ast, {
-      JSXOpeningElement(path) {
-        for (const rule of activeRules) {
-          if (rule.checkJsx) {
-            results.push(...rule.checkJsx(path));
+      JSXOpeningElement: {
+        enter(path) {
+          for (const rule of activeRules) {
+            if (rule.enterJsx) {
+              results.push(...rule.enterJsx(path));
+            }
           }
-        }
+        },
+        exit(path) {
+          for (const rule of activeRules) {
+            if (rule.exitJsx) {
+              results.push(...rule.exitJsx(path));
+            }
+          }
+        },
       },
     });
+    activeRules.forEach(r => r.end && results.push(...r.end()));
     return results;
   }
 
   const root = parseHtmlDom(content);
-  const walk = (node: ElementNode) => {
+  const walk = (node: Node) => {
     for (const rule of activeRules) {
-      if (rule.checkHtml) {
-        results.push(...rule.checkHtml(node));
+      if (rule.enterHtml) {
+        results.push(...rule.enterHtml(node));
       }
     }
-    for (const child of node.children) {
-      if (child.type === 'element') walk(child);
+    if ((node as ElementNode).children) {
+      for (const child of (node as ElementNode).children) {
+        walk(child);
+      }
+    }
+    for (const rule of activeRules) {
+      if (rule.exitHtml) {
+        results.push(...rule.exitHtml(node));
+      }
     }
   };
   walk(root);
+  activeRules.forEach(r => r.end && results.push(...r.end()));
 
   return results;
 }
