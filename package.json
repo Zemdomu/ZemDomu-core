@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "Hello",
   "main": "./out/index.js",
+  "files": ["out"],
+  "private": false,
   "scripts": {
     "build":   "tsc -p tsconfig.json",
     "test": "npm run compile && node tests/linter-labels.test.js && node tests/unique-ids.test.js"
