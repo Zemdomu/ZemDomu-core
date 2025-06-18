@@ -5,6 +5,7 @@
   "main": "./out/index.js",
   "scripts": {
     "build":   "tsc -p tsconfig.json",
+    "compile": "tsc -p tsconfig.json",
     "test": "npm run compile && node tests/linter-labels.test.js && node tests/unique-ids.test.js"
   },
   "keywords": [],
@@ -23,6 +24,7 @@
   "dependencies": {
     "@babel/parser": "^7.27.0",
     "@babel/traverse": "^7.27.0",
-    "@babel/types": "^7.27.0"
+    "@babel/types": "^7.27.0",
+    "glob": "^7.2.3"
   }
 }

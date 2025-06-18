@@ -43,6 +43,7 @@ export interface LintResult {
   column: number;
   message: string;
   rule: string;
+  filePath?: string;
 }
 
 export interface Rule {
