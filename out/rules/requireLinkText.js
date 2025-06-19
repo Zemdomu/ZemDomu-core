@@ -70,9 +70,9 @@ function requireLinkText() {
             if (tag === 'a') {
                 const entry = stack.pop();
                 let hasText = false;
-                const parent = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.node;
-                if (parent && Array.isArray(parent.children)) {
-                    hasText = parent.children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
+                const parentNode = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.node;
+                if (t.isJSXElement(parentNode) && Array.isArray(parentNode.children)) {
+                    hasText = parentNode.children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
                 }
                 if (entry && !(entry.found || hasText)) {
                     const line = ((_c = (_b = path.node.loc) === null || _b === void 0 ? void 0 : _b.start.line) !== null && _c !== void 0 ? _c : 1) - 1;

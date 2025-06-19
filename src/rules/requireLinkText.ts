@@ -33,9 +33,11 @@ export default function requireLinkText(): Rule {
       if (tag === 'a') {
         const entry = stack.pop();
         let hasText = false;
-        const parent = path.parentPath?.node as t.JSXElement;
-        if (parent && Array.isArray(parent.children)) {
-          hasText = parent.children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
+        const parentNode = path.parentPath?.node;
+        if (t.isJSXElement(parentNode) && Array.isArray(parentNode.children)) {
+          hasText = parentNode.children.some(
+            c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c)
+          );
         }
         if (entry && !(entry.found || hasText)) {
           const line = (path.node.loc?.start.line ?? 1) - 1;

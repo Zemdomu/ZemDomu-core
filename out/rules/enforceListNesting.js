@@ -62,14 +62,17 @@ function enforceListNesting() {
             var _a, _b, _c, _d, _e, _f;
             const tag = (0, utils_1.getTag)(path);
             if (tag === 'li') {
-                const parent = (_b = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.parentPath) === null || _b === void 0 ? void 0 : _b.node;
-                if (parent) {
-                    const pTag = t.isJSXIdentifier(parent.openingElement.name) ? parent.openingElement.name.name.toLowerCase() : '';
-                    if (!['ul', 'ol'].includes(pTag)) {
-                        const line = ((_d = (_c = path.node.loc) === null || _c === void 0 ? void 0 : _c.start.line) !== null && _d !== void 0 ? _d : 1) - 1;
-                        const column = (_f = (_e = path.node.loc) === null || _e === void 0 ? void 0 : _e.start.column) !== null && _f !== void 0 ? _f : 0;
-                        return [{ line, column, message: '<li> must be inside a <ul> or <ol>', rule: 'enforceListNesting' }];
-                    }
+                const parentNode = (_b = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.parentPath) === null || _b === void 0 ? void 0 : _b.node;
+                let inList = false;
+                if (parentNode && t.isJSXElement(parentNode)) {
+                    const open = parentNode.openingElement;
+                    const pTag = t.isJSXIdentifier(open.name) ? open.name.name.toLowerCase() : '';
+                    inList = ['ul', 'ol'].includes(pTag);
+                }
+                if (!inList) {
+                    const line = ((_d = (_c = path.node.loc) === null || _c === void 0 ? void 0 : _c.start.line) !== null && _d !== void 0 ? _d : 1) - 1;
+                    const column = (_f = (_e = path.node.loc) === null || _e === void 0 ? void 0 : _e.start.column) !== null && _f !== void 0 ? _f : 0;
+                    return [{ line, column, message: '<li> must be inside a <ul> or <ol>', rule: 'enforceListNesting' }];
                 }
             }
             return [];

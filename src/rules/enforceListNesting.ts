@@ -29,14 +29,17 @@ export default function enforceListNesting(): Rule {
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'li') {
-        const parent = path.parentPath?.parentPath?.node as t.JSXElement | undefined;
-        if (parent) {
-          const pTag = t.isJSXIdentifier(parent.openingElement.name) ? parent.openingElement.name.name.toLowerCase() : '';
-          if (!['ul', 'ol'].includes(pTag)) {
-            const line = (path.node.loc?.start.line ?? 1) - 1;
-            const column = path.node.loc?.start.column ?? 0;
-            return [{ line, column, message: '<li> must be inside a <ul> or <ol>', rule: 'enforceListNesting' }];
-          }
+        const parentNode = path.parentPath?.parentPath?.node;
+        let inList = false;
+        if (parentNode && t.isJSXElement(parentNode)) {
+          const open = parentNode.openingElement;
+          const pTag = t.isJSXIdentifier(open.name) ? open.name.name.toLowerCase() : '';
+          inList = ['ul', 'ol'].includes(pTag);
+        }
+        if (!inList) {
+          const line = (path.node.loc?.start.line ?? 1) - 1;
+          const column = path.node.loc?.start.column ?? 0;
+          return [{ line, column, message: '<li> must be inside a <ul> or <ol>', rule: 'enforceListNesting' }];
         }
       }
       return [];

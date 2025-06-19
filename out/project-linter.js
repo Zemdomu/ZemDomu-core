@@ -49,7 +49,7 @@ class ProjectLinter {
         if (!content) {
             content = await fs.readFile(filePath, 'utf8');
         }
-        const results = (0, linter_1.lint)(content, this.opts);
+        const results = (0, linter_1.lint)(content, { ...this.opts, filePath });
         const byFile = new Map();
         byFile.set(filePath, [...results]);
         const xmlMode = /\.(jsx|tsx)$/.test(filePath);

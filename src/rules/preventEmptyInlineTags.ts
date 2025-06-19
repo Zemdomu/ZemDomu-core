@@ -34,7 +34,12 @@ export default function preventEmptyInlineTags(): Rule {
       const tag = getTag(path);
       if (inlineTags.has(tag)) {
         const e = stack.pop();
-        const hasText = (path.parentPath?.node as t.JSXElement).children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
+        const parentNode = path.parentPath?.node;
+        const hasText =
+          t.isJSXElement(parentNode) &&
+          parentNode.children.some(c =>
+            (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c)
+          );
         if (e && !(e.found || hasText)) {
           const line = (path.node.loc?.start.line ?? 1) - 1;
           const column = path.node.loc?.start.column ?? 0;

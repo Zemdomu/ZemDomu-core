@@ -61,6 +61,8 @@ export interface Rule {
 export interface LinterOptions {
   rules?: Record<string, boolean>;
   customRules?: Rule[];
+  /** Optional file path for better error messages */
+  filePath?: string;
 }
 
 const defaultOptions: LinterOptions = {
@@ -126,14 +128,28 @@ export function lint(
         enter(path) {
           for (const rule of activeRules) {
             if (rule.enterJsx) {
-              results.push(...rule.enterJsx(path));
+              try {
+                results.push(...rule.enterJsx(path));
+              } catch (e) {
+                console.error(
+                  `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+                  e
+                );
+              }
             }
           }
         },
         exit(path) {
           for (const rule of activeRules) {
             if (rule.exitJsx) {
-              results.push(...rule.exitJsx(path));
+              try {
+                results.push(...rule.exitJsx(path));
+              } catch (e) {
+                console.error(
+                  `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+                  e
+                );
+              }
             }
           }
         },
@@ -147,7 +163,14 @@ export function lint(
   const walk = (node: Node) => {
     for (const rule of activeRules) {
       if (rule.enterHtml) {
-        results.push(...rule.enterHtml(node));
+        try {
+          results.push(...rule.enterHtml(node));
+        } catch (e) {
+          console.error(
+            `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+            e
+          );
+        }
       }
     }
     if ((node as ElementNode).children) {
@@ -157,7 +180,14 @@ export function lint(
     }
     for (const rule of activeRules) {
       if (rule.exitHtml) {
-        results.push(...rule.exitHtml(node));
+        try {
+          results.push(...rule.exitHtml(node));
+        } catch (e) {
+          console.error(
+            `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+            e
+          );
+        }
       }
     }
   };

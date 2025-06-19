@@ -96,16 +96,28 @@ function lint(content, options = defaultOptions) {
         (0, traverse_1.default)(ast, {
             JSXElement: {
                 enter(path) {
+                    var _a;
                     for (const rule of activeRules) {
                         if (rule.enterJsx) {
-                            results.push(...rule.enterJsx(path));
+                            try {
+                                results.push(...rule.enterJsx(path));
+                            }
+                            catch (e) {
+                                console.error(`[ZemDomu] Error in rule ${rule.name} (${(_a = opts.filePath) !== null && _a !== void 0 ? _a : 'unknown'}):`, e);
+                            }
                         }
                     }
                 },
                 exit(path) {
+                    var _a;
                     for (const rule of activeRules) {
                         if (rule.exitJsx) {
-                            results.push(...rule.exitJsx(path));
+                            try {
+                                results.push(...rule.exitJsx(path));
+                            }
+                            catch (e) {
+                                console.error(`[ZemDomu] Error in rule ${rule.name} (${(_a = opts.filePath) !== null && _a !== void 0 ? _a : 'unknown'}):`, e);
+                            }
                         }
                     }
                 },
@@ -116,9 +128,15 @@ function lint(content, options = defaultOptions) {
     }
     const root = (0, simpleHtmlParser_1.parse)(content);
     const walk = (node) => {
+        var _a, _b;
         for (const rule of activeRules) {
             if (rule.enterHtml) {
-                results.push(...rule.enterHtml(node));
+                try {
+                    results.push(...rule.enterHtml(node));
+                }
+                catch (e) {
+                    console.error(`[ZemDomu] Error in rule ${rule.name} (${(_a = opts.filePath) !== null && _a !== void 0 ? _a : 'unknown'}):`, e);
+                }
             }
         }
         if (node.children) {
@@ -128,7 +146,12 @@ function lint(content, options = defaultOptions) {
         }
         for (const rule of activeRules) {
             if (rule.exitHtml) {
-                results.push(...rule.exitHtml(node));
+                try {
+                    results.push(...rule.exitHtml(node));
+                }
+                catch (e) {
+                    console.error(`[ZemDomu] Error in rule ${rule.name} (${(_b = opts.filePath) !== null && _b !== void 0 ? _b : 'unknown'}):`, e);
+                }
             }
         }
     };

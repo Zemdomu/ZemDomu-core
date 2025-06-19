@@ -70,7 +70,9 @@ function preventEmptyInlineTags() {
             const tag = (0, utils_1.getTag)(path);
             if (inlineTags.has(tag)) {
                 const e = stack.pop();
-                const hasText = ((_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.node).children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
+                const parentNode = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.node;
+                const hasText = t.isJSXElement(parentNode) &&
+                    parentNode.children.some(c => (t.isJSXText(c) && c.value.trim()) || t.isJSXExpressionContainer(c));
                 if (e && !(e.found || hasText)) {
                     const line = ((_c = (_b = path.node.loc) === null || _b === void 0 ? void 0 : _b.start.line) !== null && _c !== void 0 ? _c : 1) - 1;
                     const column = (_e = (_d = path.node.loc) === null || _d === void 0 ? void 0 : _d.start.column) !== null && _e !== void 0 ? _e : 0;
