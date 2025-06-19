@@ -1,12 +1,14 @@
 {
   "name": "zemdomu",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Hello",
   "main": "./out/index.js",
-  "files": ["out"],
+  "files": [
+    "out"
+  ],
   "private": false,
   "scripts": {
-    "build":   "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
     "compile": "tsc -p tsconfig.json",
     "test": "npm run compile && node tests/unique-ids.test.js && node tests/label-form-control.test.js && node tests/cross-component.test.js && node tests/heading-order.test.js && node tests/prevent-empty-inline.test.js && node tests/section-heading.test.js && node tests/img-alt.test.js && node tests/button-accessibility.test.js && node tests/html-lang.test.js && node tests/table-caption.test.js && node tests/all-rules.test.js"
   },
