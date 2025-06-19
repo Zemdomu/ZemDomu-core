@@ -1,6 +1,6 @@
 {
   "name": "zemdomu",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Hello",
   "main": "./out/index.js",
   "files": [
