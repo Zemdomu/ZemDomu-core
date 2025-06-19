@@ -8,7 +8,7 @@
   "scripts": {
     "build":   "tsc -p tsconfig.json",
     "compile": "tsc -p tsconfig.json",
-    "test": "npm run compile && node tests/linter-labels.test.js && node tests/unique-ids.test.js"
+    "test": "npm run compile && node tests/unique-ids.test.js && node tests/label-form-control.test.js && node tests/cross-component.test.js && node tests/heading-order.test.js && node tests/prevent-empty-inline.test.js && node tests/section-heading.test.js && node tests/img-alt.test.js && node tests/button-accessibility.test.js && node tests/html-lang.test.js && node tests/table-caption.test.js && node tests/all-rules.test.js"
   },
   "keywords": [],
   "author": "",
