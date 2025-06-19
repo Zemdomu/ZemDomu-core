@@ -253,12 +253,17 @@ class ComponentAnalyzer {
         return results;
     }
     findCrossComponentH1Issues(results) {
+        var _a;
         const entryPoints = this.findEntryPoints();
         for (const entry of entryPoints) {
             const comps = this.findComponentsWithRule(entry, 'singleH1');
             if (comps.length > 1) {
                 for (let i = 1; i < comps.length; i++) {
                     const comp = comps[i];
+                    if (!comp || !comp.name) {
+                        console.error('[ZemDomu] Missing component or name during cross-component analysis', comp);
+                        continue;
+                    }
                     const ref = this.findReferenceForComp(entry, comp.filePath);
                     if (ref) {
                         // Use first JSX usage location instead of import location
@@ -272,14 +277,16 @@ class ComponentAnalyzer {
                         });
                     }
                     else {
-                        const issue = comp.issues.get('singleH1')[0];
-                        results.push({
-                            filePath: comp.filePath,
-                            line: issue.line,
-                            column: issue.column,
-                            message: `Multiple <h1> across components - consider using lower-level headings.`,
-                            rule: 'singleH1'
-                        });
+                        const issue = (_a = comp.issues.get('singleH1')) === null || _a === void 0 ? void 0 : _a[0];
+                        if (issue) {
+                            results.push({
+                                filePath: comp.filePath,
+                                line: issue.line,
+                                column: issue.column,
+                                message: `Multiple <h1> across components - consider using lower-level headings.`,
+                                rule: 'singleH1'
+                            });
+                        }
                     }
                 }
             }
