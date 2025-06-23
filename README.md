@@ -1,35 +1,30 @@
-ZemDomu
+# ZemDomu Core
 
-Semantic HTML linting engine for clean, accessible, and SEO-friendly markup. This package provides the shared core logic used by the ZemDomu VS Code extension and upcoming GitHub Action.
+Semantic HTML linting engine for clean, accessible and SEO-friendly markup. This package provides the shared core logic used by the ZemDomu VS Code extension and upcoming GitHub Action.
 
+## 🧠 What is ZemDomu Core?
 
+**ZemDomu** is a semantic-first linter that helps developers write better HTML and JSX by catching accessibility and structural issues. It parses `.html`, `.jsx` and `.tsx` files and exposes a simple `lint()` function that returns semantic violations.
 
-🧠 What is ZemDomu Core?
+## 🚀 Installation
 
-ZemDomu is a semantic-first linter that helps developers write better HTML and JSX by catching accessibility and structural issues. This package contains the framework-agnostic linting engine used by other tools in the ZemDomu ecosystem.
-
-It parses .html, .jsx, and .tsx content and exposes a simple lint() function that returns semantic violations.
-
-🚀 Installation
-
+```bash
 npm install zemdomu
 # or
 yarn add zemdomu
+```
 
-✨ Features
+## ✨ Features
 
-✅ Lint semantic issues in HTML, JSX, and TSX
+- ✅ Lint semantic issues in HTML, JSX and TSX
+- 📦 Works in Node.js, CI or any JS runtime
+- ⚙️ Extensible rule system
+- 📚 Shared by the extension and GitHub Action
+- 🧪 Simple API: `lint(content, options)`
 
-📦 Works in Node.js, CI, or any JS runtime
+## ⚙️ Usage Example
 
-⚙️ Extensible rule system
-
-📚 Shared by extension and GitHub Action
-
-🧪 Simple API: lint(content, options)
-
-⚙️ Usage Example
-
+```ts
 import { lint } from 'zemdomu';
 
 const html = '<img>';
@@ -48,20 +43,21 @@ console.log(results);
 // Custom rules can be supplied via the `customRules` option
 // const myRule = { name: 'demo', checkHtml: () => [] };
 // lint(html, { customRules: [myRule] });
+```
 
-📖 API
+## 📖 API
 
-lint(content: string, options?: LinterOptions): LintResult[]
+`lint(content: string, options?: LinterOptions): LintResult[]`
 
-Parameters:
+**Parameters**
 
-content — HTML, JSX, or TSX string input
+- `content` — HTML, JSX or TSX string input
+- `options.rules` — toggles for built-in rules
+- `options.customRules` — array of additional rules
 
-options.rules — toggles for built-in rules
-options.customRules — array of additional rules
+**Example `LinterOptions`**
 
-Example LinterOptions
-
+```ts
 interface LinterOptions {
   rules: {
     requireAltText: boolean;
@@ -69,44 +65,44 @@ interface LinterOptions {
   };
   customRules?: Rule[];
 }
+```
 
-Example LintResult
+**Example `LintResult`**
 
+```ts
 interface LintResult {
   line: number;
   column: number;
   message: string;
   rule: string;
 }
+```
 
-🔗 Related Tools
+## 🔗 Related Tools
 
-ZemDomu VS Code Extension
+- [ZemDomu VS Code Extension](../ZemDomu-Extension)
+- ZemDomu GitHub Action (coming soon)
 
-ZemDomu GitHub Action (coming soon)
+## 🛠 Development
 
-🛠 Development
-
+```bash
 git clone https://github.com/Zemdomu/ZemDomu-core.git
 cd ZemDomu-core
 npm install
 npm run build
+```
 
 Tests and coverage support coming soon.
 
-🤝 Contributing
+## 🤝 Contributing
 
-We welcome contributions! If you'd like to add rules, improve parsing, or integrate new consumers:
+We welcome contributions! If you'd like to add rules, improve parsing or integrate new consumers:
 
-Fork this repo
+1. Fork this repo
+2. Add your logic inside `src/rules` or `src/linter.ts`
+3. Write or update tests (if applicable)
+4. Submit a pull request!
 
-Add your logic inside src/rules or src/linter.ts
-
-Write or update tests (if applicable)
-
-Submit a pull request!
-
-📄 License
+## 📄 License
 
 MIT © 2025 Zacharias Eryd Berlin
-
