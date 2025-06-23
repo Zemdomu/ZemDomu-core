@@ -43,6 +43,7 @@ const parser_1 = require("@babel/parser");
 const traverse_1 = __importDefault(require("@babel/traverse"));
 const t = __importStar(require("@babel/types"));
 const component_path_resolver_1 = require("./component-path-resolver");
+const utils_1 = require("./rules/utils");
 class ComponentAnalyzer {
     constructor(options, perf) {
         this.componentRegistry = new Map();
@@ -56,6 +57,7 @@ class ComponentAnalyzer {
         var _a;
         const start = Date.now();
         try {
+            filePath = path.resolve(filePath);
             const content = await fs.readFile(filePath, 'utf8');
             if (!/\.(jsx|tsx)$/.test(filePath))
                 return null;
@@ -81,7 +83,10 @@ class ComponentAnalyzer {
             filePath,
             issues: new Map(),
             usesComponents: [],
-            headings: []
+            headings: [],
+            ids: [],
+            navs: [],
+            hasLocalAnchor: false,
         };
         // Track imported components
         const importedComponents = new Map();
@@ -101,51 +106,93 @@ class ComponentAnalyzer {
             }
         });
         timings.collectImports = Date.now() - t0;
-        // Collect JSX usages and headings
+        // Collect JSX usages, headings, ids and nav info
         t0 = Date.now();
+        const navStack = [];
         (0, traverse_1.default)(ast, {
-            JSXElement(path) {
-                var _a, _b;
-                const elt = path.node.openingElement.name;
-                if (t.isJSXIdentifier(elt)) {
+            JSXElement: {
+                enter(path) {
+                    var _a, _b, _c, _d;
+                    const elt = path.node.openingElement.name;
+                    if (!t.isJSXIdentifier(elt))
+                        return;
                     const name = elt.name;
                     const tag = name.toLowerCase();
                     // Record headings
                     if (/^h[1-6]$/.test(tag)) {
                         const level = parseInt(tag.charAt(1), 10);
-                        const loc = (_a = elt.loc) === null || _a === void 0 ? void 0 : _a.start;
+                        const loc = (_a = path.node.openingElement.loc) === null || _a === void 0 ? void 0 : _a.start;
                         if (loc) {
                             componentDef.headings.push({
                                 level,
                                 line: loc.line - 1,
                                 column: loc.column,
-                                filePath
+                                filePath,
                             });
                         }
+                    }
+                    // Track <nav> elements
+                    if (tag === 'nav') {
+                        const loc = (_b = path.node.openingElement.loc) === null || _b === void 0 ? void 0 : _b.start;
+                        const navInfo = {
+                            filePath,
+                            line: loc ? loc.line - 1 : 0,
+                            column: loc ? loc.column : 0,
+                            hasLocalLink: false,
+                            childComponents: [],
+                        };
+                        navStack.push(navInfo);
+                        componentDef.navs.push(navInfo);
+                    }
+                    // Track <a> elements
+                    if (tag === 'a') {
+                        componentDef.hasLocalAnchor = true;
+                        navStack.forEach(n => (n.hasLocalLink = true));
+                    }
+                    // Track id attributes
+                    const idAttr = (0, utils_1.getJsxAttr)(path.node.openingElement, 'id');
+                    if (idAttr) {
+                        const loc = (_c = path.node.openingElement.loc) === null || _c === void 0 ? void 0 : _c.start;
+                        componentDef.ids.push({
+                            id: idAttr,
+                            line: loc ? loc.line - 1 : 0,
+                            column: loc ? loc.column : 0,
+                            filePath,
+                        });
                     }
                     // Record component usage (only for capitalized components)
                     if (/^[A-Z]/.test(name)) {
                         const existingRef = componentDef.usesComponents.find(c => c.name === name);
-                        const loc = (_b = elt.loc) === null || _b === void 0 ? void 0 : _b.start;
+                        const loc = (_d = elt.loc) === null || _d === void 0 ? void 0 : _d.start;
                         const location = loc ? { line: loc.line - 1, column: loc.column } : { line: 0, column: 0 };
+                        let ref;
                         if (existingRef) {
-                            // Add usage location to existing reference
                             existingRef.usageLocations.push(location);
+                            ref = existingRef;
                         }
                         else {
-                            // Create new component reference
                             const rawImportPath = importedComponents.get(name) || null;
-                            componentDef.usesComponents.push({
+                            ref = {
                                 name,
-                                path: null, // Will be resolved later
+                                path: null,
                                 rawImportPath,
                                 sourceLocation: location,
-                                usageLocations: [location]
-                            });
+                                usageLocations: [location],
+                            };
+                            componentDef.usesComponents.push(ref);
+                        }
+                        if (navStack.length) {
+                            navStack[navStack.length - 1].childComponents.push(ref);
                         }
                     }
-                }
-            }
+                },
+                exit(path) {
+                    const elt = path.node.openingElement.name;
+                    if (t.isJSXIdentifier(elt) && elt.name.toLowerCase() === 'nav') {
+                        navStack.pop();
+                    }
+                },
+            },
         });
         timings.jsxCollect = Date.now() - t0;
         // Store import mappings for this file
@@ -250,6 +297,10 @@ class ComponentAnalyzer {
             this.findCrossComponentH1Issues(results);
         if (rules.enforceHeadingOrder)
             this.findCrossComponentHeadingOrderIssues(results);
+        if (rules.uniqueIds)
+            this.findCrossComponentDuplicateIds(results);
+        if (rules.requireNavLinks)
+            this.findCrossComponentNavLinks(results);
         return results;
     }
     findCrossComponentH1Issues(results) {
@@ -436,6 +487,96 @@ class ComponentAnalyzer {
             }
         }
         return allHeadings;
+    }
+    findCrossComponentDuplicateIds(results) {
+        const entryPoints = this.findEntryPoints();
+        for (const entry of entryPoints) {
+            this.collectIds(entry, new Map(), results, new Set());
+        }
+    }
+    collectIds(component, seen, results, stack) {
+        if (stack.has(component.filePath))
+            return;
+        stack.add(component.filePath);
+        for (const id of component.ids) {
+            if (seen.has(id.id)) {
+                results.push({
+                    filePath: id.filePath,
+                    line: id.line,
+                    column: id.column,
+                    message: `Duplicate id "${id.id}"`,
+                    rule: 'uniqueIds',
+                });
+            }
+            else {
+                seen.set(id.id, id);
+            }
+        }
+        for (const ref of component.usesComponents) {
+            if (ref.path && this.componentRegistry.has(ref.path)) {
+                const target = this.componentRegistry.get(ref.path);
+                const count = ref.usageLocations.length || 1;
+                for (let i = 0; i < count; i++) {
+                    this.collectIds(target, seen, results, stack);
+                }
+            }
+        }
+        stack.delete(component.filePath);
+    }
+    findCrossComponentNavLinks(results) {
+        const entryPoints = this.findEntryPoints();
+        for (const entry of entryPoints) {
+            this.checkNavs(entry, results, new Set());
+        }
+    }
+    checkNavs(component, results, stack) {
+        if (stack.has(component.filePath))
+            return;
+        stack.add(component.filePath);
+        for (const nav of component.navs) {
+            if (!this.navHasLink(nav, new Set())) {
+                results.push({
+                    filePath: nav.filePath,
+                    line: nav.line,
+                    column: nav.column,
+                    message: '<nav> contains no links',
+                    rule: 'requireNavLinks',
+                });
+            }
+        }
+        for (const ref of component.usesComponents) {
+            if (ref.path && this.componentRegistry.has(ref.path)) {
+                this.checkNavs(this.componentRegistry.get(ref.path), results, stack);
+            }
+        }
+        stack.delete(component.filePath);
+    }
+    navHasLink(nav, visited) {
+        if (nav.hasLocalLink)
+            return true;
+        for (const ref of nav.childComponents) {
+            if (ref.path && this.componentRegistry.has(ref.path)) {
+                if (this.componentHasAnchor(this.componentRegistry.get(ref.path), visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    componentHasAnchor(component, visited) {
+        if (visited.has(component.filePath))
+            return false;
+        if (component.hasLocalAnchor)
+            return true;
+        visited.add(component.filePath);
+        for (const ref of component.usesComponents) {
+            if (ref.path && this.componentRegistry.has(ref.path)) {
+                if (this.componentHasAnchor(this.componentRegistry.get(ref.path), visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     findEntryPoints() {
         const all = Array.from(this.componentRegistry.values());

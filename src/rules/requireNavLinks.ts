@@ -25,7 +25,13 @@ export default function requireNavLinks(): Rule {
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'nav') stack.push({hasLink:false});
-      if (tag === 'a' && stack.length) stack[stack.length-1].hasLink = true;
+      if (stack.length) {
+        if (tag === 'a') {
+          stack[stack.length-1].hasLink = true;
+        } else if (t.isJSXIdentifier(path.node.openingElement.name) && /^[A-Z]/.test(path.node.openingElement.name.name)) {
+          stack[stack.length-1].hasLink = true;
+        }
+      }
       return [];
     },
     exitJsx(path: NodePath<t.JSXElement>): LintResult[] {

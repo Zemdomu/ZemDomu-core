@@ -5,6 +5,7 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { LintResult, LinterOptions } from './linter';
 import { ComponentPathResolver } from './component-path-resolver';
+import { getJsxAttr } from './rules/utils';
 
 interface PerformanceRecorder {
   record(filePath: string, timings: Record<string, number>): void;
@@ -32,12 +33,30 @@ interface HeadingInfo {
   filePath: string;
 }
 
+interface IdInfo {
+  id: string;
+  line: number;
+  column: number;
+  filePath: string;
+}
+
+interface NavInfo {
+  filePath: string;
+  line: number;
+  column: number;
+  hasLocalLink: boolean;
+  childComponents: ComponentReference[];
+}
+
 interface ComponentDefinition {
   name: string;
   filePath: string;
   issues: Map<string, LintResult[]>;
   usesComponents: ComponentReference[];
   headings: HeadingInfo[];
+  ids: IdInfo[];
+  navs: NavInfo[];
+  hasLocalAnchor: boolean;
 }
 
 export class ComponentAnalyzer {
@@ -56,6 +75,7 @@ export class ComponentAnalyzer {
   async analyzeFile(filePath: string): Promise<ComponentDefinition | null> {
     const start = Date.now();
     try {
+      filePath = path.resolve(filePath);
       const content = await fs.readFile(filePath, 'utf8');
       if (!/\.(jsx|tsx)$/.test(filePath)) return null;
       const { component, timings } = await this.extractComponentInfo(content, filePath);
@@ -79,7 +99,10 @@ export class ComponentAnalyzer {
       filePath,
       issues: new Map(),
       usesComponents: [],
-      headings: []
+      headings: [],
+      ids: [],
+      navs: [],
+      hasLocalAnchor: false,
     };
 
     // Track imported components
@@ -102,26 +125,61 @@ export class ComponentAnalyzer {
     });
     timings.collectImports = Date.now() - t0;
 
-    // Collect JSX usages and headings
+    // Collect JSX usages, headings, ids and nav info
     t0 = Date.now();
+    const navStack: NavInfo[] = [];
     traverse(ast, {
-      JSXElement(path) {
-        const elt = path.node.openingElement.name;
-        if (t.isJSXIdentifier(elt)) {
+      JSXElement: {
+        enter(path) {
+          const elt = path.node.openingElement.name;
+          if (!t.isJSXIdentifier(elt)) return;
           const name = elt.name;
           const tag = name.toLowerCase();
+
           // Record headings
           if (/^h[1-6]$/.test(tag)) {
             const level = parseInt(tag.charAt(1), 10);
-            const loc = elt.loc?.start;
+            const loc = path.node.openingElement.loc?.start;
             if (loc) {
               componentDef.headings.push({
                 level,
                 line: loc.line - 1,
                 column: loc.column,
-                filePath
+                filePath,
               });
             }
+          }
+
+          // Track <nav> elements
+          if (tag === 'nav') {
+            const loc = path.node.openingElement.loc?.start;
+            const navInfo: NavInfo = {
+              filePath,
+              line: loc ? loc.line - 1 : 0,
+              column: loc ? loc.column : 0,
+              hasLocalLink: false,
+              childComponents: [],
+            };
+            navStack.push(navInfo);
+            componentDef.navs.push(navInfo);
+          }
+
+          // Track <a> elements
+          if (tag === 'a') {
+            componentDef.hasLocalAnchor = true;
+            navStack.forEach(n => (n.hasLocalLink = true));
+          }
+
+          // Track id attributes
+          const idAttr = getJsxAttr(path.node.openingElement, 'id');
+          if (idAttr) {
+            const loc = path.node.openingElement.loc?.start;
+            componentDef.ids.push({
+              id: idAttr,
+              line: loc ? loc.line - 1 : 0,
+              column: loc ? loc.column : 0,
+              filePath,
+            });
           }
 
           // Record component usage (only for capitalized components)
@@ -130,23 +188,34 @@ export class ComponentAnalyzer {
             const loc = elt.loc?.start;
             const location = loc ? { line: loc.line - 1, column: loc.column } : { line: 0, column: 0 };
 
+            let ref: ComponentReference;
             if (existingRef) {
-              // Add usage location to existing reference
               existingRef.usageLocations.push(location);
+              ref = existingRef;
             } else {
-              // Create new component reference
               const rawImportPath = importedComponents.get(name) || null;
-              componentDef.usesComponents.push({
+              ref = {
                 name,
-                path: null, // Will be resolved later
+                path: null,
                 rawImportPath,
                 sourceLocation: location,
-                usageLocations: [location]
-              });
+                usageLocations: [location],
+              };
+              componentDef.usesComponents.push(ref);
+            }
+
+            if (navStack.length) {
+              navStack[navStack.length - 1].childComponents.push(ref);
             }
           }
-        }
-      }
+        },
+        exit(path) {
+          const elt = path.node.openingElement.name;
+          if (t.isJSXIdentifier(elt) && elt.name.toLowerCase() === 'nav') {
+            navStack.pop();
+          }
+        },
+      },
     });
     timings.jsxCollect = Date.now() - t0;
 
@@ -245,6 +314,8 @@ export class ComponentAnalyzer {
 
     if (rules.singleH1) this.findCrossComponentH1Issues(results);
     if (rules.enforceHeadingOrder) this.findCrossComponentHeadingOrderIssues(results);
+    if (rules.uniqueIds) this.findCrossComponentDuplicateIds(results);
+    if (rules.requireNavLinks) this.findCrossComponentNavLinks(results);
 
     return results;
   }
@@ -449,6 +520,107 @@ export class ComponentAnalyzer {
     }
     
     return allHeadings;
+  }
+
+  private findCrossComponentDuplicateIds(results: LintResult[]): void {
+    const entryPoints = this.findEntryPoints();
+    for (const entry of entryPoints) {
+      this.collectIds(entry, new Map(), results, new Set());
+    }
+  }
+
+  private collectIds(
+    component: ComponentDefinition,
+    seen: Map<string, IdInfo>,
+    results: LintResult[],
+    stack: Set<string>
+  ): void {
+    if (stack.has(component.filePath)) return;
+    stack.add(component.filePath);
+
+    for (const id of component.ids) {
+      if (seen.has(id.id)) {
+        results.push({
+          filePath: id.filePath,
+          line: id.line,
+          column: id.column,
+          message: `Duplicate id "${id.id}"`,
+          rule: 'uniqueIds',
+        });
+      } else {
+        seen.set(id.id, id);
+      }
+    }
+
+    for (const ref of component.usesComponents) {
+      if (ref.path && this.componentRegistry.has(ref.path)) {
+        const target = this.componentRegistry.get(ref.path)!;
+        const count = ref.usageLocations.length || 1;
+        for (let i = 0; i < count; i++) {
+          this.collectIds(target, seen, results, stack);
+        }
+      }
+    }
+
+    stack.delete(component.filePath);
+  }
+
+  private findCrossComponentNavLinks(results: LintResult[]): void {
+    const entryPoints = this.findEntryPoints();
+    for (const entry of entryPoints) {
+      this.checkNavs(entry, results, new Set());
+    }
+  }
+
+  private checkNavs(component: ComponentDefinition, results: LintResult[], stack: Set<string>): void {
+    if (stack.has(component.filePath)) return;
+    stack.add(component.filePath);
+
+    for (const nav of component.navs) {
+      if (!this.navHasLink(nav, new Set())) {
+        results.push({
+          filePath: nav.filePath,
+          line: nav.line,
+          column: nav.column,
+          message: '<nav> contains no links',
+          rule: 'requireNavLinks',
+        });
+      }
+    }
+
+    for (const ref of component.usesComponents) {
+      if (ref.path && this.componentRegistry.has(ref.path)) {
+        this.checkNavs(this.componentRegistry.get(ref.path)!, results, stack);
+      }
+    }
+
+    stack.delete(component.filePath);
+  }
+
+  private navHasLink(nav: NavInfo, visited: Set<string>): boolean {
+    if (nav.hasLocalLink) return true;
+    for (const ref of nav.childComponents) {
+      if (ref.path && this.componentRegistry.has(ref.path)) {
+        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private componentHasAnchor(component: ComponentDefinition, visited: Set<string>): boolean {
+    if (visited.has(component.filePath)) return false;
+    if (component.hasLocalAnchor) return true;
+    visited.add(component.filePath);
+    for (const ref of component.usesComponents) {
+      if (ref.path && this.componentRegistry.has(ref.path)) {
+        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private findEntryPoints(): ComponentDefinition[] {
