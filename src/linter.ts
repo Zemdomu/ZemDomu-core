@@ -18,6 +18,7 @@ import requireHtmlLang from './rules/requireHtmlLang';
 import requireImageInputAlt from './rules/requireImageInputAlt';
 import requireNavLinks from './rules/requireNavLinks';
 import uniqueIds from './rules/uniqueIds';
+import noTabindexGreaterThanZero from './rules/noTabindexGreaterThanZero';
 
 const builtInRules: Record<string, () => Rule> = {
   requireSectionHeading,
@@ -36,6 +37,7 @@ const builtInRules: Record<string, () => Rule> = {
   requireImageInputAlt,
   requireNavLinks,
   uniqueIds,
+  noTabindexGreaterThanZero,
 };
 
 export interface LintResult {
@@ -83,6 +85,7 @@ const defaultOptions: LinterOptions = {
     requireImageInputAlt: true,
     requireNavLinks: true,
     uniqueIds: true,
+    noTabindexGreaterThanZero: true,
   },
   customRules: [],
 };

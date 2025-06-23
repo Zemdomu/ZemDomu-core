@@ -23,6 +23,7 @@ const requireHtmlLang_1 = __importDefault(require("./rules/requireHtmlLang"));
 const requireImageInputAlt_1 = __importDefault(require("./rules/requireImageInputAlt"));
 const requireNavLinks_1 = __importDefault(require("./rules/requireNavLinks"));
 const uniqueIds_1 = __importDefault(require("./rules/uniqueIds"));
+const noTabindexGreaterThanZero_1 = __importDefault(require("./rules/noTabindexGreaterThanZero"));
 const builtInRules = {
     requireSectionHeading: requireSectionHeading_1.default,
     enforceHeadingOrder: enforceHeadingOrder_1.default,
@@ -40,6 +41,7 @@ const builtInRules = {
     requireImageInputAlt: requireImageInputAlt_1.default,
     requireNavLinks: requireNavLinks_1.default,
     uniqueIds: uniqueIds_1.default,
+    noTabindexGreaterThanZero: noTabindexGreaterThanZero_1.default,
 };
 const defaultOptions = {
     rules: {
@@ -59,6 +61,7 @@ const defaultOptions = {
         requireImageInputAlt: true,
         requireNavLinks: true,
         uniqueIds: true,
+        noTabindexGreaterThanZero: true,
     },
     customRules: [],
 };
