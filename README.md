@@ -2,7 +2,7 @@
 
 Semantic HTML linting engine for clean, accessible and SEO-friendly markup. This package provides the shared core logic used by the ZemDomu VS Code extension and upcoming GitHub Action.
 
-## 🧠 What is ZemDomu Core?
+## 🧠 What is ZemDomu?
 
 **ZemDomu** is a semantic-first linter that helps developers write better HTML and JSX by catching accessibility and structural issues. It parses `.html`, `.jsx` and `.tsx` files and exposes a simple `lint()` function that returns semantic violations.
 
@@ -25,9 +25,9 @@ yarn add zemdomu
 ## ⚙️ Usage Example
 
 ```ts
-import { lint } from 'zemdomu';
+import { lint } from "zemdomu";
 
-const html = '<img>';
+const html = "<img>";
 const results = lint(html, { rules: { requireAltText: true } });
 
 console.log(results);
@@ -80,7 +80,7 @@ interface LintResult {
 
 ## 🔗 Related Tools
 
-- [ZemDomu VS Code Extension](../ZemDomu-Extension)
+- [ZemDomu VS Code Extension](https://marketplace.visualstudio.com/items?itemName=ZachariasErydBerlin.zemdomu)
 - ZemDomu GitHub Action (coming soon)
 
 ## 🛠 Development
