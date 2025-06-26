@@ -1,24 +1,24 @@
-import { parse as parseHtmlDom, ElementNode, Node } from './simpleHtmlParser';
-import { parse as parseJs } from '@babel/parser';
-import traverse, { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
-import requireAltText from './rules/requireAltText';
-import requireSectionHeading from './rules/requireSectionHeading';
-import enforceHeadingOrder from './rules/enforceHeadingOrder';
-import singleH1 from './rules/singleH1';
-import requireLabelForFormControls from './rules/requireLabelForFormControls';
-import enforceListNesting from './rules/enforceListNesting';
-import requireLinkText from './rules/requireLinkText';
-import requireTableCaption from './rules/requireTableCaption';
-import preventEmptyInlineTags from './rules/preventEmptyInlineTags';
-import requireHrefOnAnchors from './rules/requireHrefOnAnchors';
-import requireButtonText from './rules/requireButtonText';
-import requireIframeTitle from './rules/requireIframeTitle';
-import requireHtmlLang from './rules/requireHtmlLang';
-import requireImageInputAlt from './rules/requireImageInputAlt';
-import requireNavLinks from './rules/requireNavLinks';
-import uniqueIds from './rules/uniqueIds';
-import noTabindexGreaterThanZero from './rules/noTabindexGreaterThanZero';
+import { parse as parseHtmlDom, ElementNode, Node } from "./simpleHtmlParser";
+import { parse as parseJs } from "@babel/parser";
+import traverse, { NodePath } from "@babel/traverse";
+import * as t from "@babel/types";
+import requireAltText from "./rules/requireAltText";
+import requireSectionHeading from "./rules/requireSectionHeading";
+import enforceHeadingOrder from "./rules/enforceHeadingOrder";
+import singleH1 from "./rules/singleH1";
+import requireLabelForFormControls from "./rules/requireLabelForFormControls";
+import enforceListNesting from "./rules/enforceListNesting";
+import requireLinkText from "./rules/requireLinkText";
+import requireTableCaption from "./rules/requireTableCaption";
+import preventEmptyInlineTags from "./rules/preventEmptyInlineTags";
+import requireHrefOnAnchors from "./rules/requireHrefOnAnchors";
+import requireButtonText from "./rules/requireButtonText";
+import requireIframeTitle from "./rules/requireIframeTitle";
+import requireHtmlLang from "./rules/requireHtmlLang";
+import requireImageInputAlt from "./rules/requireImageInputAlt";
+import requireNavLinks from "./rules/requireNavLinks";
+import uniqueIds from "./rules/uniqueIds";
+import noTabindexGreaterThanZero from "./rules/noTabindexGreaterThanZero";
 
 const builtInRules: Record<string, () => Rule> = {
   requireSectionHeading,
@@ -39,12 +39,21 @@ const builtInRules: Record<string, () => Rule> = {
   uniqueIds,
   noTabindexGreaterThanZero,
 };
+export type RuleSeverity = "error" | "warning" | "off";
+
+export interface LinterOptions {
+  rules?: Record<string, RuleSeverity>;
+  customRules?: Rule[];
+  /** Optional file path for better error messages */
+  filePath?: string;
+}
 
 export interface LintResult {
   line: number;
   column: number;
   message: string;
   rule: string;
+  severity?: RuleSeverity;
   filePath?: string;
 }
 
@@ -58,38 +67,33 @@ export interface Rule {
   exitJsx?: (path: NodePath<t.JSXElement>) => LintResult[];
   /** Called after traversal finishes */
   end?: () => LintResult[];
-}
-
-export interface LinterOptions {
-  rules?: Record<string, boolean>;
-  customRules?: Rule[];
-  /** Optional file path for better error messages */
-  filePath?: string;
+  // Support simple custom rules
+  test?: (node: Node | t.Node) => boolean;
+  message?: string;
 }
 
 const defaultOptions: LinterOptions = {
   rules: {
-    requireSectionHeading: true,
-    enforceHeadingOrder: true,
-    singleH1: true,
-    requireAltText: true,
-    requireLabelForFormControls: true,
-    enforceListNesting: true,
-    requireLinkText: true,
-    requireTableCaption: true,
-    preventEmptyInlineTags: true,
-    requireHrefOnAnchors: true,
-    requireButtonText: true,
-    requireIframeTitle: true,
-    requireHtmlLang: true,
-    requireImageInputAlt: true,
-    requireNavLinks: true,
-    uniqueIds: true,
-    noTabindexGreaterThanZero: true,
+    requireSectionHeading: "error",
+    enforceHeadingOrder: "error",
+    singleH1: "error",
+    requireAltText: "error",
+    requireLabelForFormControls: "error",
+    enforceListNesting: "error",
+    requireLinkText: "error",
+    requireTableCaption: "error",
+    preventEmptyInlineTags: "warning",
+    requireHrefOnAnchors: "error",
+    requireButtonText: "error",
+    requireIframeTitle: "error",
+    requireHtmlLang: "error",
+    requireImageInputAlt: "error",
+    requireNavLinks: "warning",
+    uniqueIds: "error",
+    noTabindexGreaterThanZero: "warning",
   },
   customRules: [],
 };
-
 /**
  * Lint HTML/JSX/TSX content.
  */
@@ -104,22 +108,27 @@ export function lint(
 
   const results: LintResult[] = [];
 
-  const activeRules: Rule[] = [];
+  // Pair each rule with its severity
+  const activeRules: { rule: Rule; severity: RuleSeverity }[] = [];
   for (const name in opts.rules) {
-    const enabled = opts.rules[name];
-    if (enabled && builtInRules[name]) {
-      activeRules.push(builtInRules[name]());
+    const severity = opts.rules[name];
+    if (severity !== "off" && builtInRules[name]) {
+      activeRules.push({ rule: builtInRules[name](), severity });
     }
   }
-  if (opts.customRules) activeRules.push(...opts.customRules);
+  if (opts.customRules) {
+    for (const rule of opts.customRules) {
+      activeRules.push({ rule, severity: "error" }); // default custom to error
+    }
+  }
 
-  activeRules.forEach(r => r.init && r.init());
+  activeRules.forEach(({ rule }) => rule.init && rule.init());
 
   let ast: t.File | null = null;
   try {
     ast = parseJs(content, {
-      sourceType: 'module',
-      plugins: ['typescript', 'jsx'],
+      sourceType: "module",
+      plugins: ["typescript", "jsx"],
     });
   } catch {
     ast = null;
@@ -129,13 +138,38 @@ export function lint(
     traverse(ast, {
       JSXElement: {
         enter(path) {
-          for (const rule of activeRules) {
+          for (const { rule, severity } of activeRules) {
             if (rule.enterJsx) {
               try {
-                results.push(...rule.enterJsx(path));
+                results.push(
+                  ...rule.enterJsx(path).map((r) => ({ ...r, severity }))
+                );
               } catch (e) {
                 console.error(
-                  `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+                  `[ZemDomu] Error in rule ${rule.name} (${
+                    opts.filePath ?? "unknown"
+                  }):`,
+                  e
+                );
+              }
+            }
+            // Handle simple custom rules with test/message for JSX
+            if (rule.test && rule.message) {
+              try {
+                if (rule.test(path.node)) {
+                  results.push({
+                    line: 0,
+                    column: 0,
+                    message: rule.message,
+                    rule: rule.name,
+                    severity,
+                  });
+                }
+              } catch (e) {
+                console.error(
+                  `[ZemDomu] Error in custom rule ${rule.name} (${
+                    opts.filePath ?? "unknown"
+                  }):`,
                   e
                 );
               }
@@ -143,13 +177,17 @@ export function lint(
           }
         },
         exit(path) {
-          for (const rule of activeRules) {
+          for (const { rule, severity } of activeRules) {
             if (rule.exitJsx) {
               try {
-                results.push(...rule.exitJsx(path));
+                results.push(
+                  ...rule.exitJsx(path).map((r) => ({ ...r, severity }))
+                );
               } catch (e) {
                 console.error(
-                  `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+                  `[ZemDomu] Error in rule ${rule.name} (${
+                    opts.filePath ?? "unknown"
+                  }):`,
                   e
                 );
               }
@@ -158,19 +196,47 @@ export function lint(
         },
       },
     });
-    activeRules.forEach(r => r.end && results.push(...r.end()));
+    activeRules.forEach(({ rule, severity }) => {
+      if (rule.end)
+        results.push(...rule.end().map((r) => ({ ...r, severity })));
+    });
     return results;
   }
 
   const root = parseHtmlDom(content);
   const walk = (node: Node) => {
-    for (const rule of activeRules) {
+    for (const { rule, severity } of activeRules) {
       if (rule.enterHtml) {
         try {
-          results.push(...rule.enterHtml(node));
+          results.push(
+            ...rule.enterHtml(node).map((r) => ({ ...r, severity }))
+          );
         } catch (e) {
           console.error(
-            `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+            `[ZemDomu] Error in rule ${rule.name} (${
+              opts.filePath ?? "unknown"
+            }):`,
+            e
+          );
+        }
+      }
+      // Handle simple custom rules with test/message
+      if (rule.test && rule.message) {
+        try {
+          if (rule.test(node)) {
+            results.push({
+              line: 0,
+              column: 0,
+              message: rule.message,
+              rule: rule.name,
+              severity,
+            });
+          }
+        } catch (e) {
+          console.error(
+            `[ZemDomu] Error in custom rule ${rule.name} (${
+              opts.filePath ?? "unknown"
+            }):`,
             e
           );
         }
@@ -181,13 +247,15 @@ export function lint(
         walk(child);
       }
     }
-    for (const rule of activeRules) {
+    for (const { rule, severity } of activeRules) {
       if (rule.exitHtml) {
         try {
-          results.push(...rule.exitHtml(node));
+          results.push(...rule.exitHtml(node).map((r) => ({ ...r, severity })));
         } catch (e) {
           console.error(
-            `[ZemDomu] Error in rule ${rule.name} (${opts.filePath ?? 'unknown'}):`,
+            `[ZemDomu] Error in rule ${rule.name} (${
+              opts.filePath ?? "unknown"
+            }):`,
             e
           );
         }
@@ -195,7 +263,9 @@ export function lint(
     }
   };
   walk(root);
-  activeRules.forEach(r => r.end && results.push(...r.end()));
+  activeRules.forEach(({ rule, severity }) => {
+    if (rule.end) results.push(...rule.end().map((r) => ({ ...r, severity })));
+  });
 
   return results;
 }

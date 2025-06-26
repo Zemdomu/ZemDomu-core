@@ -3,6 +3,7 @@ node_modules/
 
 # Build outputs
 dist/
+out/
 *.tsbuildinfo
 
 # IDE and editor files
