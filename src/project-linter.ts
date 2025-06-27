@@ -1,9 +1,11 @@
 import * as fs from 'fs/promises';
 import { lint, LintResult, LinterOptions } from './linter';
 import { ComponentAnalyzer } from './component-analyzer';
+import type { PerformanceRecorder } from './performance-diagnostics';
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
+  perf?: PerformanceRecorder;
 }
 
 export class ProjectLinter {
@@ -12,11 +14,11 @@ export class ProjectLinter {
 
   constructor(options: ProjectLinterOptions = {}) {
     this.opts = options;
-    this.analyzer = new ComponentAnalyzer(this.opts);
+    this.analyzer = new ComponentAnalyzer(this.opts, options.perf);
   }
 
   clear(): void {
-    this.analyzer = new ComponentAnalyzer(this.opts);
+    this.analyzer = new ComponentAnalyzer(this.opts, this.opts.perf);
   }
 
   async lintFile(filePath: string, content?: string): Promise<Map<string, LintResult[]>> {

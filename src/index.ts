@@ -5,3 +5,4 @@ export type { LinterOptions, LintResult, Rule } from './linter';
 export { ComponentAnalyzer } from './component-analyzer';
 export { ComponentPathResolver } from './component-path-resolver';
 export { ProjectLinter } from './project-linter';
+export { PerformanceDiagnostics } from './performance-diagnostics';
