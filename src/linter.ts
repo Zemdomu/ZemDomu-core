@@ -107,6 +107,7 @@ export function lint(
   const opts: LinterOptions = {
     rules: { ...defaultOptions.rules, ...(options.rules || {}) },
     customRules: options.customRules ?? defaultOptions.customRules,
+    filePath: options.filePath,
     perf: options.perf,
   };
 

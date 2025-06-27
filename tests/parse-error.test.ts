@@ -1,5 +1,5 @@
-const assert = require('assert');
-const { lint } = require('../src/index');
+import assert from 'assert';
+import { lint } from '../src/index';
 
 const code = 'const Foo = () => (<div></div';
 const res = lint(code, { filePath: 'Foo.jsx' });
