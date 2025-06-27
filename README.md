@@ -41,7 +41,7 @@ console.log(results);
 // ]
 
 // Custom rules can be supplied via the `customRules` option
-// const myRule = { name: 'demo', checkHtml: () => [] };
+// const myRule = { name: 'demo', test: node => false, message: 'demo' };
 // lint(html, { customRules: [myRule] });
 ```
 
@@ -76,6 +76,47 @@ interface LintResult {
   message: string;
   rule: string;
 }
+```
+
+## 🛠 CLI Usage
+
+Run the linter from the command line by installing the package globally or using
+`npx`:
+
+```bash
+npx zemdomu "src/**/*.{html,jsx,tsx}" --custom my-rule.js
+```
+
+Use `--custom` (or `-c`) to provide a path to a JavaScript or TypeScript module
+exporting a custom rule or array of rules. Use `--cross` to enable cross
+component analysis.
+
+## 📝 Writing Custom Rules
+
+Custom rules are simple objects implementing the `Rule` interface. The easiest
+way is to provide a `test` function that returns `true` when a node violates the
+rule and a `message` describing the issue:
+
+```js
+// my-rule.js
+module.exports = {
+  name: 'noFooDiv',
+  test: node => node.type === 'element' && node.tagName === 'foo',
+  message: '<foo> is not allowed'
+};
+```
+
+Use it programmatically:
+
+```ts
+import { lint } from 'zemdomu';
+const results = lint('<foo></foo>', { customRules: [require('./my-rule')] });
+```
+
+Or via the CLI:
+
+```bash
+npx zemdomu file.html --custom my-rule.js
 ```
 
 ## 🔗 Related Tools
