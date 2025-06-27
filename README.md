@@ -94,10 +94,12 @@ interface LintResult {
 ## 🛠 CLI Usage
 
 Run the linter from the command line by installing the package globally or using
-`npx`:
+`npx`. Provide one or more glob patterns to specify the files to lint. Patterns
+may be separated by spaces, commas or newlines:
 
 ```bash
 npx zemdomu "src/**/*.{html,jsx,tsx}" --custom my-rule.js
+npx zemdomu "src/**/*.html,src/**/*.jsx"
 ```
 
 Use `--custom` (or `-c`) to provide a path to a JavaScript or TypeScript module

@@ -3,9 +3,21 @@ import glob from 'glob';
 import path from 'path';
 import { ProjectLinter } from './project-linter';
 
+function parsePatterns(inputs: string[]): string[] {
+  const result: string[] = [];
+  for (const input of inputs) {
+    const splits = input
+      .split(/\r?\n/)
+      .flatMap((p) => p.split(/[ ,]+/))
+      .filter(Boolean);
+    result.push(...splits);
+  }
+  return result;
+}
+
 async function run(): Promise<void> {
   const args = process.argv.slice(2);
-  const patterns: string[] = [];
+  const rawPatterns: string[] = [];
   const customRules: any[] = [];
   let cross = false;
   let depth: number | undefined;
@@ -28,9 +40,11 @@ async function run(): Promise<void> {
       if (isNaN(depth)) throw new Error('Invalid number for --cross-depth');
       cross = true;
     } else {
-      patterns.push(arg);
+      rawPatterns.push(arg);
     }
   }
+
+  const patterns = parsePatterns(rawPatterns);
 
   if (patterns.length === 0) {
     patterns.push('**/*.{html,jsx,tsx}');
