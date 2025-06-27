@@ -73,6 +73,10 @@ function* tokenize(html: string): Generator<Token> {
         i += open[0].length;
         continue;
       }
+      // Treat stray '<' as literal text to avoid infinite loops
+      yield { type: 'text', text: '<', index: i };
+      i++;
+      continue;
     }
     const next = html.indexOf('<', i);
     const end = next === -1 ? html.length : next;

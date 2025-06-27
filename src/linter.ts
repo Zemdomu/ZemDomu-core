@@ -132,14 +132,20 @@ export function lint(
   activeRules.forEach(({ rule }) => rule.init && rule.init());
 
   let ast: t.File | null = null;
+  let parseErrors: any[] = [];
   let t0 = Date.now();
   try {
     ast = parseJs(content, {
       sourceType: "module",
       plugins: ["typescript", "jsx"],
-    });
-  } catch {
+      errorRecovery: true,
+    }) as t.File & { errors?: any[] };
+    if (Array.isArray((ast as any).errors)) {
+      parseErrors = (ast as any).errors;
+    }
+  } catch (e) {
     ast = null;
+    parseErrors = [e];
   }
   timings.parse = Date.now() - t0;
 
@@ -220,6 +226,14 @@ export function lint(
     });
     for (const [r, tms] of Object.entries(ruleTimes)) {
       timings[`rule:${r}`] = tms;
+    }
+    for (const err of parseErrors) {
+      const loc = err.loc ? { line: err.loc.line - 1, column: err.loc.column } : { line: 0, column: 0 };
+      results.push({
+        ...loc,
+        message: `Parse error: ${err.message}`,
+        rule: "parseError",
+      });
     }
     timings.total = Date.now() - totalStart;
     if (opts.perf && opts.filePath) opts.perf.record(opts.filePath, timings);
@@ -302,6 +316,14 @@ export function lint(
 
   for (const [r, tms] of Object.entries(ruleTimes)) {
     timings[`rule:${r}`] = tms;
+  }
+  for (const err of parseErrors) {
+    const loc = err.loc ? { line: err.loc.line - 1, column: err.loc.column } : { line: 0, column: 0 };
+    results.push({
+      ...loc,
+      message: `Parse error: ${err.message}`,
+      rule: "parseError",
+    });
   }
   timings.total = Date.now() - totalStart;
   if (opts.perf && opts.filePath) opts.perf.record(opts.filePath, timings);
