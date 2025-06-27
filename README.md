@@ -18,7 +18,11 @@ yarn add zemdomu
 
 - ✅ Lint semantic issues in HTML, JSX and TSX
 - 📦 Works in Node.js, CI or any JS runtime
-- ⚙️ Extensible rule system
+- ⚙️ Extensible rule system with simple custom rules
+- 🔀 Cross-component analysis for React/JSX projects
+- 🚀 Command line interface with `--custom` and `--cross`
+- ⚠️ Configurable rule severity (`error`, `warning`, `off`)
+- 📈 Performance diagnostics for profiling lint runs
 - 📚 Shared by the extension and GitHub Action
 - 🧪 Simple API: `lint(content, options)`
 
@@ -52,19 +56,28 @@ console.log(results);
 **Parameters**
 
 - `content` — HTML, JSX or TSX string input
-- `options.rules` — toggles for built-in rules
+- `options.rules` — severity settings for built-in rules
 - `options.customRules` — array of additional rules
+- `options.filePath` — optional source file path
+- `options.perf` — attach a `PerformanceRecorder` instance
 
 **Example `LinterOptions`**
 
 ```ts
 interface LinterOptions {
-  rules: {
-    requireAltText: boolean;
-    // ...more rules to come
-  };
+  rules?: Record<string, 'error' | 'warning' | 'off'>;
   customRules?: Rule[];
+  filePath?: string;
+  perf?: PerformanceRecorder;
 }
+```
+
+Example enabling one rule as a warning:
+
+```ts
+const results = lint(html, {
+  rules: { requireAltText: 'warning', uniqueIds: 'error' }
+});
 ```
 
 **Example `LintResult`**
@@ -91,11 +104,47 @@ Use `--custom` (or `-c`) to provide a path to a JavaScript or TypeScript module
 exporting a custom rule or array of rules. Use `--cross` to enable cross
 component analysis.
 
+### Cross-Component Analysis
+
+When analysing JSX projects you can track `<h1>` usage or similar patterns
+across component boundaries. Instantiate `ProjectLinter` with the
+`crossComponentAnalysis` option or pass `--cross` to the CLI:
+
+```ts
+import { ProjectLinter } from 'zemdomu';
+const linter = new ProjectLinter({ crossComponentAnalysis: true });
+await linter.lintFile('App.jsx');
+```
+
+```bash
+npx zemdomu "src/**/*.{jsx,tsx}" --cross
+```
+
+### Performance Diagnostics
+
+Attach a `PerformanceDiagnostics` recorder to gather timing information for each
+file and rule:
+
+```ts
+import { lint, PerformanceDiagnostics } from 'zemdomu';
+const perf = new PerformanceDiagnostics();
+lint(code, { perf });
+console.log(perf.getAsJSON());
+```
+
 ## 📝 Writing Custom Rules
 
-Custom rules are simple objects implementing the `Rule` interface. The easiest
-way is to provide a `test` function that returns `true` when a node violates the
-rule and a `message` describing the issue:
+Custom rules are simple objects implementing the `Rule` interface. At minimum
+provide a `name`, a `test` function that returns `true` when a node violates the
+rule and a `message` describing the problem:
+
+```ts
+interface Rule {
+  name: string;
+  test(node: any): boolean;
+  message: string;
+}
+```
 
 ```js
 // my-rule.js
