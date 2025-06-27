@@ -5,6 +5,7 @@ import type { PerformanceRecorder } from './performance-diagnostics';
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
+  crossComponentDepth?: number;
   perf?: PerformanceRecorder;
 }
 

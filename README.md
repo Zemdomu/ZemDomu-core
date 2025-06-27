@@ -108,16 +108,18 @@ component analysis.
 
 When analysing JSX projects you can track `<h1>` usage or similar patterns
 across component boundaries. Instantiate `ProjectLinter` with the
-`crossComponentAnalysis` option or pass `--cross` to the CLI:
+`crossComponentAnalysis` option or pass `--cross` to the CLI. Use
+`crossComponentDepth` (or `--cross-depth`) to limit how deep component trees are
+traversed during analysis:
 
 ```ts
 import { ProjectLinter } from 'zemdomu';
-const linter = new ProjectLinter({ crossComponentAnalysis: true });
+const linter = new ProjectLinter({ crossComponentAnalysis: true, crossComponentDepth: 2 });
 await linter.lintFile('App.jsx');
 ```
 
 ```bash
-npx zemdomu "src/**/*.{jsx,tsx}" --cross
+npx zemdomu "src/**/*.{jsx,tsx}" --cross --cross-depth 2
 ```
 
 ### Performance Diagnostics

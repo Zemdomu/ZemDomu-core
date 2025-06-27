@@ -8,6 +8,7 @@ async function run(): Promise<void> {
   const patterns: string[] = [];
   const customRules: any[] = [];
   let cross = false;
+  let depth: number | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -19,6 +20,12 @@ async function run(): Promise<void> {
       if (Array.isArray(rules)) customRules.push(...rules);
       else customRules.push(rules);
     } else if (arg === '--cross') {
+      cross = true;
+    } else if (arg === '--cross-depth') {
+      const val = args[++i];
+      if (!val) throw new Error('Missing value for --cross-depth');
+      depth = parseInt(val, 10);
+      if (isNaN(depth)) throw new Error('Invalid number for --cross-depth');
       cross = true;
     } else {
       patterns.push(arg);
@@ -35,7 +42,7 @@ async function run(): Promise<void> {
     for (const m of matches) files.add(m);
   }
 
-  const linter = new ProjectLinter({ customRules, crossComponentAnalysis: cross });
+  const linter = new ProjectLinter({ customRules, crossComponentAnalysis: cross, crossComponentDepth: depth });
   const results = await linter.lintFiles(Array.from(files));
   let hasIssues = false;
   for (const [file, issues] of results.entries()) {

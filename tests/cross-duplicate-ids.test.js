@@ -2,7 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { ProjectLinter } = require('../out/index');
+const { ProjectLinter } = require('../out/src/index');
 
 (async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zd-cc-id-'));

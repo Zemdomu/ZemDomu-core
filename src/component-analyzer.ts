@@ -62,14 +62,16 @@ interface ComponentDefinition {
 export class ComponentAnalyzer {
   private componentRegistry = new Map<string, ComponentDefinition>();
   private importToComponentMap = new Map<string, Map<string, string>>();
-  private options: LinterOptions & { crossComponentAnalysis?: boolean };
+  private options: LinterOptions & { crossComponentAnalysis?: boolean; crossComponentDepth?: number };
   private processingComponentStack = new Set<string>(); // To prevent circular references
   private perf?: PerformanceRecorder;
   private resolver = new ComponentPathResolver();
+  private maxDepth: number | undefined;
 
-  constructor(options: LinterOptions & { crossComponentAnalysis?: boolean }, perf?: PerformanceRecorder) {
+  constructor(options: LinterOptions & { crossComponentAnalysis?: boolean; crossComponentDepth?: number }, perf?: PerformanceRecorder) {
     this.options = options;
     this.perf = perf;
+    this.maxDepth = typeof options.crossComponentDepth === 'number' ? options.crossComponentDepth : undefined;
   }
 
   async analyzeFile(filePath: string): Promise<ComponentDefinition | null> {
@@ -323,7 +325,7 @@ export class ComponentAnalyzer {
   private findCrossComponentH1Issues(results: LintResult[]): void {
     const entryPoints = this.findEntryPoints();
     for (const entry of entryPoints) {
-      const comps = this.findComponentsWithRule(entry, 'singleH1');
+      const comps = this.findComponentsWithRule(entry, 'singleH1', 0);
       if (comps.length > 1) {
         for (let i = 1; i < comps.length; i++) {
           const comp = comps[i];
@@ -331,7 +333,7 @@ export class ComponentAnalyzer {
             console.error('[ZemDomu] Missing component or name during cross-component analysis', comp);
             continue;
           }
-          const ref = this.findReferenceForComp(entry, comp.filePath);
+          const ref = this.findReferenceForComp(entry, comp.filePath, 0);
           if (ref) {
             // Use first JSX usage location instead of import location
             const location = ref.usageLocations[0] || ref.sourceLocation;
@@ -359,13 +361,14 @@ export class ComponentAnalyzer {
     }
   }
 
-  private findReferenceForComp(root: ComponentDefinition, targetPath: string): ComponentReference | null {
+  private findReferenceForComp(root: ComponentDefinition, targetPath: string, depth = 0): ComponentReference | null {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return null;
     for (const ref of root.usesComponents) {
       if (ref.path === targetPath) return ref;
     }
     for (const ref of root.usesComponents) {
       if (ref.path && this.componentRegistry.has(ref.path)) {
-        const nested = this.findReferenceForComp(this.componentRegistry.get(ref.path)!, targetPath);
+        const nested = this.findReferenceForComp(this.componentRegistry.get(ref.path)!, targetPath, depth + 1);
         if (nested) return ref;
       }
     }
@@ -381,7 +384,7 @@ export class ComponentAnalyzer {
     for (const entry of entryPoints) {
       // Process each entry point as a document root
       this.processingComponentStack.clear();
-      this.analyzeHeadingHierarchy(entry, results);
+      this.analyzeHeadingHierarchy(entry, results, 0);
     }
   }
 
@@ -389,7 +392,8 @@ export class ComponentAnalyzer {
    * Collects all headings from a component and its children in document order
    * and checks for heading level issues
    */
-  private analyzeHeadingHierarchy(component: ComponentDefinition, results: LintResult[]): void {
+  private analyzeHeadingHierarchy(component: ComponentDefinition, results: LintResult[], depth = 0): void {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return;
     if (this.processingComponentStack.has(component.filePath)) {
       // Avoid circular references
       return;
@@ -398,7 +402,7 @@ export class ComponentAnalyzer {
     this.processingComponentStack.add(component.filePath);
 
     // Build a flattened view of all headings in document order
-    const allHeadings = this.collectHeadingsInDocumentOrder(component);
+    const allHeadings = this.collectHeadingsInDocumentOrder(component, depth);
     
     // Check for heading level issues
     let lastLevel = 0;
@@ -423,10 +427,14 @@ export class ComponentAnalyzer {
   /**
    * Collects all headings from a component and its children in document order
    */
-  private collectHeadingsInDocumentOrder(component: ComponentDefinition): Array<{
+  private collectHeadingsInDocumentOrder(component: ComponentDefinition, depth = 0): Array<{
     heading: HeadingInfo,
     usageLocation: { filePath: string, line: number, column: number } | null
   }> {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) {
+      return [];
+    }
+
     // Sort headings within this component by line/column
     const localHeadings = [...component.headings].sort((a, b) => {
       if (a.line !== b.line) return a.line - b.line;
@@ -461,7 +469,7 @@ export class ComponentAnalyzer {
       if (headingIndex >= localHeadings.length) {
         // No more local headings, process remaining children
         const childRef = childComponents[childIndex++];
-        if (childRef.path && this.componentRegistry.has(childRef.path) && !this.processingComponentStack.has(childRef.path)) {
+        if (childRef.path && this.componentRegistry.has(childRef.path) && !this.processingComponentStack.has(childRef.path) && (this.maxDepth === undefined || depth < this.maxDepth)) {
           const childComponent = this.componentRegistry.get(childRef.path)!;
           const usageLoc = childRef.usageLocations[0] || childRef.sourceLocation;
           const usageLocation = {
@@ -471,7 +479,7 @@ export class ComponentAnalyzer {
           };
           
           this.processingComponentStack.add(childRef.path);
-          const childHeadings = this.collectHeadingsInDocumentOrder(childComponent)
+          const childHeadings = this.collectHeadingsInDocumentOrder(childComponent, depth + 1)
             .map(h => ({
               heading: h.heading,
               usageLocation: h.usageLocation || usageLocation
@@ -497,7 +505,7 @@ export class ComponentAnalyzer {
         } else {
           // Child component comes first
           childIndex++;
-          if (nextChild.path && this.componentRegistry.has(nextChild.path) && !this.processingComponentStack.has(nextChild.path)) {
+          if (nextChild.path && this.componentRegistry.has(nextChild.path) && !this.processingComponentStack.has(nextChild.path) && (this.maxDepth === undefined || depth < this.maxDepth)) {
             const childComponent = this.componentRegistry.get(nextChild.path)!;
             const usageLocation = {
               filePath: component.filePath,
@@ -506,7 +514,7 @@ export class ComponentAnalyzer {
             };
             
             this.processingComponentStack.add(nextChild.path);
-            const childHeadings = this.collectHeadingsInDocumentOrder(childComponent)
+            const childHeadings = this.collectHeadingsInDocumentOrder(childComponent, depth + 1)
               .map(h => ({
                 heading: h.heading,
                 usageLocation: h.usageLocation || usageLocation
@@ -525,7 +533,7 @@ export class ComponentAnalyzer {
   private findCrossComponentDuplicateIds(results: LintResult[]): void {
     const entryPoints = this.findEntryPoints();
     for (const entry of entryPoints) {
-      this.collectIds(entry, new Map(), results, new Set());
+      this.collectIds(entry, new Map(), results, new Set(), 0);
     }
   }
 
@@ -533,8 +541,10 @@ export class ComponentAnalyzer {
     component: ComponentDefinition,
     seen: Map<string, IdInfo>,
     results: LintResult[],
-    stack: Set<string>
+    stack: Set<string>,
+    depth = 0
   ): void {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return;
     if (stack.has(component.filePath)) return;
     stack.add(component.filePath);
 
@@ -557,7 +567,7 @@ export class ComponentAnalyzer {
         const target = this.componentRegistry.get(ref.path)!;
         const count = ref.usageLocations.length || 1;
         for (let i = 0; i < count; i++) {
-          this.collectIds(target, seen, results, stack);
+          this.collectIds(target, seen, results, stack, depth + 1);
         }
       }
     }
@@ -568,16 +578,17 @@ export class ComponentAnalyzer {
   private findCrossComponentNavLinks(results: LintResult[]): void {
     const entryPoints = this.findEntryPoints();
     for (const entry of entryPoints) {
-      this.checkNavs(entry, results, new Set());
+      this.checkNavs(entry, results, new Set(), 0);
     }
   }
 
-  private checkNavs(component: ComponentDefinition, results: LintResult[], stack: Set<string>): void {
+  private checkNavs(component: ComponentDefinition, results: LintResult[], stack: Set<string>, depth = 0): void {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return;
     if (stack.has(component.filePath)) return;
     stack.add(component.filePath);
 
     for (const nav of component.navs) {
-      if (!this.navHasLink(nav, new Set())) {
+      if (!this.navHasLink(nav, new Set(), depth)) {
         results.push({
           filePath: nav.filePath,
           line: nav.line,
@@ -590,18 +601,19 @@ export class ComponentAnalyzer {
 
     for (const ref of component.usesComponents) {
       if (ref.path && this.componentRegistry.has(ref.path)) {
-        this.checkNavs(this.componentRegistry.get(ref.path)!, results, stack);
+        this.checkNavs(this.componentRegistry.get(ref.path)!, results, stack, depth + 1);
       }
     }
 
     stack.delete(component.filePath);
   }
 
-  private navHasLink(nav: NavInfo, visited: Set<string>): boolean {
+  private navHasLink(nav: NavInfo, visited: Set<string>, depth = 0): boolean {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return false;
     if (nav.hasLocalLink) return true;
     for (const ref of nav.childComponents) {
       if (ref.path && this.componentRegistry.has(ref.path)) {
-        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited)) {
+        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited, depth + 1)) {
           return true;
         }
       }
@@ -609,13 +621,14 @@ export class ComponentAnalyzer {
     return false;
   }
 
-  private componentHasAnchor(component: ComponentDefinition, visited: Set<string>): boolean {
+  private componentHasAnchor(component: ComponentDefinition, visited: Set<string>, depth = 0): boolean {
+    if (this.maxDepth !== undefined && depth > this.maxDepth) return false;
     if (visited.has(component.filePath)) return false;
     if (component.hasLocalAnchor) return true;
     visited.add(component.filePath);
     for (const ref of component.usesComponents) {
       if (ref.path && this.componentRegistry.has(ref.path)) {
-        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited)) {
+        if (this.componentHasAnchor(this.componentRegistry.get(ref.path)!, visited, depth + 1)) {
           return true;
         }
       }
@@ -630,16 +643,17 @@ export class ComponentAnalyzer {
     return all.filter(c => !imported.has(c.filePath));
   }
 
-  private findComponentsWithRule(root: ComponentDefinition, rule: string): ComponentDefinition[] {
+  private findComponentsWithRule(root: ComponentDefinition, rule: string, depth = 0): ComponentDefinition[] {
     const res: ComponentDefinition[] = [];
     const visited = new Set<string>();
-    const dfs = (c: ComponentDefinition) => {
+    const dfs = (c: ComponentDefinition, d: number) => {
       if (visited.has(c.filePath)) return;
       visited.add(c.filePath);
       if (c.issues.has(rule)) res.push(c);
-      c.usesComponents.forEach(r => r.path && this.componentRegistry.has(r.path!) && dfs(this.componentRegistry.get(r.path!)!));
+      if (this.maxDepth !== undefined && d >= this.maxDepth) return;
+      c.usesComponents.forEach(r => r.path && this.componentRegistry.has(r.path!) && dfs(this.componentRegistry.get(r.path!)!, d + 1));
     };
-    dfs(root);
+    dfs(root, depth);
     return res;
   }
 }
