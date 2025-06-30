@@ -242,6 +242,14 @@ export function lint(
   }
 
   const root = parseHtmlDom(content);
+  // If the source contained only comments or whitespace, ignore parse errors
+  const onlyComments = root.children.every(
+    (n) =>
+      n.type === "comment" || (n.type === "text" && n.text.trim() === "")
+  );
+  if (onlyComments) {
+    parseErrors = [];
+  }
   const walk = (node: Node) => {
     for (const { rule, severity } of activeRules) {
       if (rule.enterHtml) {
