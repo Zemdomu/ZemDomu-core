@@ -166,6 +166,28 @@ import { lint } from 'zemdomu';
 const results = lint('<foo></foo>', { customRules: [require('./my-rule')] });
 ```
 
+### Helper Utilities
+
+For more advanced rules you may need direct access to the parsed HTML or JSX
+AST. ZemDomu exposes a few helpers to make this easier:
+
+```ts
+import {
+  parseHtml,
+  visitHtml,
+  getAttr,
+  getJsxAttr,
+  getTag,
+  ElementNode,
+  HtmlVisitor,
+} from 'zemdomu';
+```
+
+`parseHtml` returns the root `ElementNode`. The `visitHtml` function performs a
+simple depth‑first traversal using an `HtmlVisitor` with optional `enter` and
+`exit` callbacks. Utility functions like `getAttr` and `getJsxAttr` help reading
+attributes, while `getTag` resolves JSX element names.
+
 Or via the CLI:
 
 ```bash

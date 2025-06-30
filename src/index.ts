@@ -6,3 +6,8 @@ export { ComponentAnalyzer } from './component-analyzer';
 export { ComponentPathResolver } from './component-path-resolver';
 export { ProjectLinter } from './project-linter';
 export { PerformanceDiagnostics } from './performance-diagnostics';
+export type { Node, ElementNode, TextNode, CommentNode } from './simpleHtmlParser';
+export { parse as parseHtml } from './simpleHtmlParser';
+export { getAttr, getJsxAttr, getTag } from './rules/utils';
+export type { HtmlVisitor } from './html-visitor';
+export { visitHtml } from './html-visitor';
