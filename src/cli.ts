@@ -27,7 +27,13 @@ async function run(): Promise<void> {
     if (arg === '--custom' || arg === '-c') {
       const file = args[++i];
       if (!file) throw new Error('Missing file for --custom');
-      const mod = require(path.resolve(file));
+      const resolved = path.resolve(file);
+      const customDir = path.resolve('custom-rules');
+      const relative = path.relative(customDir, resolved);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error('Custom rule file must be inside ./custom-rules');
+      }
+      const mod = require(resolved);
       const rules = mod.default ?? mod;
       if (Array.isArray(rules)) customRules.push(...rules);
       else customRules.push(rules);
