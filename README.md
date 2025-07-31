@@ -1,4 +1,4 @@
-# ZemDomu Core
+# ZemDomu
 
 Semantic HTML linting engine for clean, accessible and SEO-friendly markup. This package provides the shared core logic used by the ZemDomu VS Code extension and upcoming GitHub Action.
 
