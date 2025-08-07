@@ -1,12 +1,11 @@
 import * as React from "react";
-import Button from "./Button";
+import Section from "./Section";
 
 export default function Page() {
   return (
     <main>
       <h1>Hello</h1>
-      <h2>Intro</h2>
-      <Button />
+      <Section />
     </main>
   );
 }

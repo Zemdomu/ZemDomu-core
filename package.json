@@ -36,6 +36,8 @@
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.17",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
     "esbuild": "^0.25.5",
     "mocha": "^10.8.2",
     "typescript": "^5.8.2"
@@ -44,7 +46,9 @@
     "@babel/parser": "^7.27.0",
     "@babel/traverse": "^7.27.0",
     "@babel/types": "^7.27.0",
-    "glob": "^7.2.3"
+    "glob": "^7.2.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "jest": {
     "transform": {
