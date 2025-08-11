@@ -1,9 +1,15 @@
-// src/utils/collectLocalDeps.ts
 import fs from "fs";
 import path from "path";
-import ts from "typescript";
+import * as ts from "typescript";
 
 const EXTS = [".tsx", ".ts", ".jsx", ".js"];
+
+export type ResolveCtx = {
+  rootDir: string;
+  baseUrl?: string;
+  paths?: Record<string, string[]>;
+  maxDepth?: number;
+};
 
 function resolveWithExtensions(base: string): string | null {
   if (fs.existsSync(base) && fs.statSync(base).isFile()) return base;
@@ -18,12 +24,45 @@ function resolveWithExtensions(base: string): string | null {
   return null;
 }
 
-export function collectLocalDeps(
-  entries: string[],
-  rootDir = process.cwd(),
-  maxDepth?: number
-): string[] {
-  const root = path.resolve(rootDir);
+function resolveAlias(
+  spec: string,
+  fileDir: string,
+  ctx: ResolveCtx
+): string | null {
+  if (spec.startsWith(".") || spec.startsWith("/")) {
+    return resolveWithExtensions(path.resolve(fileDir, spec));
+  }
+  const { baseUrl, paths } = ctx;
+  if (baseUrl && paths) {
+    for (const [pattern, targets] of Object.entries(paths)) {
+      const starIdx = pattern.indexOf("*");
+      if (starIdx >= 0) {
+        const pre = pattern.slice(0, starIdx);
+        const post = pattern.slice(starIdx + 1);
+        if (spec.startsWith(pre) && spec.endsWith(post)) {
+          const middle = spec.slice(pre.length, spec.length - post.length);
+          for (const t of targets) {
+            const candidate = t.replace("*", middle);
+            const abs = path.resolve(baseUrl, candidate);
+            const hit = resolveWithExtensions(abs);
+            if (hit) return hit;
+          }
+        }
+      } else if (spec === pattern) {
+        for (const t of targets) {
+          const abs = path.resolve(baseUrl, t);
+          const hit = resolveWithExtensions(abs);
+          if (hit) return hit;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+export function collectLocalDeps(entries: string[], ctx: ResolveCtx): string[] {
+  const root = path.resolve(ctx.rootDir);
   const seen = new Set<string>();
   const q: Array<{ file: string; depth: number }> = entries.map((p) => ({
     file: path.resolve(p),
@@ -35,28 +74,29 @@ export function collectLocalDeps(
     if (seen.has(file)) continue;
     seen.add(file);
 
-    // depth cap if provided
-    if (maxDepth !== undefined && depth >= maxDepth) continue;
+    if (ctx.maxDepth !== undefined && depth >= ctx.maxDepth) continue;
 
-    const code = fs.readFileSync(file, "utf8");
+    let code = "";
+    try {
+      code = fs.readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+
     const sf = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true);
 
     sf.forEachChild((node) => {
-      const mod =
-        (ts.isImportDeclaration(node) && node.moduleSpecifier) ||
-        (ts.isExportDeclaration(node) && node.moduleSpecifier)
-          ? (node.moduleSpecifier as ts.StringLiteral).text
-          : undefined;
-      if (!mod) return;
+      let spec: string | undefined;
+      if (ts.isImportDeclaration(node) && node.moduleSpecifier) {
+        spec = (node.moduleSpecifier as ts.StringLiteral).text;
+      } else if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
+        spec = (node.moduleSpecifier as ts.StringLiteral).text;
+      }
+      if (!spec) return;
 
-      // follow only local/relative
-      if (mod.startsWith(".") || mod.startsWith("/")) {
-        const resolved = resolveWithExtensions(
-          path.resolve(path.dirname(file), mod)
-        );
-        if (resolved && resolved.startsWith(root)) {
-          q.push({ file: resolved, depth: depth + 1 });
-        }
+      const resolved = resolveAlias(spec, path.dirname(file), ctx);
+      if (resolved && resolved.startsWith(root)) {
+        q.push({ file: resolved, depth: depth + 1 });
       }
     });
   }

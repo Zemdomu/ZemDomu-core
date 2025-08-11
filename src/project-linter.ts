@@ -1,9 +1,10 @@
 import * as fs from "fs/promises";
+import path from "path";
+import * as ts from "typescript";
 import { lint, LintResult, LinterOptions } from "./linter";
 import { ComponentAnalyzer } from "./component-analyzer";
 import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
-import path from "path";
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
@@ -32,15 +33,16 @@ export class ProjectLinter {
     if (!content) {
       content = await fs.readFile(filePath, "utf8");
     }
+
     const results = lint(content, { ...this.opts, filePath });
     const byFile = new Map<string, LintResult[]>();
     byFile.set(filePath, [...results]);
+
     const xmlMode = /\.(jsx|tsx)$/.test(filePath);
     if (xmlMode) {
       const component = await this.analyzer.analyzeFile(filePath);
-      if (component) {
-        this.analyzer.registerComponent(component, results);
-      }
+      if (component) this.analyzer.registerComponent(component, results);
+
       if (this.opts.crossComponentAnalysis) {
         const cross = this.analyzer.analyzeComponentTree();
         for (const r of cross) {
@@ -50,17 +52,43 @@ export class ProjectLinter {
         }
       }
     }
+
     return byFile;
   }
 
   async lintFiles(filePaths: string[]): Promise<Map<string, LintResult[]>> {
     const root = this.opts.rootDir ?? process.cwd();
+
+    const configPath = ts.findConfigFile(
+      root,
+      ts.sys.fileExists,
+      "tsconfig.json"
+    );
+    let baseUrl: string | undefined;
+    let paths: Record<string, string[]> | undefined;
+
+    if (configPath) {
+      const cfg = ts.readConfigFile(configPath, ts.sys.readFile).config;
+      const cfgDir = path.dirname(configPath);
+      baseUrl = cfg?.compilerOptions?.baseUrl
+        ? path.resolve(cfgDir, cfg.compilerOptions.baseUrl)
+        : undefined;
+      paths = cfg?.compilerOptions?.paths;
+    }
+
     const targets = this.opts.crossComponentAnalysis
-      ? collectLocalDeps(filePaths, root, this.opts.crossComponentDepth)
+      ? collectLocalDeps(filePaths, {
+          rootDir: root,
+          baseUrl,
+          paths,
+          maxDepth: this.opts.crossComponentDepth,
+        })
       : filePaths;
+
     const uniqueTargets = Array.from(
       new Set(targets.map((p) => path.resolve(p)))
     );
+
     const aggregated = new Map<string, LintResult[]>();
     for (const filePath of uniqueTargets) {
       const fileMap = await this.lintFile(filePath);

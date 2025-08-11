@@ -1,5 +1,5 @@
 import * as React from "react";
-import SubSection from "./SubSection";
+import SubSection from "@alias/SubSection";
 
 export default function Section() {
   return (
