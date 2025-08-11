@@ -1,12 +1,15 @@
-import * as fs from 'fs/promises';
-import { lint, LintResult, LinterOptions } from './linter';
-import { ComponentAnalyzer } from './component-analyzer';
-import type { PerformanceRecorder } from './performance-diagnostics';
+import * as fs from "fs/promises";
+import { lint, LintResult, LinterOptions } from "./linter";
+import { ComponentAnalyzer } from "./component-analyzer";
+import type { PerformanceRecorder } from "./performance-diagnostics";
+import { collectLocalDeps } from "./utils/collectLocalDeps";
+import path from "path";
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
   crossComponentDepth?: number;
   perf?: PerformanceRecorder;
+  rootDir?: string;
 }
 
 export class ProjectLinter {
@@ -22,9 +25,12 @@ export class ProjectLinter {
     this.analyzer = new ComponentAnalyzer(this.opts, this.opts.perf);
   }
 
-  async lintFile(filePath: string, content?: string): Promise<Map<string, LintResult[]>> {
+  async lintFile(
+    filePath: string,
+    content?: string
+  ): Promise<Map<string, LintResult[]>> {
     if (!content) {
-      content = await fs.readFile(filePath, 'utf8');
+      content = await fs.readFile(filePath, "utf8");
     }
     const results = lint(content, { ...this.opts, filePath });
     const byFile = new Map<string, LintResult[]>();
@@ -48,8 +54,15 @@ export class ProjectLinter {
   }
 
   async lintFiles(filePaths: string[]): Promise<Map<string, LintResult[]>> {
+    const root = this.opts.rootDir ?? process.cwd();
+    const targets = this.opts.crossComponentAnalysis
+      ? collectLocalDeps(filePaths, root, this.opts.crossComponentDepth)
+      : filePaths;
+    const uniqueTargets = Array.from(
+      new Set(targets.map((p) => path.resolve(p)))
+    );
     const aggregated = new Map<string, LintResult[]>();
-    for (const filePath of filePaths) {
+    for (const filePath of uniqueTargets) {
       const fileMap = await this.lintFile(filePath);
       for (const [fp, res] of fileMap.entries()) {
         if (!aggregated.has(fp)) aggregated.set(fp, []);

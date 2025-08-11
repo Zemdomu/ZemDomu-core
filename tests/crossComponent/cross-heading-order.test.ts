@@ -1,6 +1,9 @@
+// tests/crossComponent/cross-heading-order.test.ts
 import assert from "assert";
 import path from "path";
 import { ProjectLinter } from "../../src/index";
+
+type LintResult = { rule: string };
 
 describe("cross component heading order", () => {
   it("detects heading order and h1 issues across components", async () => {
@@ -32,12 +35,14 @@ describe("cross component heading order", () => {
 
     const map = await linter.lintFiles([
       buttonPath,
-      pagePath,
       sectionPath,
       subSectionPath,
+      pagePath,
     ]);
-    const results = Array.from(map.values()).flat();
 
+    const results = Array.from(map.values()).flat() as LintResult[];
+
+    // Presence checks
     assert.ok(
       results.some((r) => r.rule === "singleH1"),
       "Expected cross-component singleH1 warning"
@@ -45,6 +50,18 @@ describe("cross component heading order", () => {
     assert.ok(
       results.some((r) => r.rule === "enforceHeadingOrder"),
       "Expected cross-component heading order warning"
+    );
+
+    // Count checks (looser; tighten later if you want)
+    const byRule = results.reduce<Record<string, number>>((acc, r) => {
+      acc[r.rule] = (acc[r.rule] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    assert.ok((byRule["singleH1"] ?? 0) >= 1, "Expected at least one singleH1");
+    assert.ok(
+      (byRule["enforceHeadingOrder"] ?? 0) >= 1, // set to >=2 if you expect more
+      "Expected at least one enforceHeadingOrder"
     );
   });
 });
