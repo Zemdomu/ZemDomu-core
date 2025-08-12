@@ -1,18 +1,23 @@
 {
   "name": "zemdomu",
-  "version": "1.3.0",
+  "version": "1.3.3",
   "description": "Semantic HTML linter for HTML, JSX, and TSX. Detects accessibility, SEO, and structure issues before deployment.",
   "main": "./out/index.js",
+  "types": "./out/index.d.ts",
   "bin": {
     "zemdomu": "./out/cli.js"
   },
   "files": [
-    "out"
+    "out",
+    "README.md",
+    "LICENSE",
+    "package.json"
   ],
   "private": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "compile": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build",
     "test": "npm run compile && mocha out/**/*.test.js"
   },
   "keywords": [
