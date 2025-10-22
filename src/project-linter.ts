@@ -3,6 +3,7 @@ import path from "path";
 import * as ts from "typescript";
 import { lint, LintResult, LinterOptions } from "./linter";
 import { ComponentAnalyzer } from "./component-analyzer";
+import { ComponentPathResolver } from "./component-path-resolver";
 import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
 
@@ -19,6 +20,8 @@ export class ProjectLinter {
 
   constructor(options: ProjectLinterOptions = {}) {
     this.opts = options;
+    const rootDir = this.opts.rootDir ?? process.cwd();
+    ComponentPathResolver.setRootDir(rootDir);
     this.analyzer = new ComponentAnalyzer(this.opts, options.perf);
   }
 

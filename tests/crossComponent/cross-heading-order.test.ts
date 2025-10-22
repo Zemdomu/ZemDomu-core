@@ -3,7 +3,7 @@ import assert from "assert";
 import path from "path";
 import { ProjectLinter } from "../../src/index";
 
-type LintResult = { rule: string };
+type LintResult = { rule: string; filePath?: string };
 
 describe("cross component heading order", () => {
   it("detects heading order and h1 issues across components", async () => {
@@ -62,6 +62,14 @@ describe("cross component heading order", () => {
     assert.ok(
       (byRule["enforceHeadingOrder"] ?? 0) >= 1, // set to >=2 if you expect more
       "Expected at least one enforceHeadingOrder"
+    );
+
+    const usageLocations = results
+      .filter((r) => r.rule === "enforceHeadingOrder" && "filePath" in r && r.filePath)
+      .map((r) => path.basename(r.filePath as string));
+    assert.ok(
+      usageLocations.includes("SubSection.tsx"),
+      "Expected heading order issue to surface on the component that renders the offending child"
     );
   });
 });

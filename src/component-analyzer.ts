@@ -245,16 +245,28 @@ export class ComponentAnalyzer {
       });
       
       for (const heading of sortedHeadings) {
-        if (lastHeadingLevel && heading.level > lastHeadingLevel + 1) {
-          componentDef.issues.set('enforceHeadingOrder', [
-            ...(componentDef.issues.get('enforceHeadingOrder') || []),
-            {
-              line: heading.line,
-              column: heading.column,
-              message: `Heading level skipped: <h${heading.level}> after <h${lastHeadingLevel}>`,
-              rule: 'enforceHeadingOrder'
-            }
-          ]);
+        if (lastHeadingLevel) {
+          if (heading.level > lastHeadingLevel + 1) {
+            componentDef.issues.set('enforceHeadingOrder', [
+              ...(componentDef.issues.get('enforceHeadingOrder') || []),
+              {
+                line: heading.line,
+                column: heading.column,
+                message: `Heading level skipped: <h${heading.level}> after <h${lastHeadingLevel}>`,
+                rule: 'enforceHeadingOrder'
+              }
+            ]);
+          } else if (heading.level === 1 && lastHeadingLevel !== 1) {
+            componentDef.issues.set('enforceHeadingOrder', [
+              ...(componentDef.issues.get('enforceHeadingOrder') || []),
+              {
+                line: heading.line,
+                column: heading.column,
+                message: `Heading level skipped: <h${heading.level}> after <h${lastHeadingLevel}>`,
+                rule: 'enforceHeadingOrder'
+              }
+            ]);
+          }
         }
         lastHeadingLevel = heading.level;
       }
@@ -408,15 +420,25 @@ export class ComponentAnalyzer {
     let lastLevel = 0;
     
     for (const heading of allHeadings) {
-      if (lastLevel > 0 && heading.heading.level > lastLevel + 1) {
-        // We found a heading level skip
-        results.push({
-          filePath: heading.usageLocation?.filePath || heading.heading.filePath,
-          line: heading.usageLocation?.line || heading.heading.line,
-          column: heading.usageLocation?.column || heading.heading.column,
-          message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>`,
-          rule: 'enforceHeadingOrder'
-        });
+      if (lastLevel > 0) {
+        if (heading.heading.level > lastLevel + 1) {
+          // We found a heading level skip
+          results.push({
+            filePath: heading.usageLocation?.filePath || heading.heading.filePath,
+            line: heading.usageLocation?.line || heading.heading.line,
+            column: heading.usageLocation?.column || heading.heading.column,
+            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>`,
+            rule: 'enforceHeadingOrder'
+          });
+        } else if (heading.heading.level === 1 && lastLevel !== 1) {
+          results.push({
+            filePath: heading.usageLocation?.filePath || heading.heading.filePath,
+            line: heading.usageLocation?.line || heading.heading.line,
+            column: heading.usageLocation?.column || heading.heading.column,
+            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>`,
+            rule: 'enforceHeadingOrder'
+          });
+        }
       }
       lastLevel = heading.heading.level;
     }
