@@ -15,7 +15,7 @@
       "@alias/*": ["tests/crossComponent/*"]
     },
 
-    "types": ["mocha", "node", "glob", "react", "react-dom"],
+    "types": ["mocha", "node", "react", "react-dom"],
     "esModuleInterop": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,

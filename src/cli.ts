@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
 import { ProjectLinter } from './project-linter';
 
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
 
   const files = new Set<string>();
   for (const pattern of patterns) {
-    const matches = glob.sync(pattern, { nodir: true } as any);
+    const matches = globSync(pattern, { nodir: true });
     for (const m of matches) files.add(m);
   }
 

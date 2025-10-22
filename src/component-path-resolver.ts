@@ -1,7 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const glob: any = require('glob');
+import { glob } from 'glob';
 
 
 let vscodeApi: any | undefined;
@@ -152,12 +151,10 @@ export class ComponentPathResolver {
           let alias = ComponentPathResolver.aliasCache.get(prefix);
           if (!alias) {
           const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js}`;
-          const files = await new Promise<string[]>((resolve, reject) => {
-            glob(
-              pattern,
-              { cwd: ComponentPathResolver.rootDir, ignore: '**/node_modules/**', nodir: true },
-              (err: any, matches: any) => (err ? reject(err) : resolve(matches))
-            );
+          const files = await glob(pattern, {
+            cwd: ComponentPathResolver.rootDir,
+            ignore: '**/node_modules/**',
+            nodir: true,
           });
           alias = new Map();
           for (const relPath of files.slice(0, ComponentPathResolver.aliasFileLimit)) {
@@ -190,12 +187,10 @@ export class ComponentPathResolver {
                 if (cached) { result = cached; break; }
                 continue;
               }
-              const matches = await new Promise<string[]>((resolve, reject) => {
-                glob(
-                  ptn,
-                  { cwd: ComponentPathResolver.rootDir, ignore: '**/node_modules/**', nodir: true },
-                  (err: any, files: any) => (err ? reject(err) : resolve(files))
-                );
+              const matches = await glob(ptn, {
+                cwd: ComponentPathResolver.rootDir,
+                ignore: '**/node_modules/**',
+                nodir: true,
               });
               if (matches.length) {
                 result = path.resolve(ComponentPathResolver.rootDir, matches[0]);
