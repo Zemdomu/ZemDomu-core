@@ -1,6 +1,6 @@
 {
   "name": "zemdomu",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Semantic HTML linter for HTML, JSX, and TSX. Detects accessibility, SEO, and structure issues before deployment.",
   "main": "./out/index.js",
   "types": "./out/index.d.ts",
