@@ -58,6 +58,12 @@ export interface LintResult {
   rule: string;
   severity?: RuleSeverity;
   filePath?: string;
+  related?: Array<{
+    filePath: string;
+    line: number;
+    column: number;
+    message?: string;
+  }>;
 }
 
 export interface Rule {

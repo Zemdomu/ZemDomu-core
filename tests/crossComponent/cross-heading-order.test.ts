@@ -64,12 +64,30 @@ describe("cross component heading order", () => {
       "Expected at least one enforceHeadingOrder"
     );
 
-    const usageLocations = results
-      .filter((r) => r.rule === "enforceHeadingOrder" && "filePath" in r && r.filePath)
+    const singleH1Files = new Set(
+      results
+        .filter((r) => r.rule === "singleH1" && r.filePath)
+        .map((r) => path.basename(r.filePath as string))
+    );
+    assert.ok(
+      singleH1Files.has("Page.tsx"),
+      "Expected cross-component singleH1 to surface on Page.tsx"
+    );
+    assert.ok(
+      singleH1Files.has("Button.tsx"),
+      "Expected cross-component singleH1 to surface on Button.tsx"
+    );
+    assert.ok(
+      singleH1Files.has("SubSection.tsx"),
+      "Expected cross-component singleH1 to surface on SubSection.tsx usage"
+    );
+
+    const headingLocations = results
+      .filter((r) => r.rule === "enforceHeadingOrder" && r.filePath)
       .map((r) => path.basename(r.filePath as string));
     assert.ok(
-      usageLocations.includes("SubSection.tsx"),
-      "Expected heading order issue to surface on the component that renders the offending child"
+      headingLocations.includes("Button.tsx"),
+      "Expected heading order issue to highlight the component containing the offending heading"
     );
   });
 });

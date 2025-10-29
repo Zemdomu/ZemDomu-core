@@ -336,55 +336,113 @@ export class ComponentAnalyzer {
 
   private findCrossComponentH1Issues(results: LintResult[]): void {
     const entryPoints = this.findEntryPoints();
+    const emitted = new Set<string>();
+
+    const getDisplayName = (component: ComponentDefinition): string => {
+      if (component.name) return component.name;
+      return path.basename(component.filePath, path.extname(component.filePath));
+    };
+
+    const addResult = (result: LintResult) => {
+      const key = `${result.rule}|${result.filePath}|${result.line}|${result.column}|${result.message}`;
+      if (emitted.has(key)) return;
+      emitted.add(key);
+      results.push(result);
+    };
+
     for (const entry of entryPoints) {
       const comps = this.findComponentsWithRule(entry, 'singleH1', 0);
-      if (comps.length > 1) {
-        for (let i = 1; i < comps.length; i++) {
-          const comp = comps[i];
-          if (!comp || !comp.name) {
-            console.error('[ZemDomu] Missing component or name during cross-component analysis', comp);
-            continue;
-          }
-          const ref = this.findReferenceForComp(entry, comp.filePath, 0);
-          if (ref) {
-            // Use first JSX usage location instead of import location
-            const location = ref.usageLocations[0] || ref.sourceLocation;
-            results.push({
-              filePath: entry.filePath,
-              line: location.line,
-              column: location.column,
-              message: `Multiple <h1> tags: component '${comp.name}' brings an extra <h1>. Use a lower-level heading.`,
-              rule: 'singleH1'
+      if (comps.length <= 1) continue;
+
+      const conflictMap = new Map<string, string[]>();
+      for (const comp of comps) {
+        const conflicts = comps
+          .filter(other => other.filePath !== comp.filePath)
+          .map(getDisplayName);
+        if (conflicts.length) conflictMap.set(comp.filePath, conflicts);
+      }
+
+      const usageMap = new Map<
+        string,
+        Array<{
+          parent: ComponentDefinition;
+          location: { filePath: string; line: number; column: number };
+        }>
+      >();
+
+      const usageStack = new Set<string>();
+      const collectUsage = (component: ComponentDefinition, depth = 0) => {
+        if (this.maxDepth !== undefined && depth > this.maxDepth) return;
+        if (usageStack.has(component.filePath)) return;
+        usageStack.add(component.filePath);
+
+        for (const ref of component.usesComponents) {
+          if (!ref.path || !this.componentRegistry.has(ref.path)) continue;
+          const child = this.componentRegistry.get(ref.path)!;
+          if (!usageMap.has(child.filePath)) usageMap.set(child.filePath, []);
+          const locations =
+            ref.usageLocations.length > 0 ? ref.usageLocations : [ref.sourceLocation];
+          for (const loc of locations) {
+            usageMap.get(child.filePath)!.push({
+              parent: component,
+              location: { filePath: component.filePath, line: loc.line, column: loc.column },
             });
-          } else {
-            const issue = comp.issues.get('singleH1')?.[0];
-            if (issue) {
-              results.push({
-                filePath: comp.filePath,
-                line: issue.line,
-                column: issue.column,
-                message: `Multiple <h1> across components - consider using lower-level headings.`,
-                rule: 'singleH1'
-              });
-            }
           }
+          collectUsage(child, depth + 1);
+        }
+
+        usageStack.delete(component.filePath);
+      };
+
+      collectUsage(entry, 0);
+
+      for (const comp of comps) {
+        const conflicts = conflictMap.get(comp.filePath);
+        if (!conflicts || !conflicts.length) continue;
+        const compName = getDisplayName(comp);
+        const issues = comp.issues.get('singleH1') ?? [];
+        if (!issues.length) continue;
+
+        const conflictText = conflicts.map(name => `'${name}'`).join(', ');
+        const usageEntries = usageMap.get(comp.filePath) ?? [];
+        const usageRelated = usageEntries.map(u => ({
+          filePath: u.location.filePath,
+          line: u.location.line,
+          column: u.location.column,
+          message: `Rendered via '${getDisplayName(u.parent)}'`,
+        }));
+
+        for (const issue of issues) {
+          addResult({
+            filePath: comp.filePath,
+            line: issue.line,
+            column: issue.column,
+            message: `Multiple <h1> tags across components. This <h1> in '${compName}' conflicts with ${conflictText}.`,
+            rule: 'singleH1',
+            related: usageRelated,
+          });
+        }
+
+        const childIssueLocations = issues.map(issue => ({
+          filePath: comp.filePath,
+          line: issue.line,
+          column: issue.column,
+          message: `Defined in '${compName}'`,
+        }));
+
+        for (const usage of usageEntries) {
+          const parentName = getDisplayName(usage.parent);
+          addResult({
+            filePath: usage.location.filePath,
+            line: usage.location.line,
+            column: usage.location.column,
+            message: `Component '${compName}' renders an extra <h1> that conflicts with ${conflictText}.`,
+            rule: 'singleH1',
+            related: childIssueLocations.length ? childIssueLocations : undefined,
+          });
         }
       }
     }
-  }
-
-  private findReferenceForComp(root: ComponentDefinition, targetPath: string, depth = 0): ComponentReference | null {
-    if (this.maxDepth !== undefined && depth > this.maxDepth) return null;
-    for (const ref of root.usesComponents) {
-      if (ref.path === targetPath) return ref;
-    }
-    for (const ref of root.usesComponents) {
-      if (ref.path && this.componentRegistry.has(ref.path)) {
-        const nested = this.findReferenceForComp(this.componentRegistry.get(ref.path)!, targetPath, depth + 1);
-        if (nested) return ref;
-      }
-    }
-    return null;
   }
 
   /**
@@ -422,20 +480,45 @@ export class ComponentAnalyzer {
     for (const heading of allHeadings) {
       if (lastLevel > 0) {
         if (heading.heading.level > lastLevel + 1) {
-          // We found a heading level skip
+          const locationFile = heading.heading.filePath;
+          const locationLine = heading.heading.line;
+          const locationColumn = heading.heading.column;
+          const usageComponent = heading.usageLocation?.filePath
+            ? this.componentRegistry.get(heading.usageLocation.filePath)
+            : null;
+          const usageName = usageComponent
+            ? path.basename(usageComponent.filePath, path.extname(usageComponent.filePath))
+            : heading.usageLocation?.filePath
+              ? path.basename(heading.usageLocation.filePath, path.extname(heading.usageLocation.filePath))
+              : null;
+          const messageSuffix = usageName ? ` (rendered via '${usageName}')` : '';
+
           results.push({
-            filePath: heading.usageLocation?.filePath || heading.heading.filePath,
-            line: heading.usageLocation?.line || heading.heading.line,
-            column: heading.usageLocation?.column || heading.heading.column,
-            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>`,
+            filePath: locationFile,
+            line: locationLine,
+            column: locationColumn,
+            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>${messageSuffix}`,
             rule: 'enforceHeadingOrder'
           });
         } else if (heading.heading.level === 1 && lastLevel !== 1) {
+          const locationFile = heading.heading.filePath;
+          const locationLine = heading.heading.line;
+          const locationColumn = heading.heading.column;
+          const usageComponent = heading.usageLocation?.filePath
+            ? this.componentRegistry.get(heading.usageLocation.filePath)
+            : null;
+          const usageName = usageComponent
+            ? path.basename(usageComponent.filePath, path.extname(usageComponent.filePath))
+            : heading.usageLocation?.filePath
+              ? path.basename(heading.usageLocation.filePath, path.extname(heading.usageLocation.filePath))
+              : null;
+          const messageSuffix = usageName ? ` (rendered via '${usageName}')` : '';
+
           results.push({
-            filePath: heading.usageLocation?.filePath || heading.heading.filePath,
-            line: heading.usageLocation?.line || heading.heading.line,
-            column: heading.usageLocation?.column || heading.heading.column,
-            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>`,
+            filePath: locationFile,
+            line: locationLine,
+            column: locationColumn,
+            message: `Cross-component heading level skipped: <h${heading.heading.level}> after <h${lastLevel}>${messageSuffix}`,
             rule: 'enforceHeadingOrder'
           });
         }
