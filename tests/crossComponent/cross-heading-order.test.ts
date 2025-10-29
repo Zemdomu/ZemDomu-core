@@ -3,7 +3,7 @@ import assert from "assert";
 import path from "path";
 import { ProjectLinter } from "../../src/index";
 
-type LintResult = { rule: string; filePath?: string };
+type LintResult = { rule: string; filePath?: string; message?: string };
 
 describe("cross component heading order", () => {
   it("detects heading order and h1 issues across components", async () => {
@@ -88,6 +88,18 @@ describe("cross component heading order", () => {
     assert.ok(
       headingLocations.includes("Button.tsx"),
       "Expected heading order issue to highlight the component containing the offending heading"
+    );
+
+    const headingMessages = results
+      .filter((r) => r.rule === "enforceHeadingOrder")
+      .map((r) => r.message || "");
+    assert.ok(
+      headingMessages.some((msg) => msg.includes("<h1>") && msg.includes("after <h3>")),
+      "Expected cross-component reset <h1> warning"
+    );
+    assert.ok(
+      headingMessages.some((msg) => msg.includes("<h5>") && msg.includes("after <h1>")),
+      "Expected cross-component skipped <h5> warning"
     );
   });
 });

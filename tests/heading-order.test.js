@@ -15,4 +15,17 @@ assert.ok(!results.some(r => r.rule === 'enforceHeadingOrder'), 'Did not expect 
 html = '<h2>Two</h2><h1>Reset</h1>';
 results = lint(html);
 assert.ok(results.some(r => r.rule === 'enforceHeadingOrder'), 'Expected heading order warning when <h1> follows a deeper heading');
+
+// Mixed reset and deeper skip should flag both offending headings
+html = '<h2>Two</h2><h1>Reset</h1><h4>Too deep</h4>';
+results = lint(html);
+const headingMessages = results.filter(r => r.rule === 'enforceHeadingOrder').map(r => r.message);
+assert.ok(
+  headingMessages.some(msg => msg.includes('<h1>') && msg.includes('after <h2>')),
+  'Expected reset <h1> to trigger a heading order warning'
+);
+assert.ok(
+  headingMessages.some(msg => msg.includes('<h4>') && msg.includes('after <h1>')),
+  'Expected skipped <h4> to trigger a heading order warning'
+);
 console.log('heading-order tests passed');
