@@ -733,7 +733,6 @@ export class ComponentAnalyzer {
     return res;
   }
 }
-
 function shouldWarnForHeadingOrder(newLevel: number, lastLevel: number): boolean {
   if (!lastLevel) return false;
   if (newLevel === 1 && lastLevel !== 1) return true;
