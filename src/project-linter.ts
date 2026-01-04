@@ -6,6 +6,7 @@ import { ComponentAnalyzer } from "./component-analyzer";
 import { ComponentPathResolver } from "./component-path-resolver";
 import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
+import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
@@ -37,11 +38,22 @@ export class ProjectLinter {
       content = await fs.readFile(filePath, "utf8");
     }
 
-    const results = lint(content, { ...this.opts, filePath });
+    const isVue = path.extname(filePath).toLowerCase() === ".vue";
+    let lintContent = content;
+    if (isVue) {
+      const template = extractVueTemplate(content);
+      lintContent = isHtmlVueTemplate(template) ? template.content : "";
+    }
+
+    const results = lint(lintContent, {
+      ...this.opts,
+      filePath,
+      forceHtml: isVue || this.opts.forceHtml,
+    });
     const byFile = new Map<string, LintResult[]>();
     byFile.set(filePath, [...results]);
 
-    const xmlMode = /\.(jsx|tsx)$/.test(filePath);
+    const xmlMode = /\.(jsx|tsx)$/.test(filePath) || isVue;
     if (xmlMode) {
       const component = await this.analyzer.analyzeFile(filePath);
       if (component) this.analyzer.registerComponent(component, results);

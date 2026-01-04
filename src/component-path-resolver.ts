@@ -61,7 +61,7 @@ export class ComponentPathResolver {
     if (path.extname(base)) {
       if (await this.fileExists(base)) return base;
     } else {
-      const exts = ['.tsx', '.jsx', '.ts', '.js'];
+      const exts = ['.tsx', '.jsx', '.ts', '.js', '.vue'];
       for (const ext of exts) {
         const candidate = `${base}${ext}`;
         if (await this.fileExists(candidate)) return candidate;
@@ -108,7 +108,7 @@ export class ComponentPathResolver {
     return p
       .replace(/\\/g, '/')
       .replace(/\/+$/, '')
-      .replace(/\.(tsx|ts|jsx|js)$/, '')
+      .replace(/\.(tsx|ts|jsx|js|vue)$/, '')
       .replace(/\/index$/, '')
       .toLowerCase();
   }
@@ -150,7 +150,7 @@ export class ComponentPathResolver {
           const prefix = importPath.split('/')[0];
           let alias = ComponentPathResolver.aliasCache.get(prefix);
           if (!alias) {
-          const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js}`;
+          const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js,vue}`;
           const files = await glob(pattern, {
             cwd: ComponentPathResolver.rootDir,
             ignore: '**/node_modules/**',
@@ -161,7 +161,7 @@ export class ComponentPathResolver {
             const rel = path.resolve(ComponentPathResolver.rootDir, relPath).replace(/\\/g, '/');
             const idx = rel.lastIndexOf(`/${prefix}/`);
             if (idx === -1) continue;
-            const after = rel.substring(idx + prefix.length + 2).replace(/\.(tsx|ts|jsx|js)$/, '');
+            const after = rel.substring(idx + prefix.length + 2).replace(/\.(tsx|ts|jsx|js|vue)$/, '');
             const key1 = ComponentPathResolver.normalizeKey(`${prefix}/${after}`);
             alias.set(key1, rel);
             if (after.endsWith('/index')) {
@@ -177,8 +177,8 @@ export class ComponentPathResolver {
 
           if (!result) {
             const patterns = [
-              `**/${importPath}.{tsx,jsx,ts,js}`,
-              `**/${importPath}/index.{tsx,jsx,ts,js}`
+              `**/${importPath}.{tsx,jsx,ts,js,vue}`,
+              `**/${importPath}/index.{tsx,jsx,ts,js,vue}`
             ];
             for (const ptn of patterns) {
               const pKey = `glob:${ptn}`;

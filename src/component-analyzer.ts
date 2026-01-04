@@ -6,6 +6,9 @@ import * as t from '@babel/types';
 import { LintResult, LinterOptions } from './linter';
 import { ComponentPathResolver } from './component-path-resolver';
 import { getJsxAttr } from './rules/utils';
+import { parse as parseHtml } from './simpleHtmlParser';
+import type { Node as HtmlNode, ElementNode } from './simpleHtmlParser';
+import { extractVueScripts, extractVueTemplate, isHtmlVueTemplate } from './utils/vue-sfc';
 
 interface PerformanceRecorder {
   record(filePath: string, timings: Record<string, number>): void;
@@ -79,6 +82,14 @@ export class ComponentAnalyzer {
     try {
       filePath = path.resolve(filePath);
       const content = await fs.readFile(filePath, 'utf8');
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === '.vue') {
+        const vueResult = await this.extractVueComponentInfo(content, filePath);
+        if (!vueResult) return null;
+        vueResult.timings.total = Date.now() - start;
+        this.perf?.record(filePath, vueResult.timings);
+        return vueResult.component;
+      }
       if (!/\.(jsx|tsx)$/.test(filePath)) return null;
       const { component, timings } = await this.extractComponentInfo(content, filePath);
       timings.total = Date.now() - start;
@@ -276,6 +287,215 @@ export class ComponentAnalyzer {
     timings.headingAnalysis = Date.now() - t0;
 
     // Register component
+    this.componentRegistry.set(filePath, componentDef);
+    return { component: componentDef, timings };
+  }
+
+  private async extractVueComponentInfo(
+    content: string,
+    filePath: string
+  ): Promise<{ component: ComponentDefinition; timings: Record<string, number> } | null> {
+    const templateBlock = extractVueTemplate(content);
+    if (!isHtmlVueTemplate(templateBlock)) return null;
+
+    const timings: Record<string, number> = {};
+    const componentName = path.basename(filePath, path.extname(filePath));
+    const componentDef: ComponentDefinition = {
+      name: componentName,
+      filePath,
+      issues: new Map(),
+      usesComponents: [],
+      headings: [],
+      ids: [],
+      navs: [],
+      hasLocalAnchor: false,
+    };
+
+    const importedComponents = new Map<string, string>();
+    const normalizedImports = new Map<string, string>();
+
+    let t0 = Date.now();
+    const scripts = extractVueScripts(content);
+    for (const script of scripts) {
+      if (!script.content.trim()) continue;
+      const lang =
+        typeof script.attrs.lang === "string" ? script.attrs.lang.toLowerCase() : "";
+      const plugins: Array<"typescript" | "jsx"> = ["typescript"];
+      if (lang.includes("jsx") || lang.includes("tsx")) {
+        plugins.push("jsx");
+      }
+      try {
+        const ast = parse(script.content, {
+          sourceType: "module",
+          plugins,
+          errorRecovery: true,
+        });
+        traverse(ast, {
+          ImportDeclaration(path) {
+            const source = path.node.source.value as string;
+            path.node.specifiers.forEach((spec) => {
+              if (t.isImportSpecifier(spec) || t.isImportDefaultSpecifier(spec)) {
+                const name = spec.local.name;
+                if (/^[A-Z]/.test(name)) {
+                  importedComponents.set(name, source);
+                }
+              }
+            });
+          },
+        });
+      } catch {
+        // Ignore malformed script blocks
+      }
+    }
+    for (const name of importedComponents.keys()) {
+      const key = normalizeComponentKey(name);
+      if (!normalizedImports.has(key)) normalizedImports.set(key, name);
+    }
+    timings.collectImports = Date.now() - t0;
+
+    const tParse = Date.now();
+    const root = parseHtml(templateBlock.content);
+    timings.parseTemplate = Date.now() - tParse;
+
+    t0 = Date.now();
+    const lineIndex = buildLineIndex(content);
+    const templateStart = templateBlock.start;
+    const navStack: NavInfo[] = [];
+    const visit = (node: HtmlNode) => {
+      if (node.type === "element") {
+        const tag = node.tagName;
+        const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
+
+        if (/^h[1-6]$/.test(tag)) {
+          const level = parseInt(tag.charAt(1), 10);
+          componentDef.headings.push({
+            level,
+            line: loc.line,
+            column: loc.column,
+            filePath,
+          });
+        }
+
+        if (tag === "nav") {
+          const navInfo: NavInfo = {
+            filePath,
+            line: loc.line,
+            column: loc.column,
+            hasLocalLink: false,
+            childComponents: [],
+          };
+          navStack.push(navInfo);
+          componentDef.navs.push(navInfo);
+        }
+
+        if (tag === "a") {
+          componentDef.hasLocalAnchor = true;
+          navStack.forEach((n) => (n.hasLocalLink = true));
+        }
+
+        if (node.attrs && node.attrs.id !== undefined) {
+          componentDef.ids.push({
+            id: String(node.attrs.id),
+            line: loc.line,
+            column: loc.column,
+            filePath,
+          });
+        }
+
+        if (isVueComponentTag(tag)) {
+          const lookupKey = normalizeComponentKey(tag);
+          const importName = normalizedImports.get(lookupKey);
+          const componentName = importName ?? tag;
+          const rawImportPath = importName ? importedComponents.get(importName) ?? null : null;
+          const existingRef = componentDef.usesComponents.find(
+            (c) => c.name === componentName
+          );
+          const location = { line: loc.line, column: loc.column };
+          let ref: ComponentReference;
+          if (existingRef) {
+            existingRef.usageLocations.push(location);
+            ref = existingRef;
+          } else {
+            ref = {
+              name: componentName,
+              path: null,
+              rawImportPath,
+              sourceLocation: location,
+              usageLocations: [location],
+            };
+            componentDef.usesComponents.push(ref);
+          }
+          if (navStack.length) {
+            navStack[navStack.length - 1].childComponents.push(ref);
+          }
+        }
+
+        for (const child of (node as ElementNode).children) {
+          visit(child);
+        }
+
+        if (tag === "nav") {
+          navStack.pop();
+        }
+      }
+    };
+    visit(root);
+    timings.templateCollect = Date.now() - t0;
+
+    this.importToComponentMap.set(filePath, importedComponents);
+
+    t0 = Date.now();
+    for (const ref of componentDef.usesComponents) {
+      if (ref.rawImportPath) {
+        const t1 = Date.now();
+        ref.path = await this.resolveComponentPath(ref.rawImportPath, filePath);
+        timings[`resolve:${ref.rawImportPath}`] = Date.now() - t1;
+      }
+    }
+    timings.resolvePaths = Date.now() - t0;
+
+    t0 = Date.now();
+    if (this.options.rules?.enforceHeadingOrder) {
+      let lastHeadingLevel = 0;
+      const sortedHeadings = [...componentDef.headings].sort((a, b) => {
+        if (a.line !== b.line) return a.line - b.line;
+        return a.column - b.column;
+      });
+
+      for (const heading of sortedHeadings) {
+        if (
+          lastHeadingLevel &&
+          shouldWarnForHeadingOrder(heading.level, lastHeadingLevel)
+        ) {
+          componentDef.issues.set("enforceHeadingOrder", [
+            ...(componentDef.issues.get("enforceHeadingOrder") || []),
+            {
+              line: heading.line,
+              column: heading.column,
+              message: `Heading level skipped: <h${heading.level}> after <h${lastHeadingLevel}>`,
+              rule: "enforceHeadingOrder",
+            },
+          ]);
+        }
+        lastHeadingLevel = heading.level;
+      }
+    }
+
+    if (this.options.rules?.singleH1) {
+      const h1Results: LintResult[] = componentDef.headings
+        .filter((h) => h.level === 1)
+        .map((h) => ({
+          line: h.line,
+          column: h.column,
+          message: "<h1>",
+          rule: "singleH1",
+        }));
+      if (h1Results.length > 0) {
+        componentDef.issues.set("singleH1", h1Results);
+      }
+    }
+    timings.headingAnalysis = Date.now() - t0;
+
     this.componentRegistry.set(filePath, componentDef);
     return { component: componentDef, timings };
   }
@@ -733,6 +953,201 @@ export class ComponentAnalyzer {
     return res;
   }
 }
+
+const NON_COMPONENT_TAGS = new Set([
+  "root",
+  "a",
+  "abbr",
+  "address",
+  "area",
+  "article",
+  "aside",
+  "audio",
+  "b",
+  "base",
+  "bdi",
+  "bdo",
+  "blockquote",
+  "body",
+  "br",
+  "button",
+  "canvas",
+  "caption",
+  "cite",
+  "code",
+  "col",
+  "colgroup",
+  "data",
+  "datalist",
+  "dd",
+  "del",
+  "details",
+  "dfn",
+  "dialog",
+  "div",
+  "dl",
+  "dt",
+  "em",
+  "embed",
+  "fieldset",
+  "figcaption",
+  "figure",
+  "footer",
+  "form",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "head",
+  "header",
+  "hgroup",
+  "hr",
+  "html",
+  "i",
+  "iframe",
+  "img",
+  "input",
+  "ins",
+  "kbd",
+  "label",
+  "legend",
+  "li",
+  "link",
+  "main",
+  "map",
+  "mark",
+  "menu",
+  "meta",
+  "meter",
+  "nav",
+  "noscript",
+  "object",
+  "ol",
+  "optgroup",
+  "option",
+  "output",
+  "p",
+  "param",
+  "picture",
+  "pre",
+  "progress",
+  "q",
+  "rp",
+  "rt",
+  "ruby",
+  "s",
+  "samp",
+  "script",
+  "section",
+  "select",
+  "small",
+  "source",
+  "span",
+  "strong",
+  "style",
+  "sub",
+  "summary",
+  "sup",
+  "table",
+  "tbody",
+  "td",
+  "template",
+  "textarea",
+  "tfoot",
+  "th",
+  "thead",
+  "time",
+  "title",
+  "tr",
+  "track",
+  "u",
+  "ul",
+  "var",
+  "video",
+  "wbr",
+  "svg",
+  "path",
+  "circle",
+  "ellipse",
+  "line",
+  "polygon",
+  "polyline",
+  "rect",
+  "g",
+  "defs",
+  "lineargradient",
+  "radialgradient",
+  "stop",
+  "mask",
+  "pattern",
+  "clippath",
+  "symbol",
+  "use",
+  "text",
+  "tspan",
+  "foreignobject",
+  "math",
+  "mi",
+  "mn",
+  "mo",
+  "ms",
+  "mtext",
+  "mrow",
+  "msup",
+  "msub",
+  "msubsup",
+  "mover",
+  "munder",
+  "munderover",
+  "mfrac",
+  "msqrt",
+  "mroot",
+  "mtable",
+  "mtr",
+  "mtd",
+  "component",
+  "transition",
+  "transition-group",
+  "keep-alive",
+  "teleport",
+  "suspense",
+  "slot",
+]);
+
+function isVueComponentTag(tag: string): boolean {
+  return !NON_COMPONENT_TAGS.has(tag);
+}
+
+function normalizeComponentKey(name: string): string {
+  return name.replace(/[-_]/g, "").toLowerCase();
+}
+
+function buildLineIndex(content: string): number[] {
+  const lines = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") lines.push(i + 1);
+  }
+  return lines;
+}
+
+function indexToLoc(lineIndex: number[], index: number): { line: number; column: number } {
+  let low = 0;
+  let high = lineIndex.length - 1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (lineIndex[mid] <= index) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  const line = Math.max(high, 0);
+  const column = index - lineIndex[line];
+  return { line, column };
+}
+
 function shouldWarnForHeadingOrder(newLevel: number, lastLevel: number): boolean {
   if (!lastLevel) return false;
   if (newLevel === 1 && lastLevel !== 1) return true;

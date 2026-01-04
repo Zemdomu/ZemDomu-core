@@ -4,7 +4,7 @@ Semantic HTML linting engine for clean, accessible and SEO-friendly markup. This
 
 ## 🧠 What is ZemDomu?
 
-**ZemDomu** is a semantic-first linter that helps developers write better HTML and JSX by catching accessibility and structural issues. It parses `.html`, `.jsx` and `.tsx` files and exposes a simple `lint()` function that returns semantic violations.
+**ZemDomu** is a semantic-first linter that helps developers write better HTML and JSX by catching accessibility and structural issues. It parses `.html`, `.jsx`, `.tsx`, and `.vue` files and exposes a simple `lint()` function that returns semantic violations.
 
 ## 🚀 Installation
 
@@ -16,10 +16,10 @@ yarn add zemdomu
 
 ## ✨ Features
 
-- ✅ Lint semantic issues in HTML, JSX and TSX
+- ✅ Lint semantic issues in HTML, JSX, TSX, and Vue templates
 - 📦 Works in Node.js, CI or any JS runtime
 - ⚙️ Extensible rule system with simple custom rules
-- 🔀 Cross-component analysis for React/JSX projects
+- 🔀 Cross-component analysis for React/JSX and Vue projects
 - 🚀 Command line interface with `--custom` and `--cross`
 - ⚠️ Configurable rule severity (`error`, `warning`, `off`)
 - 📈 Performance diagnostics for profiling lint runs
@@ -55,7 +55,7 @@ console.log(results);
 
 **Parameters**
 
-- `content` — HTML, JSX or TSX string input
+- `content` — HTML, JSX, TSX, or Vue template string input
 - `options.rules` — severity settings for built-in rules
 - `options.customRules` — array of additional rules
 - `options.filePath` — optional source file path
@@ -68,6 +68,7 @@ interface LinterOptions {
   rules?: Record<string, 'error' | 'warning' | 'off'>;
   customRules?: Rule[];
   filePath?: string;
+  forceHtml?: boolean;
   perf?: PerformanceRecorder;
 }
 ```
@@ -98,7 +99,7 @@ Run the linter from the command line by installing the package globally or using
 may be separated by spaces, commas or newlines:
 
 ```bash
-npx zemdomu "src/**/*.{html,jsx,tsx}" --custom my-rule.js
+npx zemdomu "src/**/*.{html,jsx,tsx,vue}" --custom my-rule.js
 npx zemdomu "src/**/*.html,src/**/*.jsx"
 ```
 
@@ -108,7 +109,7 @@ component analysis.
 
 ### Cross-Component Analysis
 
-When analysing JSX projects you can track `<h1>` usage or similar patterns
+When analysing JSX or Vue projects you can track `<h1>` usage or similar patterns
 across component boundaries. Instantiate `ProjectLinter` with the
 `crossComponentAnalysis` option or pass `--cross` to the CLI. Use
 `crossComponentDepth` (or `--cross-depth`) to limit how deep component trees are
@@ -121,7 +122,7 @@ await linter.lintFile('App.jsx');
 ```
 
 ```bash
-npx zemdomu "src/**/*.{jsx,tsx}" --cross --cross-depth 2
+npx zemdomu "src/**/*.{jsx,tsx,vue}" --cross --cross-depth 2
 ```
 
 ### Performance Diagnostics

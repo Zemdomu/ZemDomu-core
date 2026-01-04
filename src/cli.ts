@@ -53,7 +53,7 @@ async function run(): Promise<void> {
   const patterns = parsePatterns(rawPatterns);
 
   if (patterns.length === 0) {
-    patterns.push('**/*.{html,jsx,tsx}');
+    patterns.push('**/*.{html,jsx,tsx,vue}');
   }
 
   const files = new Set<string>();

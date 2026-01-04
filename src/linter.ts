@@ -47,6 +47,8 @@ export interface LinterOptions {
   customRules?: Rule[];
   /** Optional file path for better error messages */
   filePath?: string;
+  /** Force HTML parsing instead of JSX/TSX parsing */
+  forceHtml?: boolean;
   /** Optional performance recorder */
   perf?: PerformanceRecorder;
 }
@@ -114,6 +116,7 @@ export function lint(
     rules: { ...defaultOptions.rules, ...(options.rules || {}) },
     customRules: options.customRules ?? defaultOptions.customRules,
     filePath: options.filePath,
+    forceHtml: options.forceHtml,
     perf: options.perf,
   };
 
@@ -140,21 +143,23 @@ export function lint(
 
   let ast: t.File | null = null;
   let parseErrors: any[] = [];
-  let t0 = Date.now();
-  try {
-    ast = parseJs(content, {
-      sourceType: "module",
-      plugins: ["typescript", "jsx"],
-      errorRecovery: true,
-    }) as t.File & { errors?: any[] };
-    if (Array.isArray((ast as any).errors)) {
-      parseErrors = (ast as any).errors;
+  if (!opts.forceHtml) {
+    const t0 = Date.now();
+    try {
+      ast = parseJs(content, {
+        sourceType: "module",
+        plugins: ["typescript", "jsx"],
+        errorRecovery: true,
+      }) as t.File & { errors?: any[] };
+      if (Array.isArray((ast as any).errors)) {
+        parseErrors = (ast as any).errors;
+      }
+    } catch (e) {
+      ast = null;
+      parseErrors = [e];
     }
-  } catch (e) {
-    ast = null;
-    parseErrors = [e];
+    timings.parse = Date.now() - t0;
   }
-  timings.parse = Date.now() - t0;
 
   if (ast) {
     traverse(ast, {
@@ -167,7 +172,8 @@ export function lint(
                 results.push(
                   ...rule.enterJsx(path).map((r) => ({ ...r, severity }))
                 );
-                ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
+                ruleTimes[rule.name] =
+                  (ruleTimes[rule.name] || 0) + (Date.now() - s);
               } catch (e) {
                 console.error(
                   `[ZemDomu] Error in rule ${rule.name} (${
@@ -190,7 +196,8 @@ export function lint(
                     severity,
                   });
                 }
-                ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - ts);
+                ruleTimes[rule.name] =
+                  (ruleTimes[rule.name] || 0) + (Date.now() - ts);
               } catch (e) {
                 console.error(
                   `[ZemDomu] Error in custom rule ${rule.name} (${
@@ -210,7 +217,8 @@ export function lint(
                 results.push(
                   ...rule.exitJsx(path).map((r) => ({ ...r, severity }))
                 );
-                ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
+                ruleTimes[rule.name] =
+                  (ruleTimes[rule.name] || 0) + (Date.now() - s);
               } catch (e) {
                 console.error(
                   `[ZemDomu] Error in rule ${rule.name} (${
@@ -228,14 +236,17 @@ export function lint(
       if (rule.end) {
         const s = Date.now();
         results.push(...rule.end().map((r) => ({ ...r, severity })));
-        ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
+        ruleTimes[rule.name] =
+          (ruleTimes[rule.name] || 0) + (Date.now() - s);
       }
     });
     for (const [r, tms] of Object.entries(ruleTimes)) {
       timings[`rule:${r}`] = tms;
     }
     for (const err of parseErrors) {
-      const loc = err.loc ? { line: err.loc.line - 1, column: err.loc.column } : { line: 0, column: 0 };
+      const loc = err.loc
+        ? { line: err.loc.line - 1, column: err.loc.column }
+        : { line: 0, column: 0 };
       results.push({
         ...loc,
         message: `Parse error: ${err.message}`,

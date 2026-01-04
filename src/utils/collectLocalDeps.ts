@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import * as ts from "typescript";
+import { extractVueScripts } from "./vue-sfc";
 
-const EXTS = [".tsx", ".ts", ".jsx", ".js"];
+const EXTS = [".tsx", ".ts", ".jsx", ".js", ".vue"];
 
 export type ResolveCtx = {
   rootDir: string;
@@ -10,6 +11,21 @@ export type ResolveCtx = {
   paths?: Record<string, string[]>;
   maxDepth?: number;
 };
+
+function scriptKindForFile(filePath: string): ts.ScriptKind {
+  switch (path.extname(filePath).toLowerCase()) {
+    case ".tsx":
+      return ts.ScriptKind.TSX;
+    case ".ts":
+      return ts.ScriptKind.TS;
+    case ".jsx":
+      return ts.ScriptKind.JSX;
+    case ".js":
+      return ts.ScriptKind.JS;
+    default:
+      return ts.ScriptKind.Unknown;
+  }
+}
 
 function resolveWithExtensions(base: string): string | null {
   if (fs.existsSync(base) && fs.statSync(base).isFile()) return base;
@@ -83,7 +99,34 @@ export function collectLocalDeps(entries: string[], ctx: ResolveCtx): string[] {
       continue;
     }
 
-    const sf = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true);
+    const ext = path.extname(file).toLowerCase();
+    let parseCode = code;
+    let scriptKind = scriptKindForFile(file);
+    if (ext === ".vue") {
+      const scripts = extractVueScripts(code);
+      if (scripts.length === 0) continue;
+      parseCode = scripts.map((s) => s.content).join("\n");
+      const langs = scripts
+        .map((s) =>
+          typeof s.attrs.lang === "string" ? s.attrs.lang.toLowerCase() : ""
+        )
+        .filter(Boolean);
+      if (langs.some((l) => l.includes("tsx") || l.includes("jsx"))) {
+        scriptKind = ts.ScriptKind.TSX;
+      } else if (langs.some((l) => l.includes("ts"))) {
+        scriptKind = ts.ScriptKind.TS;
+      } else {
+        scriptKind = ts.ScriptKind.JS;
+      }
+    }
+
+    const sf = ts.createSourceFile(
+      file,
+      parseCode,
+      ts.ScriptTarget.Latest,
+      true,
+      scriptKind
+    );
 
     sf.forEachChild((node) => {
       let spec: string | undefined;
