@@ -7,6 +7,7 @@ import { ComponentPathResolver } from "./component-path-resolver";
 import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
+import { applyRuleCode } from "./rule-codes";
 
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
@@ -63,7 +64,7 @@ export class ProjectLinter {
         for (const r of cross) {
           if (!r.filePath) continue;
           if (!byFile.has(r.filePath)) byFile.set(r.filePath, []);
-          byFile.get(r.filePath)!.push(r);
+          byFile.get(r.filePath)!.push(applyRuleCode(r));
         }
       }
     }

@@ -23,6 +23,7 @@ export interface SarifLog {
 }
 
 import { LintResult } from './linter';
+import { getRuleCode } from "./rule-codes";
 
 const RULE_DOCS_BASE =
   'https://github.com/ZemDomu/docs/blob/main/rules/';
@@ -31,13 +32,15 @@ export function resultsToSarif(
   results: Map<string, LintResult[]>
 ): SarifLog {
   const sarifResults: SarifLog['runs'][0]['results'] = [];
-  const ruleMeta = new Map<string, { helpUri: string }>();
+  const ruleMeta = new Map<string, { helpUri: string; name: string }>();
 
   for (const [file, issues] of results.entries()) {
     for (const issue of issues) {
+      const code = issue.code ?? getRuleCode(issue.rule);
+      const ruleId = code ?? issue.rule;
       const helpUri = `${RULE_DOCS_BASE}${issue.rule}.md`;
       sarifResults.push({
-        ruleId: issue.rule,
+        ruleId,
         message: { text: issue.message },
         level: issue.severity === 'error' ? 'error' : 'warning',
         locations: [
@@ -52,15 +55,15 @@ export function resultsToSarif(
           },
         ],
       });
-      if (!ruleMeta.has(issue.rule)) {
-        ruleMeta.set(issue.rule, { helpUri });
+      if (!ruleMeta.has(ruleId)) {
+        ruleMeta.set(ruleId, { helpUri, name: issue.rule });
       }
     }
   }
 
   const rules = Array.from(ruleMeta.entries()).map(([id, meta]) => ({
     id,
-    name: id,
+    name: meta.name,
     helpUri: meta.helpUri,
   }));
 

@@ -2,6 +2,7 @@
 import { globSync } from 'glob';
 import path from 'path';
 import { ProjectLinter } from './project-linter';
+import { getRuleCode } from './rule-codes';
 
 function parsePatterns(inputs: string[]): string[] {
   const result: string[] = [];
@@ -67,8 +68,9 @@ async function run(): Promise<void> {
   let hasIssues = false;
   for (const [file, issues] of results.entries()) {
     for (const issue of issues) {
+      const code = issue.code ?? getRuleCode(issue.rule) ?? issue.rule;
       console.error(
-        `${file}:${issue.line + 1}:${issue.column + 1} ${issue.rule}: ${issue.message}`
+        `${file}:${issue.line + 1}:${issue.column + 1} ${code}: ${issue.message}`
       );
       hasIssues = true;
     }

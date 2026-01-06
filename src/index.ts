@@ -19,3 +19,4 @@ export type { HtmlVisitor } from "./html-visitor";
 export { visitHtml } from "./html-visitor";
 export { resultsToSarif, RULE_DOCS_BASE } from "./sarif";
 export type { SarifLog } from "./sarif";
+export { getRuleCode, RULE_CODES } from "./rule-codes";

@@ -20,6 +20,7 @@ import requireImageInputAlt from "./rules/requireImageInputAlt";
 import requireNavLinks from "./rules/requireNavLinks";
 import uniqueIds from "./rules/uniqueIds";
 import noTabindexGreaterThanZero from "./rules/noTabindexGreaterThanZero";
+import { applyRuleCode } from "./rule-codes";
 
 const builtInRules: Record<string, () => Rule> = {
   requireSectionHeading,
@@ -58,6 +59,7 @@ export interface LintResult {
   column: number;
   message: string;
   rule: string;
+  code?: string;
   severity?: RuleSeverity;
   filePath?: string;
   related?: Array<{
@@ -170,7 +172,9 @@ export function lint(
               try {
                 const s = Date.now();
                 results.push(
-                  ...rule.enterJsx(path).map((r) => ({ ...r, severity }))
+                  ...rule
+                    .enterJsx(path)
+                    .map((r) => applyRuleCode({ ...r, severity }))
                 );
                 ruleTimes[rule.name] =
                   (ruleTimes[rule.name] || 0) + (Date.now() - s);
@@ -215,7 +219,9 @@ export function lint(
               try {
                 const s = Date.now();
                 results.push(
-                  ...rule.exitJsx(path).map((r) => ({ ...r, severity }))
+                  ...rule
+                    .exitJsx(path)
+                    .map((r) => applyRuleCode({ ...r, severity }))
                 );
                 ruleTimes[rule.name] =
                   (ruleTimes[rule.name] || 0) + (Date.now() - s);
@@ -235,7 +241,9 @@ export function lint(
     activeRules.forEach(({ rule, severity }) => {
       if (rule.end) {
         const s = Date.now();
-        results.push(...rule.end().map((r) => ({ ...r, severity })));
+        results.push(
+          ...rule.end().map((r) => applyRuleCode({ ...r, severity }))
+        );
         ruleTimes[rule.name] =
           (ruleTimes[rule.name] || 0) + (Date.now() - s);
       }
@@ -273,7 +281,9 @@ export function lint(
         try {
           const s = Date.now();
           results.push(
-            ...rule.enterHtml(node).map((r) => ({ ...r, severity }))
+            ...rule
+              .enterHtml(node)
+              .map((r) => applyRuleCode({ ...r, severity }))
           );
           ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
         } catch (e) {
@@ -318,7 +328,9 @@ export function lint(
       if (rule.exitHtml) {
         try {
           const s = Date.now();
-          results.push(...rule.exitHtml(node).map((r) => ({ ...r, severity })));
+          results.push(
+            ...rule.exitHtml(node).map((r) => applyRuleCode({ ...r, severity }))
+          );
           ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
         } catch (e) {
           console.error(
@@ -335,7 +347,7 @@ export function lint(
   activeRules.forEach(({ rule, severity }) => {
     if (rule.end) {
       const s = Date.now();
-      results.push(...rule.end().map((r) => ({ ...r, severity })));
+      results.push(...rule.end().map((r) => applyRuleCode({ ...r, severity })));
       ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
     }
   });
