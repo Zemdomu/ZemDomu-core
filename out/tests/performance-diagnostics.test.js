@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const assert_1 = require("assert");
+const index_1 = require("../src/index");
+index_1.PerformanceDiagnostics.resetMetrics();
+const perf = new index_1.PerformanceDiagnostics();
+const html = '<img src="foo.jpg" alt="bar">';
+(0, index_1.lint)(html, { filePath: 'perf.html', perf });
+const metrics = index_1.PerformanceDiagnostics.getLatestMetrics();
+const data = metrics.get('perf.html');
+assert_1.strict.ok(data && typeof data.total === 'number', 'Expected performance metrics');
+console.log('performance diagnostics test passed');
