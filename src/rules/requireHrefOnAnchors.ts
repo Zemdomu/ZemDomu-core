@@ -2,7 +2,7 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
-import { getJsxAttribute, isJsxAttrValueEmpty } from './utils';
+import { getJsxAttributeState } from './utils';
 
 export default function requireHrefOnAnchors(): Rule {
   return {
@@ -28,11 +28,15 @@ export default function requireHrefOnAnchors(): Rule {
       const opening = path.node.openingElement;
       const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'a') {
-        const hrefAttr = getJsxAttribute(opening, 'href');
-        if (!hrefAttr || isJsxAttrValueEmpty(hrefAttr.value, true)) {
+        const hrefState = getJsxAttributeState(opening, 'href', true);
+        if (hrefState === 'missing' || hrefState === 'empty' || hrefState === 'possiblyEmpty') {
           const line = (opening.loc?.start.line ?? 1) - 1;
           const column = opening.loc?.start.column ?? 0;
-          return [{ line, column, message: '<a> tag missing non-empty href attribute', rule: 'requireHrefOnAnchors' }];
+          const message =
+            hrefState === 'possiblyEmpty'
+              ? '<a> href is possibly empty or undefined'
+              : '<a> tag missing non-empty href attribute';
+          return [{ line, column, message, rule: 'requireHrefOnAnchors' }];
         }
       }
       return [];

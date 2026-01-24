@@ -39,6 +39,31 @@ describe("link href and text with dynamic values", () => {
     );
   });
 
+  it("uses possible-empty messaging for conditional href/text", () => {
+    const jsx = `
+      export default function Nav({ ready, link }) {
+        return (
+          <a href={ready ? link.url : ""}>
+            {ready ? "Docs" : ""}
+          </a>
+        );
+      }
+    `;
+    const results = lint(jsx);
+    const hrefWarning = results.find((r) => r.rule === "requireHrefOnAnchors");
+    const textWarning = results.find((r) => r.rule === "requireLinkText");
+    assert.ok(hrefWarning, "Expected href warning for possibly empty href");
+    assert.ok(textWarning, "Expected link text warning for possibly empty text");
+    assert.ok(
+      hrefWarning?.message.includes("possibly empty or undefined"),
+      "Expected possible-empty href message"
+    );
+    assert.ok(
+      textWarning?.message.includes("possibly empty or undefined"),
+      "Expected possible-empty text message"
+    );
+  });
+
   it("treats Vue-style bound href and mustache text as present in HTML mode", () => {
     const html = `<a :href="link.url">{{ text }}</a>`;
     const results = lint(html, { forceHtml: true });

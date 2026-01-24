@@ -2,26 +2,36 @@ import { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
 import { Node } from "../simpleHtmlParser";
 import { LintResult, Rule } from "../linter";
-import { getTag, isJsxExpressionPossiblyEmpty } from "./utils";
+import { getTag, getJsxExpressionState, JsxValueState } from "./utils";
 
 type JsxChild = t.JSXElement["children"][number];
 
-function jsxChildHasText(child: JsxChild): boolean {
-  if (t.isJSXText(child)) return child.value.trim().length > 0;
-  if (t.isJSXExpressionContainer(child)) {
-    const expr = child.expression;
-    if (t.isJSXElement(expr)) return jsxElementHasText(expr);
-    if (t.isJSXFragment(expr)) return expr.children.some(jsxChildHasText);
-    return !isJsxExpressionPossiblyEmpty(expr, true);
-  }
-  if (t.isJSXElement(child)) return jsxElementHasText(child);
-  if (t.isJSXFragment(child)) return child.children.some(jsxChildHasText);
-  if (t.isJSXSpreadChild(child)) return true;
-  return false;
+function mergeTextStates(states: JsxValueState[]): JsxValueState {
+  if (states.some((s) => s === "present")) return "present";
+  if (states.some((s) => s === "possiblyEmpty")) return "possiblyEmpty";
+  return "empty";
 }
 
-function jsxElementHasText(node: t.JSXElement): boolean {
-  return node.children.some(jsxChildHasText);
+function jsxChildTextState(child: JsxChild): JsxValueState {
+  if (t.isJSXText(child)) return child.value.trim().length > 0 ? "present" : "empty";
+  if (t.isJSXExpressionContainer(child)) {
+    const expr = child.expression;
+    if (t.isJSXElement(expr)) return jsxElementTextState(expr);
+    if (t.isJSXFragment(expr)) {
+      return mergeTextStates(expr.children.map(jsxChildTextState));
+    }
+    return getJsxExpressionState(expr, true);
+  }
+  if (t.isJSXElement(child)) return jsxElementTextState(child);
+  if (t.isJSXFragment(child)) {
+    return mergeTextStates(child.children.map(jsxChildTextState));
+  }
+  if (t.isJSXSpreadChild(child)) return "present";
+  return "empty";
+}
+
+function jsxElementTextState(node: t.JSXElement): JsxValueState {
+  return mergeTextStates(node.children.map(jsxChildTextState));
 }
 
 export default function requireLinkText(): Rule {
@@ -58,15 +68,19 @@ export default function requireLinkText(): Rule {
     exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === "a") {
-        const hasText = jsxElementHasText(path.node);
-        if (!hasText) {
+        const textState = jsxElementTextState(path.node);
+        if (textState !== "present") {
           const line = (path.node.loc?.start.line ?? 1) - 1;
           const column = path.node.loc?.start.column ?? 0;
+          const message =
+            textState === "possiblyEmpty"
+              ? "<a> link text is possibly empty or undefined"
+              : "<a> tag missing link text";
           return [
             {
               line,
               column,
-              message: "<a> tag missing link text",
+              message,
               rule: "requireLinkText",
             },
           ];

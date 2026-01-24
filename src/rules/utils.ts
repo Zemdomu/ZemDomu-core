@@ -31,55 +31,88 @@ function isEmptyString(value: string, trimText: boolean): boolean {
   return trimText ? value.trim().length === 0 : value.length === 0;
 }
 
-export function isJsxExpressionPossiblyEmpty(
-  expression: t.Expression | t.JSXEmptyExpression,
+export type JsxValueState = 'missing' | 'empty' | 'possiblyEmpty' | 'present';
+
+function mergeConditionalStates(
+  a: JsxValueState,
+  b: JsxValueState
+): JsxValueState {
+  if (a === 'present' && b === 'present') return 'present';
+  if (a === 'empty' && b === 'empty') return 'empty';
+  return 'possiblyEmpty';
+}
+
+function mergeTemplateStates(states: JsxValueState[]): JsxValueState {
+  if (states.some((s) => s === 'present')) return 'present';
+  if (states.some((s) => s === 'possiblyEmpty')) return 'possiblyEmpty';
+  return 'empty';
+}
+
+export function getJsxExpressionState(
+  expression: t.Expression | t.TSType | t.JSXEmptyExpression,
   trimText: boolean
-): boolean {
-  if (t.isJSXEmptyExpression(expression)) return true;
-  if (t.isNullLiteral(expression)) return true;
-  if (t.isIdentifier(expression, { name: 'undefined' })) return true;
-  if (t.isBooleanLiteral(expression)) return true;
+): JsxValueState {
+  if (t.isTSType(expression)) return 'present';
+  if (t.isJSXEmptyExpression(expression)) return 'empty';
+  if (t.isNullLiteral(expression)) return 'empty';
+  if (t.isIdentifier(expression, { name: 'undefined' })) return 'empty';
+  if (t.isBooleanLiteral(expression)) return 'empty';
   if (t.isOptionalMemberExpression(expression) || t.isOptionalCallExpression(expression)) {
-    return true;
+    return 'possiblyEmpty';
   }
   if (t.isStringLiteral(expression)) {
-    return isEmptyString(expression.value, trimText);
+    return isEmptyString(expression.value, trimText) ? 'empty' : 'present';
   }
   if (t.isTemplateLiteral(expression)) {
     if (expression.expressions.length === 0) {
       const raw = expression.quasis
         .map((q) => q.value.cooked ?? q.value.raw)
         .join('');
-      return isEmptyString(raw, trimText);
+      return isEmptyString(raw, trimText) ? 'empty' : 'present';
     }
     const staticText = expression.quasis
       .map((q) => q.value.cooked ?? q.value.raw)
       .join('');
-    if (staticText.trim().length > 0) return false;
-    return false;
+    if (staticText.trim().length > 0) return 'present';
+    const exprStates = expression.expressions.map((expr) =>
+      getJsxExpressionState(expr, trimText)
+    );
+    return mergeTemplateStates(exprStates);
   }
   if (t.isConditionalExpression(expression)) {
-    return (
-      isJsxExpressionPossiblyEmpty(expression.consequent, trimText) ||
-      isJsxExpressionPossiblyEmpty(expression.alternate, trimText)
+    return mergeConditionalStates(
+      getJsxExpressionState(expression.consequent, trimText),
+      getJsxExpressionState(expression.alternate, trimText)
     );
   }
   if (t.isLogicalExpression(expression)) {
+    const left = getJsxExpressionState(expression.left, trimText);
     if (expression.operator === '&&') {
-      return (
-        isJsxExpressionPossiblyEmpty(expression.left, trimText) ||
-        isJsxExpressionPossiblyEmpty(expression.right, trimText)
-      );
+      if (left === 'empty') return 'empty';
+      if (left === 'present') {
+        return getJsxExpressionState(expression.right, trimText);
+      }
+      return 'possiblyEmpty';
     }
     if (expression.operator === '||' || expression.operator === '??') {
-      return (
-        isJsxExpressionPossiblyEmpty(expression.left, trimText) &&
-        isJsxExpressionPossiblyEmpty(expression.right, trimText)
-      );
+      if (left === 'present') return 'present';
+      if (left === 'empty') {
+        return getJsxExpressionState(expression.right, trimText);
+      }
+      const right = getJsxExpressionState(expression.right, trimText);
+      if (right === 'present') return 'present';
+      return 'possiblyEmpty';
     }
   }
-  if (t.isUnaryExpression(expression) && expression.operator === 'void') return true;
-  return false;
+  if (t.isUnaryExpression(expression) && expression.operator === 'void') return 'empty';
+  return 'present';
+}
+
+export function isJsxExpressionPossiblyEmpty(
+  expression: t.Expression | t.JSXEmptyExpression,
+  trimText: boolean
+): boolean {
+  return getJsxExpressionState(expression, trimText) !== 'present';
 }
 
 export function isJsxAttrValueEmpty(
@@ -94,6 +127,23 @@ export function isJsxAttrValueEmpty(
     return isJsxExpressionPossiblyEmpty(value.expression, trimText);
   }
   return false;
+}
+
+export function getJsxAttributeState(
+  opening: t.JSXOpeningElement,
+  name: string,
+  trimText: boolean
+): JsxValueState {
+  const attr = getJsxAttribute(opening, name);
+  if (!attr) return 'missing';
+  if (!attr.value) return 'empty';
+  if (t.isStringLiteral(attr.value)) {
+    return isEmptyString(attr.value.value, trimText) ? 'empty' : 'present';
+  }
+  if (t.isJSXExpressionContainer(attr.value)) {
+    return getJsxExpressionState(attr.value.expression, trimText);
+  }
+  return 'present';
 }
 
 export function getTag(path: NodePath<t.JSXElement>): string {

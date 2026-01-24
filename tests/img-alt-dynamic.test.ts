@@ -26,6 +26,21 @@ describe("img alt text with dynamic values", () => {
     );
   });
 
+  it("uses possible-empty messaging for conditional alt", () => {
+    const jsx = `
+      export default function Avatar({ user }) {
+        return <img src="/avatar.png" alt={user ? user.label : ""} />;
+      }
+    `;
+    const results = lint(jsx);
+    const warning = results.find((r) => r.rule === "requireAltText");
+    assert.ok(warning, "Expected alt warning for possibly empty alt");
+    assert.ok(
+      warning?.message.includes("possibly empty or undefined"),
+      "Expected possible-empty alt message"
+    );
+  });
+
   it("treats Vue-style bound alt as present in HTML mode unless empty", () => {
     const html = `<img src="/avatar.png" :alt="displayLabel"><img src="/avatar.png" :alt="">`;
     const results = lint(html, { forceHtml: true });
