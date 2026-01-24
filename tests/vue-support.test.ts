@@ -89,4 +89,43 @@ import ButtonComp from "./Button.vue";
       "Did not expect singleH1 warning after fixing Vue child component"
     );
   });
+
+  it("handles bound href and mustache text in Vue templates", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zd-vue-links-"));
+    const file = path.join(tmp, "Links.vue");
+    fs.writeFileSync(
+      file,
+      `<template>
+  <div>
+    <a :href="link.url">{{ text }}</a>
+    <a :href=""></a>
+  </div>
+</template>
+<script setup>
+const link = { url: "/docs" };
+const text = "Docs";
+</script>
+`,
+      "utf8"
+    );
+
+    const linter = new ProjectLinter({
+      rules: { requireHrefOnAnchors: "error", requireLinkText: "error" },
+    });
+    const map = await linter.lintFile(file);
+    const results = Array.from(map.values()).flat();
+    const hrefWarnings = results.filter((r) => r.rule === "requireHrefOnAnchors");
+    const textWarnings = results.filter((r) => r.rule === "requireLinkText");
+
+    assert.strictEqual(
+      hrefWarnings.length,
+      1,
+      "Expected only the empty bound href to warn"
+    );
+    assert.strictEqual(
+      textWarnings.length,
+      1,
+      "Expected only the empty link text to warn"
+    );
+  });
 });
