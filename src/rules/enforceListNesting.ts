@@ -29,13 +29,11 @@ export default function enforceListNesting(): Rule {
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
       if (tag === 'li') {
-        const parentNode = path.parentPath?.parentPath?.node;
-        let inList = false;
-        if (parentNode && t.isJSXElement(parentNode)) {
-          const open = parentNode.openingElement;
-          const pTag = t.isJSXIdentifier(open.name) ? open.name.name.toLowerCase() : '';
-          inList = ['ul', 'ol'].includes(pTag);
-        }
+        const parentElement = path.findParent((p) => p.isJSXElement()) as
+          | NodePath<t.JSXElement>
+          | null;
+        const parentTag = parentElement ? getTag(parentElement) : '';
+        const inList = parentTag === 'ul' || parentTag === 'ol';
         if (!inList) {
           const line = (path.node.loc?.start.line ?? 1) - 1;
           const column = path.node.loc?.start.column ?? 0;
