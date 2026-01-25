@@ -69,6 +69,7 @@ export class ProjectLinter {
       }
     }
 
+    this.applyListNestingSuppressions(byFile);
     return byFile;
   }
 
@@ -113,6 +114,27 @@ export class ProjectLinter {
         aggregated.get(fp)!.push(...res);
       }
     }
+    this.applyListNestingSuppressions(aggregated);
     return aggregated;
+  }
+
+  private applyListNestingSuppressions(results: Map<string, LintResult[]>): void {
+    if (!this.opts.crossComponentAnalysis) return;
+    const rules = this.opts.rules || {};
+    if (!rules.enforceListNesting) return;
+    const suppressions = this.analyzer.getListNestingSuppressions();
+    if (!suppressions.size) return;
+    for (const [filePath, entries] of results.entries()) {
+      const suppressSet = suppressions.get(filePath);
+      if (!suppressSet || suppressSet.size === 0) continue;
+      results.set(
+        filePath,
+        entries.filter(
+          (r) =>
+            r.rule !== "enforceListNesting" ||
+            !suppressSet.has(`${r.line}:${r.column}`)
+        )
+      );
+    }
   }
 }

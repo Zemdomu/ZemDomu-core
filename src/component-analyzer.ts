@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
+import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { LintResult, LinterOptions } from './linter';
 import { ComponentPathResolver } from './component-path-resolver';
@@ -26,6 +26,7 @@ interface ComponentReference {
   usageLocations: Array<{
     line: number;
     column: number;
+    inListDirect?: boolean;
   }>;
 }
 
@@ -51,6 +52,13 @@ interface NavInfo {
   childComponents: ComponentReference[];
 }
 
+interface ListItemInfo {
+  filePath: string;
+  line: number;
+  column: number;
+  nesting: 'root' | 'inList' | 'inOther';
+}
+
 interface ComponentDefinition {
   name: string;
   filePath: string;
@@ -60,6 +68,7 @@ interface ComponentDefinition {
   ids: IdInfo[];
   navs: NavInfo[];
   hasLocalAnchor: boolean;
+  listItems: ListItemInfo[];
 }
 
 export class ComponentAnalyzer {
@@ -116,6 +125,7 @@ export class ComponentAnalyzer {
       ids: [],
       navs: [],
       hasLocalAnchor: false,
+      listItems: [],
     };
 
     // Track imported components
@@ -148,6 +158,31 @@ export class ComponentAnalyzer {
           if (!t.isJSXIdentifier(elt)) return;
           const name = elt.name;
           const tag = name.toLowerCase();
+
+          // Track list items for cross-component nesting
+          if (tag === 'li') {
+            const parentElement = path.findParent((p) => p.isJSXElement()) as
+              | NodePath<t.JSXElement>
+              | null;
+            const parentTag = parentElement
+              ? (t.isJSXIdentifier(parentElement.node.openingElement.name)
+                  ? parentElement.node.openingElement.name.name.toLowerCase()
+                  : '')
+              : '';
+            const nesting =
+              !parentElement
+                ? 'root'
+                : parentTag === 'ul' || parentTag === 'ol'
+                  ? 'inList'
+                  : 'inOther';
+            const loc = path.node.openingElement.loc?.start;
+            componentDef.listItems.push({
+              filePath,
+              line: loc ? loc.line - 1 : 0,
+              column: loc ? loc.column : 0,
+              nesting,
+            });
+          }
 
           // Record headings
           if (/^h[1-6]$/.test(tag)) {
@@ -199,7 +234,18 @@ export class ComponentAnalyzer {
           if (/^[A-Z]/.test(name)) {
             const existingRef = componentDef.usesComponents.find(c => c.name === name);
             const loc = elt.loc?.start;
-            const location = loc ? { line: loc.line - 1, column: loc.column } : { line: 0, column: 0 };
+            const parentElement = path.findParent((p) => p.isJSXElement()) as
+              | NodePath<t.JSXElement>
+              | null;
+            const parentTag = parentElement
+              ? (t.isJSXIdentifier(parentElement.node.openingElement.name)
+                  ? parentElement.node.openingElement.name.name.toLowerCase()
+                  : '')
+              : '';
+            const inListDirect = parentTag === 'ul' || parentTag === 'ol';
+            const location = loc
+              ? { line: loc.line - 1, column: loc.column, inListDirect }
+              : { line: 0, column: 0, inListDirect };
 
             let ref: ComponentReference;
             if (existingRef) {
@@ -309,6 +355,7 @@ export class ComponentAnalyzer {
       ids: [],
       navs: [],
       hasLocalAnchor: false,
+      listItems: [],
     };
 
     const importedComponents = new Map<string, string>();
@@ -361,7 +408,7 @@ export class ComponentAnalyzer {
     const lineIndex = buildLineIndex(content);
     const templateStart = templateBlock.start;
     const navStack: NavInfo[] = [];
-    const visit = (node: HtmlNode) => {
+    const visit = (node: HtmlNode, parentTag: string) => {
       if (node.type === "element") {
         const tag = node.tagName;
         const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
@@ -393,6 +440,21 @@ export class ComponentAnalyzer {
           navStack.forEach((n) => (n.hasLocalLink = true));
         }
 
+        if (tag === "li") {
+          const nesting =
+            parentTag === "ul" || parentTag === "ol"
+              ? "inList"
+              : parentTag === "root"
+                ? "root"
+                : "inOther";
+          componentDef.listItems.push({
+            filePath,
+            line: loc.line,
+            column: loc.column,
+            nesting,
+          });
+        }
+
         if (node.attrs && node.attrs.id !== undefined) {
           componentDef.ids.push({
             id: String(node.attrs.id),
@@ -413,7 +475,10 @@ export class ComponentAnalyzer {
           const location = { line: loc.line, column: loc.column };
           let ref: ComponentReference;
           if (existingRef) {
-            existingRef.usageLocations.push(location);
+            existingRef.usageLocations.push({
+              ...location,
+              inListDirect: parentTag === "ul" || parentTag === "ol",
+            });
             ref = existingRef;
           } else {
             ref = {
@@ -421,7 +486,12 @@ export class ComponentAnalyzer {
               path: null,
               rawImportPath,
               sourceLocation: location,
-              usageLocations: [location],
+              usageLocations: [
+                {
+                  ...location,
+                  inListDirect: parentTag === "ul" || parentTag === "ol",
+                },
+              ],
             };
             componentDef.usesComponents.push(ref);
           }
@@ -431,7 +501,7 @@ export class ComponentAnalyzer {
         }
 
         for (const child of (node as ElementNode).children) {
-          visit(child);
+          visit(child, tag);
         }
 
         if (tag === "nav") {
@@ -439,7 +509,7 @@ export class ComponentAnalyzer {
         }
       }
     };
-    visit(root);
+    visit(root, "root");
     timings.templateCollect = Date.now() - t0;
 
     this.importToComponentMap.set(filePath, importedComponents);
@@ -541,6 +611,7 @@ export class ComponentAnalyzer {
     if (rules.enforceHeadingOrder) this.findCrossComponentHeadingOrderIssues(results);
     if (rules.uniqueIds) this.findCrossComponentDuplicateIds(results);
     if (rules.requireNavLinks) this.findCrossComponentNavLinks(results);
+    if (rules.enforceListNesting) this.findCrossComponentListNestingIssues(results);
 
     return results;
   }
@@ -878,6 +949,67 @@ export class ComponentAnalyzer {
     }
   }
 
+  private findCrossComponentListNestingIssues(results: LintResult[]): void {
+    const entryPoints = this.findEntryPoints();
+    const emitted = new Set<string>();
+    const addResult = (result: LintResult) => {
+      const key = `${result.rule}|${result.filePath}|${result.line}|${result.column}|${result.message}`;
+      if (emitted.has(key)) return;
+      emitted.add(key);
+      results.push(result);
+    };
+    const getDisplayName = (component: ComponentDefinition): string =>
+      component.name || path.basename(component.filePath, path.extname(component.filePath));
+
+    const visit = (
+      component: ComponentDefinition,
+      stack: Set<string>,
+      depth = 0
+    ) => {
+      if (this.maxDepth !== undefined && depth > this.maxDepth) return;
+      if (stack.has(component.filePath)) return;
+      stack.add(component.filePath);
+
+      for (const ref of component.usesComponents) {
+        if (!ref.path || !this.componentRegistry.has(ref.path)) continue;
+        const child = this.componentRegistry.get(ref.path)!;
+        const rootItems = child.listItems.filter((item) => item.nesting === "root");
+        if (rootItems.length) {
+          const locations =
+            ref.usageLocations.length > 0 ? ref.usageLocations : [ref.sourceLocation];
+          for (const loc of locations) {
+            const inListDirect =
+              typeof (loc as { inListDirect?: boolean }).inListDirect === "boolean"
+                ? (loc as { inListDirect?: boolean }).inListDirect
+                : false;
+            if (inListDirect) continue;
+            const childName = getDisplayName(child);
+            addResult({
+              filePath: component.filePath,
+              line: loc.line,
+              column: loc.column,
+              message: `Component '${childName}' renders <li> elements that must be inside <ul> or <ol>.`,
+              rule: "enforceListNesting",
+              related: rootItems.map((item) => ({
+                filePath: child.filePath,
+                line: item.line,
+                column: item.column,
+                message: `Rendered <li> in '${childName}'`,
+              })),
+            });
+          }
+        }
+        visit(child, stack, depth + 1);
+      }
+
+      stack.delete(component.filePath);
+    };
+
+    for (const entry of entryPoints) {
+      visit(entry, new Set(), 0);
+    }
+  }
+
   private checkNavs(component: ComponentDefinition, results: LintResult[], stack: Set<string>, depth = 0): void {
     if (this.maxDepth !== undefined && depth > this.maxDepth) return;
     if (stack.has(component.filePath)) return;
@@ -930,6 +1062,32 @@ export class ComponentAnalyzer {
       }
     }
     return false;
+  }
+
+  getListNestingSuppressions(): Map<string, Set<string>> {
+    const used = new Set<string>();
+    for (const component of this.componentRegistry.values()) {
+      for (const ref of component.usesComponents) {
+        if (ref.path) used.add(ref.path);
+      }
+    }
+    const suppressions = new Map<string, Set<string>>();
+    for (const filePath of used) {
+      const component = this.componentRegistry.get(filePath);
+      if (!component) continue;
+      const rootItems = component.listItems.filter((item) => item.nesting === "root");
+      if (!rootItems.length) continue;
+      const keySet = new Set<string>();
+      for (const item of rootItems) {
+        keySet.add(`${item.line}:${item.column}`);
+      }
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === ".vue" || ext === ".html") {
+        keySet.add("0:0");
+      }
+      suppressions.set(filePath, keySet);
+    }
+    return suppressions;
   }
 
   private findEntryPoints(): ComponentDefinition[] {

@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Bugfix: allow cross-component list items to satisfy list nesting when rendered inside <ul>/<ol>
+
 ## 1.3.15
 
 - Bugfix: handle dynamic anchor href/text bindings without false positives, and flag explicitly empty values (tests + fixtures updated)
