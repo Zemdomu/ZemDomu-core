@@ -6,6 +6,7 @@
 - Bugfix: allow router/link components with href/to to satisfy <nav> link requirements
 - Docs: clarify CLI custom rule usage and custom-rules directory requirement
 - Docs: add sample custom rule file for CLI usage
+-performance: add CLI perf report and slowest logging, plus tests
 
 ## 1.3.15
 

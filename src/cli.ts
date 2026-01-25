@@ -2,6 +2,7 @@
 import { globSync } from 'glob';
 import path from 'path';
 import { ProjectLinter } from './project-linter';
+import { PerformanceDiagnostics } from './performance-diagnostics';
 import { getRuleCode } from './rule-codes';
 
 function parsePatterns(inputs: string[]): string[] {
@@ -22,6 +23,8 @@ async function run(): Promise<void> {
   const customRules: any[] = [];
   let cross = false;
   let depth: number | undefined;
+  let perfEnabled = false;
+  let perfSlowest = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -40,6 +43,11 @@ async function run(): Promise<void> {
       else customRules.push(rules);
     } else if (arg === '--cross') {
       cross = true;
+    } else if (arg === '--perf') {
+      perfEnabled = true;
+    } else if (arg === '--perf-slowest') {
+      perfEnabled = true;
+      perfSlowest = true;
     } else if (arg === '--cross-depth') {
       const val = args[++i];
       if (!val) throw new Error('Missing value for --cross-depth');
@@ -63,7 +71,13 @@ async function run(): Promise<void> {
     for (const m of matches) files.add(m);
   }
 
-  const linter = new ProjectLinter({ customRules, crossComponentAnalysis: cross, crossComponentDepth: depth });
+  const perf = perfEnabled ? new PerformanceDiagnostics() : undefined;
+  const linter = new ProjectLinter({
+    customRules,
+    crossComponentAnalysis: cross,
+    crossComponentDepth: depth,
+    perf,
+  });
   const results = await linter.lintFiles(Array.from(files));
   let hasIssues = false;
   for (const [file, issues] of results.entries()) {
@@ -74,6 +88,10 @@ async function run(): Promise<void> {
       );
       hasIssues = true;
     }
+  }
+  if (perfEnabled && perf) {
+    process.stdout.write(perf.getAsJSON() + '\n');
+    if (perfSlowest) perf.logSlowest();
   }
   if (hasIssues) process.exit(1);
 }

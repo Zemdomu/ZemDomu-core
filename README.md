@@ -114,6 +114,9 @@ files inside a `./custom-rules` directory (relative to your current working
 directory). You can repeat `--custom` to load multiple rule files. Use `--cross`
 to enable cross component analysis.
 
+Use `--perf` to emit a JSON timing report to stdout, and `--perf-slowest` to
+also print the slowest file and phase.
+
 ### Cross-component analysis
 
 When analyzing JSX or Vue projects you can track `<h1>` usage or similar
@@ -205,6 +208,7 @@ Or via the CLI:
 mkdir -p custom-rules
 cp my-rule.js custom-rules/my-rule.js
 npx zemdomu file.html --custom custom-rules/my-rule.js
+npx zemdomu "src/**/*.{html,jsx,tsx,vue}" --perf --perf-slowest
 ```
 
 There is a sample rule in `custom-rules/example-rule.js` you can copy and edit.
