@@ -1,7 +1,7 @@
 "use strict";
 // Exposes the core lint function and types
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RULE_CODES = exports.getRuleCode = exports.RULE_DOCS_BASE = exports.resultsToSarif = exports.visitHtml = exports.getTag = exports.getJsxAttr = exports.getAttr = exports.parseHtml = exports.PerformanceDiagnostics = exports.ProjectLinter = exports.ComponentPathResolver = exports.ComponentAnalyzer = exports.lint = void 0;
+exports.RULE_CODES = exports.getRuleCode = exports.RULE_DOCS_BASE = exports.resultsToSarif = exports.visitHtml = exports.isJsxExpressionPossiblyEmpty = exports.getTag = exports.getJsxExpressionState = exports.getJsxAttributeState = exports.getJsxAttribute = exports.getJsxAttr = exports.getAttr = exports.parseHtml = exports.PerformanceDiagnostics = exports.ProjectLinter = exports.ComponentPathResolver = exports.ComponentAnalyzer = exports.lint = void 0;
 var linter_1 = require("./linter");
 Object.defineProperty(exports, "lint", { enumerable: true, get: function () { return linter_1.lint; } });
 var component_analyzer_1 = require("./component-analyzer");
@@ -17,7 +17,11 @@ Object.defineProperty(exports, "parseHtml", { enumerable: true, get: function ()
 var utils_1 = require("./rules/utils");
 Object.defineProperty(exports, "getAttr", { enumerable: true, get: function () { return utils_1.getAttr; } });
 Object.defineProperty(exports, "getJsxAttr", { enumerable: true, get: function () { return utils_1.getJsxAttr; } });
+Object.defineProperty(exports, "getJsxAttribute", { enumerable: true, get: function () { return utils_1.getJsxAttribute; } });
+Object.defineProperty(exports, "getJsxAttributeState", { enumerable: true, get: function () { return utils_1.getJsxAttributeState; } });
+Object.defineProperty(exports, "getJsxExpressionState", { enumerable: true, get: function () { return utils_1.getJsxExpressionState; } });
 Object.defineProperty(exports, "getTag", { enumerable: true, get: function () { return utils_1.getTag; } });
+Object.defineProperty(exports, "isJsxExpressionPossiblyEmpty", { enumerable: true, get: function () { return utils_1.isJsxExpressionPossiblyEmpty; } });
 var html_visitor_1 = require("./html-visitor");
 Object.defineProperty(exports, "visitHtml", { enumerable: true, get: function () { return html_visitor_1.visitHtml; } });
 var sarif_1 = require("./sarif");

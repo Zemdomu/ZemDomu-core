@@ -191,7 +191,11 @@ import {
   visitHtml,
   getAttr,
   getJsxAttr,
+  getJsxAttribute,
+  getJsxAttributeState,
+  getJsxExpressionState,
   getTag,
+  isJsxExpressionPossiblyEmpty,
   ElementNode,
   HtmlVisitor,
 } from "zemdomu";
@@ -200,7 +204,9 @@ import {
 `parseHtml` returns the root `ElementNode`. The `visitHtml` function performs a
 simple depth-first traversal using an `HtmlVisitor` with optional `enter` and
 `exit` callbacks. Utility functions like `getAttr` and `getJsxAttr` help reading
-attributes, while `getTag` resolves JSX element names.
+attributes. JSX helpers like `getJsxAttribute`, `getJsxAttributeState`, and
+`getJsxExpressionState` help interpret JSX attributes and expressions, while
+`getTag` resolves JSX element names.
 
 Or via the CLI:
 

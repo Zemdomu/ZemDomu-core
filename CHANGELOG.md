@@ -8,6 +8,7 @@
 - Docs: add sample custom rule file for CLI usage
 -performance: add CLI perf report and slowest logging, plus tests
 -chore: add regression test for parse errors across multiple files
+-feature: export additional JSX helper utilities for custom rules
 
 ## 1.3.15
 
