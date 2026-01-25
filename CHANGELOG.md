@@ -3,6 +3,7 @@
 - Feature: allow cross-component list items to satisfy list nesting when rendered inside <ul>/<ol>
 - Feature: allow section headings provided by child components to satisfy <section> requirements
 - Bugfix: avoid singleH1 warnings when <h1> render paths are mutually exclusive (returns, ternaries, v-if/v-else)
+- Bugfix: allow router/link components with href/to to satisfy <nav> link requirements
 
 ## 1.3.15
 

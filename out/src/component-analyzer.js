@@ -200,8 +200,10 @@ class ComponentAnalyzer {
                         navStack.push(navInfo);
                         componentDef.navs.push(navInfo);
                     }
-                    // Track <a> elements
-                    if (tag === 'a') {
+                    // Track link-like elements
+                    const isComponentTag = t.isJSXIdentifier(path.node.openingElement.name) &&
+                        /^[A-Z]/.test(path.node.openingElement.name.name);
+                    if (tag === 'a' || (isComponentTag && (0, utils_1.hasJsxLinkAttribute)(path.node.openingElement))) {
                         componentDef.hasLocalAnchor = true;
                         navStack.forEach(n => (n.hasLocalLink = true));
                     }
@@ -424,7 +426,7 @@ class ComponentAnalyzer {
             ctx.pendingIfExclusive = undefined;
         };
         const visit = (node, parentTag) => {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             if (node.type === "element") {
                 const parentCtx = (_a = groupStack[groupStack.length - 1]) !== null && _a !== void 0 ? _a : { groupKey: "root" };
                 const hasIf = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-if");
@@ -486,7 +488,7 @@ class ComponentAnalyzer {
                     navStack.push(navInfo);
                     componentDef.navs.push(navInfo);
                 }
-                if (tag === "a") {
+                if (tag === "a" || (0, utils_1.hasHtmlLinkAttribute)((_c = node.attrs) !== null && _c !== void 0 ? _c : {})) {
                     componentDef.hasLocalAnchor = true;
                     navStack.forEach((n) => (n.hasLocalLink = true));
                 }
@@ -515,7 +517,7 @@ class ComponentAnalyzer {
                     const lookupKey = normalizeComponentKey(tag);
                     const importName = normalizedImports.get(lookupKey);
                     const componentName = importName !== null && importName !== void 0 ? importName : tag;
-                    const rawImportPath = importName ? (_c = importedComponents.get(importName)) !== null && _c !== void 0 ? _c : null : null;
+                    const rawImportPath = importName ? (_d = importedComponents.get(importName)) !== null && _d !== void 0 ? _d : null : null;
                     const existingRef = componentDef.usesComponents.find((c) => c.name === componentName);
                     const location = { line: loc.line, column: loc.column };
                     let ref;

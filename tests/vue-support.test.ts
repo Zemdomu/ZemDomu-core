@@ -155,4 +155,30 @@ const show = true;
       "Did not expect singleH1 warning for v-if/v-else branches"
     );
   });
+
+  it("accepts router links inside nav", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zd-vue-nav-"));
+    const file = path.join(tmp, "Nav.vue");
+    fs.writeFileSync(
+      file,
+      `<template>
+  <nav>
+    <RouterLink to="/home">Home</RouterLink>
+  </nav>
+</template>
+<script setup>
+import RouterLink from "./RouterLink.vue";
+</script>
+`,
+      "utf8"
+    );
+
+    const linter = new ProjectLinter({ rules: { requireNavLinks: "error" } });
+    const map = await linter.lintFile(file);
+    const results = Array.from(map.values()).flat();
+    assert.ok(
+      !results.some((r) => r.rule === "requireNavLinks"),
+      "Did not expect requireNavLinks warning for RouterLink"
+    );
+  });
 });

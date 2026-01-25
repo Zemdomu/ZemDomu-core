@@ -5,7 +5,12 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { LintResult, LinterOptions } from './linter';
 import { ComponentPathResolver } from './component-path-resolver';
-import { getJsxAttr, getJsxRenderGroup } from './rules/utils';
+import {
+  getJsxAttr,
+  getJsxRenderGroup,
+  hasHtmlLinkAttribute,
+  hasJsxLinkAttribute,
+} from './rules/utils';
 import { parse as parseHtml } from './simpleHtmlParser';
 import type { Node as HtmlNode, ElementNode } from './simpleHtmlParser';
 import { extractVueScripts, extractVueTemplate, isHtmlVueTemplate } from './utils/vue-sfc';
@@ -246,8 +251,11 @@ export class ComponentAnalyzer {
             componentDef.navs.push(navInfo);
           }
 
-          // Track <a> elements
-          if (tag === 'a') {
+          // Track link-like elements
+          const isComponentTag =
+            t.isJSXIdentifier(path.node.openingElement.name) &&
+            /^[A-Z]/.test(path.node.openingElement.name.name);
+          if (tag === 'a' || (isComponentTag && hasJsxLinkAttribute(path.node.openingElement))) {
             componentDef.hasLocalAnchor = true;
             navStack.forEach(n => (n.hasLocalLink = true));
           }
@@ -561,7 +569,7 @@ export class ComponentAnalyzer {
           componentDef.navs.push(navInfo);
         }
 
-        if (tag === "a") {
+        if (tag === "a" || hasHtmlLinkAttribute(node.attrs ?? {})) {
           componentDef.hasLocalAnchor = true;
           navStack.forEach((n) => (n.hasLocalLink = true));
         }

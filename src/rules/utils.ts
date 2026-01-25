@@ -146,6 +146,28 @@ export function getJsxAttributeState(
   return 'present';
 }
 
+const LINK_ATTRS = ['href', 'to', ':href', 'v-bind:href', ':to', 'v-bind:to'];
+
+function isPresentState(state: JsxValueState): boolean {
+  return state !== 'missing' && state !== 'empty';
+}
+
+export function hasHtmlLinkAttribute(attrs: Record<string, string>): boolean {
+  for (const key of LINK_ATTRS) {
+    if (!(key in attrs)) continue;
+    const value = attrs[key];
+    if (typeof value !== 'string') return true;
+    if (value.trim().length > 0) return true;
+  }
+  return false;
+}
+
+export function hasJsxLinkAttribute(opening: t.JSXOpeningElement): boolean {
+  const hrefState = getJsxAttributeState(opening, 'href', true);
+  const toState = getJsxAttributeState(opening, 'to', true);
+  return isPresentState(hrefState) || isPresentState(toState);
+}
+
 export function getTag(path: NodePath<t.JSXElement>): string {
   const opening = path.node.openingElement;
   return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';

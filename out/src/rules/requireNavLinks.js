@@ -44,8 +44,11 @@ function requireNavLinks() {
             if (node.type === 'element') {
                 if (node.tagName === 'nav')
                     stack.push({ hasLink: false });
-                if (node.tagName === 'a' && stack.length)
-                    stack[stack.length - 1].hasLink = true;
+                if (stack.length) {
+                    if (node.tagName === 'a' || (0, utils_1.hasHtmlLinkAttribute)(node.attrs)) {
+                        stack[stack.length - 1].hasLink = true;
+                    }
+                }
             }
             return [];
         },
@@ -63,6 +66,9 @@ function requireNavLinks() {
                 stack.push({ hasLink: false });
             if (stack.length) {
                 if (tag === 'a') {
+                    stack[stack.length - 1].hasLink = true;
+                }
+                else if ((0, utils_1.hasJsxLinkAttribute)(path.node.openingElement)) {
                     stack[stack.length - 1].hasLink = true;
                 }
                 else if (t.isJSXIdentifier(path.node.openingElement.name) && /^[A-Z]/.test(path.node.openingElement.name.name)) {

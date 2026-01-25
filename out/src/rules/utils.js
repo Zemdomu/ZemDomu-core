@@ -40,6 +40,8 @@ exports.getJsxExpressionState = getJsxExpressionState;
 exports.isJsxExpressionPossiblyEmpty = isJsxExpressionPossiblyEmpty;
 exports.isJsxAttrValueEmpty = isJsxAttrValueEmpty;
 exports.getJsxAttributeState = getJsxAttributeState;
+exports.hasHtmlLinkAttribute = hasHtmlLinkAttribute;
+exports.hasJsxLinkAttribute = hasJsxLinkAttribute;
 exports.getTag = getTag;
 exports.getJsxRenderGroup = getJsxRenderGroup;
 const t = __importStar(require("@babel/types"));
@@ -158,6 +160,27 @@ function getJsxAttributeState(opening, name, trimText) {
         return getJsxExpressionState(attr.value.expression, trimText);
     }
     return 'present';
+}
+const LINK_ATTRS = ['href', 'to', ':href', 'v-bind:href', ':to', 'v-bind:to'];
+function isPresentState(state) {
+    return state !== 'missing' && state !== 'empty';
+}
+function hasHtmlLinkAttribute(attrs) {
+    for (const key of LINK_ATTRS) {
+        if (!(key in attrs))
+            continue;
+        const value = attrs[key];
+        if (typeof value !== 'string')
+            return true;
+        if (value.trim().length > 0)
+            return true;
+    }
+    return false;
+}
+function hasJsxLinkAttribute(opening) {
+    const hrefState = getJsxAttributeState(opening, 'href', true);
+    const toState = getJsxAttributeState(opening, 'to', true);
+    return isPresentState(hrefState) || isPresentState(toState);
 }
 function getTag(path) {
     const opening = path.node.openingElement;

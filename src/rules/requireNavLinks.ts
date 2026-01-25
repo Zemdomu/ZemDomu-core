@@ -2,7 +2,7 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
-import { getTag } from './utils';
+import { getTag, hasHtmlLinkAttribute, hasJsxLinkAttribute } from './utils';
 
 export default function requireNavLinks(): Rule {
   const stack: Array<{hasLink:boolean}> = [];
@@ -11,7 +11,11 @@ export default function requireNavLinks(): Rule {
     enterHtml(node: Node): LintResult[] {
       if (node.type === 'element') {
         if (node.tagName === 'nav') stack.push({hasLink:false});
-        if (node.tagName === 'a' && stack.length) stack[stack.length-1].hasLink = true;
+        if (stack.length) {
+          if (node.tagName === 'a' || hasHtmlLinkAttribute(node.attrs)) {
+            stack[stack.length-1].hasLink = true;
+          }
+        }
       }
       return [];
     },
@@ -27,6 +31,8 @@ export default function requireNavLinks(): Rule {
       if (tag === 'nav') stack.push({hasLink:false});
       if (stack.length) {
         if (tag === 'a') {
+          stack[stack.length-1].hasLink = true;
+        } else if (hasJsxLinkAttribute(path.node.openingElement)) {
           stack[stack.length-1].hasLink = true;
         } else if (t.isJSXIdentifier(path.node.openingElement.name) && /^[A-Z]/.test(path.node.openingElement.name.name)) {
           stack[stack.length-1].hasLink = true;
