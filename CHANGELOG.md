@@ -5,6 +5,7 @@
 - Bugfix: avoid singleH1 warnings when <h1> render paths are mutually exclusive (returns, ternaries, v-if/v-else)
 - Bugfix: allow router/link components with href/to to satisfy <nav> link requirements
 - Docs: clarify CLI custom rule usage and custom-rules directory requirement
+- Docs: add sample custom rule file for CLI usage
 
 ## 1.3.15
 

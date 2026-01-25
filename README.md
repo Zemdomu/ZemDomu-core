@@ -207,6 +207,8 @@ cp my-rule.js custom-rules/my-rule.js
 npx zemdomu file.html --custom custom-rules/my-rule.js
 ```
 
+There is a sample rule in `custom-rules/example-rule.js` you can copy and edit.
+
 ## Local development (monorepo)
 
 From the core package:
