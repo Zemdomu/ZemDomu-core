@@ -99,6 +99,9 @@ class ComponentAnalyzer {
             ids: [],
             navs: [],
             hasLocalAnchor: false,
+            sections: [],
+            hasHeadingOutsideSection: false,
+            listItems: [],
         };
         // Track imported components
         const importedComponents = new Map();
@@ -121,19 +124,54 @@ class ComponentAnalyzer {
         // Collect JSX usages, headings, ids and nav info
         t0 = Date.now();
         const navStack = [];
+        const sectionStack = [];
         (0, traverse_1.default)(ast, {
             JSXElement: {
                 enter(path) {
-                    var _a, _b, _c, _d;
+                    var _a, _b, _c, _d, _e, _f;
                     const elt = path.node.openingElement.name;
                     if (!t.isJSXIdentifier(elt))
                         return;
                     const name = elt.name;
                     const tag = name.toLowerCase();
+                    // Track <section> elements
+                    if (tag === 'section') {
+                        const loc = (_a = path.node.openingElement.loc) === null || _a === void 0 ? void 0 : _a.start;
+                        const sectionInfo = {
+                            filePath,
+                            line: loc ? loc.line - 1 : 0,
+                            column: loc ? loc.column : 0,
+                            hasLocalHeading: false,
+                            childComponents: [],
+                        };
+                        sectionStack.push(sectionInfo);
+                        componentDef.sections.push(sectionInfo);
+                    }
+                    // Track list items for cross-component nesting
+                    if (tag === 'li') {
+                        const parentElement = path.findParent((p) => p.isJSXElement());
+                        const parentTag = parentElement
+                            ? (t.isJSXIdentifier(parentElement.node.openingElement.name)
+                                ? parentElement.node.openingElement.name.name.toLowerCase()
+                                : '')
+                            : '';
+                        const nesting = !parentElement
+                            ? 'root'
+                            : parentTag === 'ul' || parentTag === 'ol'
+                                ? 'inList'
+                                : 'inOther';
+                        const loc = (_b = path.node.openingElement.loc) === null || _b === void 0 ? void 0 : _b.start;
+                        componentDef.listItems.push({
+                            filePath,
+                            line: loc ? loc.line - 1 : 0,
+                            column: loc ? loc.column : 0,
+                            nesting,
+                        });
+                    }
                     // Record headings
                     if (/^h[1-6]$/.test(tag)) {
                         const level = parseInt(tag.charAt(1), 10);
-                        const loc = (_a = path.node.openingElement.loc) === null || _a === void 0 ? void 0 : _a.start;
+                        const loc = (_c = path.node.openingElement.loc) === null || _c === void 0 ? void 0 : _c.start;
                         if (loc) {
                             componentDef.headings.push({
                                 level,
@@ -142,10 +180,16 @@ class ComponentAnalyzer {
                                 filePath,
                             });
                         }
+                        if (sectionStack.length) {
+                            sectionStack[sectionStack.length - 1].hasLocalHeading = true;
+                        }
+                        else {
+                            componentDef.hasHeadingOutsideSection = true;
+                        }
                     }
                     // Track <nav> elements
                     if (tag === 'nav') {
-                        const loc = (_b = path.node.openingElement.loc) === null || _b === void 0 ? void 0 : _b.start;
+                        const loc = (_d = path.node.openingElement.loc) === null || _d === void 0 ? void 0 : _d.start;
                         const navInfo = {
                             filePath,
                             line: loc ? loc.line - 1 : 0,
@@ -164,7 +208,7 @@ class ComponentAnalyzer {
                     // Track id attributes
                     const idAttr = (0, utils_1.getJsxAttr)(path.node.openingElement, 'id');
                     if (idAttr) {
-                        const loc = (_c = path.node.openingElement.loc) === null || _c === void 0 ? void 0 : _c.start;
+                        const loc = (_e = path.node.openingElement.loc) === null || _e === void 0 ? void 0 : _e.start;
                         componentDef.ids.push({
                             id: idAttr,
                             line: loc ? loc.line - 1 : 0,
@@ -175,8 +219,25 @@ class ComponentAnalyzer {
                     // Record component usage (only for capitalized components)
                     if (/^[A-Z]/.test(name)) {
                         const existingRef = componentDef.usesComponents.find(c => c.name === name);
-                        const loc = (_d = elt.loc) === null || _d === void 0 ? void 0 : _d.start;
-                        const location = loc ? { line: loc.line - 1, column: loc.column } : { line: 0, column: 0 };
+                        const loc = (_f = elt.loc) === null || _f === void 0 ? void 0 : _f.start;
+                        const parentElement = path.findParent((p) => p.isJSXElement());
+                        const parentTag = parentElement
+                            ? (t.isJSXIdentifier(parentElement.node.openingElement.name)
+                                ? parentElement.node.openingElement.name.name.toLowerCase()
+                                : '')
+                            : '';
+                        const inListDirect = parentTag === 'ul' || parentTag === 'ol';
+                        const inSection = sectionStack.length > 0;
+                        const renderGroup = (0, utils_1.getJsxRenderGroup)(path);
+                        const location = loc
+                            ? {
+                                line: loc.line - 1,
+                                column: loc.column,
+                                inListDirect,
+                                inSection,
+                                renderGroup,
+                            }
+                            : { line: 0, column: 0, inListDirect, inSection, renderGroup };
                         let ref;
                         if (existingRef) {
                             existingRef.usageLocations.push(location);
@@ -196,12 +257,21 @@ class ComponentAnalyzer {
                         if (navStack.length) {
                             navStack[navStack.length - 1].childComponents.push(ref);
                         }
+                        if (sectionStack.length) {
+                            sectionStack[sectionStack.length - 1].childComponents.push(ref);
+                        }
                     }
                 },
                 exit(path) {
                     const elt = path.node.openingElement.name;
-                    if (t.isJSXIdentifier(elt) && elt.name.toLowerCase() === 'nav') {
-                        navStack.pop();
+                    if (t.isJSXIdentifier(elt)) {
+                        const tag = elt.name.toLowerCase();
+                        if (tag === 'nav') {
+                            navStack.pop();
+                        }
+                        if (tag === 'section') {
+                            sectionStack.pop();
+                        }
                     }
                 },
             },
@@ -274,6 +344,9 @@ class ComponentAnalyzer {
             ids: [],
             navs: [],
             hasLocalAnchor: false,
+            sections: [],
+            hasHeadingOutsideSection: false,
+            listItems: [],
         };
         const importedComponents = new Map();
         const normalizedImports = new Map();
@@ -324,11 +397,69 @@ class ComponentAnalyzer {
         const lineIndex = buildLineIndex(content);
         const templateStart = templateBlock.start;
         const navStack = [];
-        const visit = (node) => {
-            var _a;
+        const sectionStack = [];
+        const groupStack = [];
+        let groupId = 0;
+        const mergePendingUsageGroup = (pendingId, baseGroup) => {
+            for (const ref of componentDef.usesComponents) {
+                for (const loc of ref.usageLocations) {
+                    if (!loc.renderGroup)
+                        continue;
+                    if (loc.renderGroup.startsWith(`${pendingId}:`)) {
+                        loc.renderGroup = baseGroup;
+                    }
+                }
+            }
+        };
+        const finalizePending = (ctx) => {
+            if (!ctx.pendingIfGroup)
+                return;
+            if (ctx.pendingIfExclusive) {
+                ctx.pendingIfGroup = undefined;
+                ctx.pendingIfExclusive = undefined;
+                return;
+            }
+            mergePendingUsageGroup(ctx.pendingIfGroup, ctx.groupKey);
+            ctx.pendingIfGroup = undefined;
+            ctx.pendingIfExclusive = undefined;
+        };
+        const visit = (node, parentTag) => {
+            var _a, _b, _c;
             if (node.type === "element") {
+                const parentCtx = (_a = groupStack[groupStack.length - 1]) !== null && _a !== void 0 ? _a : { groupKey: "root" };
+                const hasIf = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-if");
+                const hasElseIf = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-else-if");
+                const hasElse = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-else");
+                if (!hasElseIf && !hasElse) {
+                    finalizePending(parentCtx);
+                }
+                let groupKey = parentCtx.groupKey;
+                if (hasElseIf || hasElse) {
+                    const chainId = (_b = parentCtx.pendingIfGroup) !== null && _b !== void 0 ? _b : `${parentCtx.groupKey}|cond:${++groupId}`;
+                    parentCtx.pendingIfGroup = chainId;
+                    parentCtx.pendingIfExclusive = true;
+                    groupKey = `${chainId}:${hasElse ? "else" : "else-if"}`;
+                }
+                else if (hasIf) {
+                    const chainId = `${parentCtx.groupKey}|cond:${++groupId}`;
+                    parentCtx.pendingIfGroup = chainId;
+                    parentCtx.pendingIfExclusive = false;
+                    groupKey = `${chainId}:if`;
+                }
+                groupStack.push({ groupKey });
                 const tag = node.tagName;
                 const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
+                if (tag === "section") {
+                    const sectionInfo = {
+                        filePath,
+                        line: loc.line,
+                        column: loc.column,
+                        hasLocalHeading: false,
+                        childComponents: [],
+                    };
+                    sectionStack.push(sectionInfo);
+                    componentDef.sections.push(sectionInfo);
+                }
                 if (/^h[1-6]$/.test(tag)) {
                     const level = parseInt(tag.charAt(1), 10);
                     componentDef.headings.push({
@@ -337,6 +468,12 @@ class ComponentAnalyzer {
                         column: loc.column,
                         filePath,
                     });
+                    if (sectionStack.length) {
+                        sectionStack[sectionStack.length - 1].hasLocalHeading = true;
+                    }
+                    else {
+                        componentDef.hasHeadingOutsideSection = true;
+                    }
                 }
                 if (tag === "nav") {
                     const navInfo = {
@@ -353,6 +490,19 @@ class ComponentAnalyzer {
                     componentDef.hasLocalAnchor = true;
                     navStack.forEach((n) => (n.hasLocalLink = true));
                 }
+                if (tag === "li") {
+                    const nesting = parentTag === "ul" || parentTag === "ol"
+                        ? "inList"
+                        : parentTag === "root"
+                            ? "root"
+                            : "inOther";
+                    componentDef.listItems.push({
+                        filePath,
+                        line: loc.line,
+                        column: loc.column,
+                        nesting,
+                    });
+                }
                 if (node.attrs && node.attrs.id !== undefined) {
                     componentDef.ids.push({
                         id: String(node.attrs.id),
@@ -365,12 +515,17 @@ class ComponentAnalyzer {
                     const lookupKey = normalizeComponentKey(tag);
                     const importName = normalizedImports.get(lookupKey);
                     const componentName = importName !== null && importName !== void 0 ? importName : tag;
-                    const rawImportPath = importName ? (_a = importedComponents.get(importName)) !== null && _a !== void 0 ? _a : null : null;
+                    const rawImportPath = importName ? (_c = importedComponents.get(importName)) !== null && _c !== void 0 ? _c : null : null;
                     const existingRef = componentDef.usesComponents.find((c) => c.name === componentName);
                     const location = { line: loc.line, column: loc.column };
                     let ref;
                     if (existingRef) {
-                        existingRef.usageLocations.push(location);
+                        existingRef.usageLocations.push({
+                            ...location,
+                            inListDirect: parentTag === "ul" || parentTag === "ol",
+                            inSection: sectionStack.length > 0,
+                            renderGroup: groupKey,
+                        });
                         ref = existingRef;
                     }
                     else {
@@ -379,23 +534,39 @@ class ComponentAnalyzer {
                             path: null,
                             rawImportPath,
                             sourceLocation: location,
-                            usageLocations: [location],
+                            usageLocations: [
+                                {
+                                    ...location,
+                                    inListDirect: parentTag === "ul" || parentTag === "ol",
+                                    inSection: sectionStack.length > 0,
+                                    renderGroup: groupKey,
+                                },
+                            ],
                         };
                         componentDef.usesComponents.push(ref);
                     }
                     if (navStack.length) {
                         navStack[navStack.length - 1].childComponents.push(ref);
                     }
+                    if (sectionStack.length) {
+                        sectionStack[sectionStack.length - 1].childComponents.push(ref);
+                    }
                 }
                 for (const child of node.children) {
-                    visit(child);
+                    visit(child, tag);
                 }
                 if (tag === "nav") {
                     navStack.pop();
                 }
+                if (tag === "section") {
+                    sectionStack.pop();
+                }
+                const ctx = groupStack.pop();
+                if (ctx)
+                    finalizePending(ctx);
             }
         };
-        visit(root);
+        visit(root, "root");
         timings.templateCollect = Date.now() - t0;
         this.importToComponentMap.set(filePath, importedComponents);
         t0 = Date.now();
@@ -504,10 +675,12 @@ class ComponentAnalyzer {
             this.findCrossComponentDuplicateIds(results);
         if (rules.requireNavLinks)
             this.findCrossComponentNavLinks(results);
+        if (rules.enforceListNesting)
+            this.findCrossComponentListNestingIssues(results);
         return results;
     }
     findCrossComponentH1Issues(results) {
-        var _a, _b;
+        var _a, _b, _c;
         const entryPoints = this.findEntryPoints();
         const emitted = new Set();
         const getDisplayName = (component) => {
@@ -523,85 +696,123 @@ class ComponentAnalyzer {
             results.push(result);
         };
         for (const entry of entryPoints) {
-            const comps = this.findComponentsWithRule(entry, 'singleH1', 0);
-            if (comps.length <= 1)
-                continue;
-            const conflictMap = new Map();
-            for (const comp of comps) {
-                const conflicts = comps
-                    .filter(other => other.filePath !== comp.filePath)
-                    .map(getDisplayName);
-                if (conflicts.length)
-                    conflictMap.set(comp.filePath, conflicts);
-            }
-            const usageMap = new Map();
+            const usageGroups = new Map();
+            const usageEntries = new Map();
             const usageStack = new Set();
-            const collectUsage = (component, depth = 0) => {
+            const collectUsage = (component, groupKey, depth = 0) => {
                 if (this.maxDepth !== undefined && depth > this.maxDepth)
                     return;
                 if (usageStack.has(component.filePath))
                     return;
                 usageStack.add(component.filePath);
+                if (!usageGroups.has(component.filePath)) {
+                    usageGroups.set(component.filePath, new Set());
+                }
+                usageGroups.get(component.filePath).add(groupKey);
                 for (const ref of component.usesComponents) {
                     if (!ref.path || !this.componentRegistry.has(ref.path))
                         continue;
                     const child = this.componentRegistry.get(ref.path);
-                    if (!usageMap.has(child.filePath))
-                        usageMap.set(child.filePath, []);
+                    if (!usageEntries.has(child.filePath))
+                        usageEntries.set(child.filePath, []);
                     const locations = ref.usageLocations.length > 0 ? ref.usageLocations : [ref.sourceLocation];
                     for (const loc of locations) {
-                        usageMap.get(child.filePath).push({
+                        const locGroup = typeof loc.renderGroup === 'string'
+                            ? loc.renderGroup
+                            : 'root';
+                        const childGroup = `${groupKey}|${locGroup}`;
+                        usageEntries.get(child.filePath).push({
                             parent: component,
                             location: { filePath: component.filePath, line: loc.line, column: loc.column },
+                            groupKey: childGroup,
                         });
+                        collectUsage(child, childGroup, depth + 1);
                     }
-                    collectUsage(child, depth + 1);
                 }
                 usageStack.delete(component.filePath);
             };
-            collectUsage(entry, 0);
-            for (const comp of comps) {
-                const conflicts = conflictMap.get(comp.filePath);
-                if (!conflicts || !conflicts.length)
+            collectUsage(entry, 'root', 0);
+            const allGroups = new Set();
+            for (const groups of usageGroups.values()) {
+                for (const group of groups)
+                    allGroups.add(group);
+            }
+            const groupComponents = new Map();
+            for (const [filePath, groups] of usageGroups) {
+                const comp = this.componentRegistry.get(filePath);
+                if (!comp)
                     continue;
-                const compName = getDisplayName(comp);
-                const issues = (_a = comp.issues.get('singleH1')) !== null && _a !== void 0 ? _a : [];
-                if (!issues.length)
+                if (!comp.headings.some((h) => h.level === 1))
                     continue;
-                const conflictText = conflicts.map(name => `'${name}'`).join(', ');
-                const usageEntries = (_b = usageMap.get(comp.filePath)) !== null && _b !== void 0 ? _b : [];
-                const usageRelated = usageEntries.map(u => ({
-                    filePath: u.location.filePath,
-                    line: u.location.line,
-                    column: u.location.column,
-                    message: `Rendered via '${getDisplayName(u.parent)}'`,
-                }));
-                for (const issue of issues) {
-                    addResult({
+                for (const group of groups) {
+                    for (const candidate of allGroups) {
+                        if (candidate === group || candidate.startsWith(`${group}|`)) {
+                            if (!groupComponents.has(candidate)) {
+                                groupComponents.set(candidate, new Set());
+                            }
+                            groupComponents.get(candidate).add(filePath);
+                        }
+                    }
+                }
+            }
+            for (const [groupKey, componentSet] of groupComponents) {
+                if (componentSet.size <= 1)
+                    continue;
+                const componentNames = new Map();
+                for (const filePath of componentSet) {
+                    const comp = this.componentRegistry.get(filePath);
+                    if (comp)
+                        componentNames.set(filePath, getDisplayName(comp));
+                }
+                for (const filePath of componentSet) {
+                    const comp = this.componentRegistry.get(filePath);
+                    if (!comp)
+                        continue;
+                    const compName = (_a = componentNames.get(filePath)) !== null && _a !== void 0 ? _a : getDisplayName(comp);
+                    const conflicts = Array.from(componentNames.entries())
+                        .filter(([otherPath]) => otherPath !== filePath)
+                        .map(([, name]) => `'${name}'`);
+                    if (!conflicts.length)
+                        continue;
+                    const conflictText = conflicts.join(', ');
+                    const issues = (_b = comp.issues.get('singleH1')) !== null && _b !== void 0 ? _b : [];
+                    if (!issues.length)
+                        continue;
+                    const usageEntriesForGroup = ((_c = usageEntries.get(filePath)) !== null && _c !== void 0 ? _c : []).filter((u) => u.groupKey === groupKey);
+                    const usageRelated = usageEntriesForGroup.map((u) => ({
+                        filePath: u.location.filePath,
+                        line: u.location.line,
+                        column: u.location.column,
+                        message: `Rendered via '${getDisplayName(u.parent)}'`,
+                    }));
+                    for (const issue of issues) {
+                        addResult({
+                            filePath: comp.filePath,
+                            line: issue.line,
+                            column: issue.column,
+                            message: `Multiple <h1> tags across components. This <h1> in '${compName}' conflicts with ${conflictText}.`,
+                            rule: 'singleH1',
+                            related: usageRelated.length ? usageRelated : undefined,
+                        });
+                    }
+                    if (!usageEntriesForGroup.length)
+                        continue;
+                    const childIssueLocations = issues.map((issue) => ({
                         filePath: comp.filePath,
                         line: issue.line,
                         column: issue.column,
-                        message: `Multiple <h1> tags across components. This <h1> in '${compName}' conflicts with ${conflictText}.`,
-                        rule: 'singleH1',
-                        related: usageRelated,
-                    });
-                }
-                const childIssueLocations = issues.map(issue => ({
-                    filePath: comp.filePath,
-                    line: issue.line,
-                    column: issue.column,
-                    message: `Defined in '${compName}'`,
-                }));
-                for (const usage of usageEntries) {
-                    const parentName = getDisplayName(usage.parent);
-                    addResult({
-                        filePath: usage.location.filePath,
-                        line: usage.location.line,
-                        column: usage.location.column,
-                        message: `Component '${compName}' renders an extra <h1> that conflicts with ${conflictText}.`,
-                        rule: 'singleH1',
-                        related: childIssueLocations.length ? childIssueLocations : undefined,
-                    });
+                        message: `Defined in '${compName}'`,
+                    }));
+                    for (const usage of usageEntriesForGroup) {
+                        addResult({
+                            filePath: usage.location.filePath,
+                            line: usage.location.line,
+                            column: usage.location.column,
+                            message: `Component '${compName}' renders an extra <h1> that conflicts with ${conflictText}.`,
+                            rule: 'singleH1',
+                            related: childIssueLocations.length ? childIssueLocations : undefined,
+                        });
+                    }
                 }
             }
         }
@@ -797,6 +1008,60 @@ class ComponentAnalyzer {
             this.checkNavs(entry, results, new Set(), 0);
         }
     }
+    findCrossComponentListNestingIssues(results) {
+        const entryPoints = this.findEntryPoints();
+        const emitted = new Set();
+        const addResult = (result) => {
+            const key = `${result.rule}|${result.filePath}|${result.line}|${result.column}|${result.message}`;
+            if (emitted.has(key))
+                return;
+            emitted.add(key);
+            results.push(result);
+        };
+        const getDisplayName = (component) => component.name || path.basename(component.filePath, path.extname(component.filePath));
+        const visit = (component, stack, depth = 0) => {
+            if (this.maxDepth !== undefined && depth > this.maxDepth)
+                return;
+            if (stack.has(component.filePath))
+                return;
+            stack.add(component.filePath);
+            for (const ref of component.usesComponents) {
+                if (!ref.path || !this.componentRegistry.has(ref.path))
+                    continue;
+                const child = this.componentRegistry.get(ref.path);
+                const rootItems = child.listItems.filter((item) => item.nesting === "root");
+                if (rootItems.length) {
+                    const locations = ref.usageLocations.length > 0 ? ref.usageLocations : [ref.sourceLocation];
+                    for (const loc of locations) {
+                        const inListDirect = typeof loc.inListDirect === "boolean"
+                            ? loc.inListDirect
+                            : false;
+                        if (inListDirect)
+                            continue;
+                        const childName = getDisplayName(child);
+                        addResult({
+                            filePath: component.filePath,
+                            line: loc.line,
+                            column: loc.column,
+                            message: `Component '${childName}' renders <li> elements that must be inside <ul> or <ol>.`,
+                            rule: "enforceListNesting",
+                            related: rootItems.map((item) => ({
+                                filePath: child.filePath,
+                                line: item.line,
+                                column: item.column,
+                                message: `Rendered <li> in '${childName}'`,
+                            })),
+                        });
+                    }
+                }
+                visit(child, stack, depth + 1);
+            }
+            stack.delete(component.filePath);
+        };
+        for (const entry of entryPoints) {
+            visit(entry, new Set(), 0);
+        }
+    }
     checkNavs(component, results, stack, depth = 0) {
         if (this.maxDepth !== undefined && depth > this.maxDepth)
             return;
@@ -851,6 +1116,94 @@ class ComponentAnalyzer {
             }
         }
         return false;
+    }
+    getListNestingSuppressions() {
+        const used = new Set();
+        for (const component of this.componentRegistry.values()) {
+            for (const ref of component.usesComponents) {
+                if (ref.path)
+                    used.add(ref.path);
+            }
+        }
+        const suppressions = new Map();
+        for (const filePath of used) {
+            const component = this.componentRegistry.get(filePath);
+            if (!component)
+                continue;
+            const rootItems = component.listItems.filter((item) => item.nesting === "root");
+            if (!rootItems.length)
+                continue;
+            const keySet = new Set();
+            for (const item of rootItems) {
+                keySet.add(`${item.line}:${item.column}`);
+            }
+            const ext = path.extname(filePath).toLowerCase();
+            if (ext === ".vue" || ext === ".html") {
+                keySet.add("0:0");
+            }
+            suppressions.set(filePath, keySet);
+        }
+        return suppressions;
+    }
+    getSectionHeadingSuppressions() {
+        const suppressions = new Map();
+        const cache = new Map();
+        const visiting = new Set();
+        const hasHeadingOutsideSection = (component, depth = 0) => {
+            if (this.maxDepth !== undefined && depth > this.maxDepth)
+                return false;
+            if (cache.has(component.filePath))
+                return cache.get(component.filePath);
+            if (visiting.has(component.filePath))
+                return false;
+            visiting.add(component.filePath);
+            if (component.hasHeadingOutsideSection) {
+                cache.set(component.filePath, true);
+                visiting.delete(component.filePath);
+                return true;
+            }
+            for (const ref of component.usesComponents) {
+                if (!ref.path || !this.componentRegistry.has(ref.path))
+                    continue;
+                const usedOutsideSection = ref.usageLocations.length === 0
+                    ? true
+                    : ref.usageLocations.some((loc) => typeof loc.inSection === "boolean"
+                        ? !loc.inSection
+                        : true);
+                if (!usedOutsideSection)
+                    continue;
+                const child = this.componentRegistry.get(ref.path);
+                if (hasHeadingOutsideSection(child, depth + 1)) {
+                    cache.set(component.filePath, true);
+                    visiting.delete(component.filePath);
+                    return true;
+                }
+            }
+            cache.set(component.filePath, false);
+            visiting.delete(component.filePath);
+            return false;
+        };
+        for (const component of this.componentRegistry.values()) {
+            for (const section of component.sections) {
+                if (section.hasLocalHeading)
+                    continue;
+                const satisfiedByChild = section.childComponents.some((ref) => {
+                    if (!ref.path || !this.componentRegistry.has(ref.path))
+                        return false;
+                    const child = this.componentRegistry.get(ref.path);
+                    return hasHeadingOutsideSection(child, 0);
+                });
+                if (!satisfiedByChild)
+                    continue;
+                if (!suppressions.has(component.filePath)) {
+                    suppressions.set(component.filePath, new Set());
+                }
+                suppressions
+                    .get(component.filePath)
+                    .add(`${section.line}:${section.column}`);
+            }
+        }
+        return suppressions;
     }
     findEntryPoints() {
         const all = Array.from(this.componentRegistry.values());

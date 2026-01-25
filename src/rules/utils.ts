@@ -150,3 +150,54 @@ export function getTag(path: NodePath<t.JSXElement>): string {
   const opening = path.node.openingElement;
   return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
 }
+
+function locKey(loc?: t.SourceLocation['start']): string {
+  if (!loc) return '0:0';
+  return `${loc.line}:${loc.column}`;
+}
+
+export function getJsxRenderGroup(path: NodePath<t.Node>): string {
+  const returnPath = path.findParent((p) => p.isReturnStatement()) as
+    | NodePath<t.ReturnStatement>
+    | null;
+  let baseGroup: string | null = null;
+  if (returnPath) {
+    baseGroup = `return:${locKey(returnPath.node.loc?.start)}`;
+  }
+
+  const arrowPath = path.findParent((p) => p.isArrowFunctionExpression()) as
+    | NodePath<t.ArrowFunctionExpression>
+    | null;
+  if (arrowPath) {
+    const body = arrowPath.node.body;
+    if (t.isJSXElement(body) || t.isJSXFragment(body)) {
+      const loc = body.loc?.start ?? arrowPath.node.loc?.start;
+      baseGroup = `return:${locKey(loc)}`;
+    }
+  }
+
+  if (!baseGroup) baseGroup = 'root';
+
+  const segments: string[] = [];
+  let current: NodePath<t.Node> | null = path;
+  while (current?.parentPath) {
+    const parentPath = current.parentPath;
+    if (parentPath.isConditionalExpression()) {
+      const conditional = parentPath.node;
+      const inConsequent =
+        current.node === conditional.consequent ||
+        !!current.findParent((p) => p.node === conditional.consequent);
+      const inAlternate =
+        current.node === conditional.alternate ||
+        !!current.findParent((p) => p.node === conditional.alternate);
+      if (inConsequent || inAlternate) {
+        const branch = inConsequent ? "then" : "else";
+        segments.push(`cond:${locKey(conditional.loc?.start)}:${branch}`);
+      }
+    }
+    current = parentPath as NodePath<t.Node>;
+  }
+
+  if (!segments.length) return baseGroup;
+  return `${baseGroup}|${segments.reverse().join("|")}`;
+}

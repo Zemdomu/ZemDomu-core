@@ -60,4 +60,46 @@ import ButtonComp from "./Button.vue";
         const results2 = Array.from(map2.values()).flat();
         assert_1.default.ok(!results2.some((r) => r.rule === "singleH1"), "Did not expect singleH1 warning after fixing Vue child component");
     });
+    it("handles bound href and mustache text in Vue templates", async () => {
+        const tmp = fs_1.default.mkdtempSync(path_1.default.join(os_1.default.tmpdir(), "zd-vue-links-"));
+        const file = path_1.default.join(tmp, "Links.vue");
+        fs_1.default.writeFileSync(file, `<template>
+  <div>
+    <a :href="link.url">{{ text }}</a>
+    <a :href=""></a>
+  </div>
+</template>
+<script setup>
+const link = { url: "/docs" };
+const text = "Docs";
+</script>
+`, "utf8");
+        const linter = new index_1.ProjectLinter({
+            rules: { requireHrefOnAnchors: "error", requireLinkText: "error" },
+        });
+        const map = await linter.lintFile(file);
+        const results = Array.from(map.values()).flat();
+        const hrefWarnings = results.filter((r) => r.rule === "requireHrefOnAnchors");
+        const textWarnings = results.filter((r) => r.rule === "requireLinkText");
+        assert_1.default.strictEqual(hrefWarnings.length, 1, "Expected only the empty bound href to warn");
+        assert_1.default.strictEqual(textWarnings.length, 1, "Expected only the empty link text to warn");
+    });
+    it("does not flag singleH1 when v-if/v-else are exclusive", async () => {
+        const tmp = fs_1.default.mkdtempSync(path_1.default.join(os_1.default.tmpdir(), "zd-vue-h1-"));
+        const file = path_1.default.join(tmp, "Page.vue");
+        fs_1.default.writeFileSync(file, `<template>
+  <main>
+    <h1 v-if="show">One</h1>
+    <h1 v-else>Two</h1>
+  </main>
+</template>
+<script setup>
+const show = true;
+</script>
+`, "utf8");
+        const linter = new index_1.ProjectLinter({ rules: { singleH1: "error" } });
+        const map = await linter.lintFile(file);
+        const results = Array.from(map.values()).flat();
+        assert_1.default.ok(!results.some((r) => r.rule === "singleH1"), "Did not expect singleH1 warning for v-if/v-else branches");
+    });
 });

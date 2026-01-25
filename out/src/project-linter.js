@@ -90,6 +90,8 @@ class ProjectLinter {
                 }
             }
         }
+        this.applyListNestingSuppressions(byFile);
+        this.applySectionHeadingSuppressions(byFile);
         return byFile;
     }
     async lintFiles(filePaths) {
@@ -124,7 +126,43 @@ class ProjectLinter {
                 aggregated.get(fp).push(...res);
             }
         }
+        this.applyListNestingSuppressions(aggregated);
+        this.applySectionHeadingSuppressions(aggregated);
         return aggregated;
+    }
+    applyListNestingSuppressions(results) {
+        if (!this.opts.crossComponentAnalysis)
+            return;
+        const rules = this.opts.rules || {};
+        if (!rules.enforceListNesting)
+            return;
+        const suppressions = this.analyzer.getListNestingSuppressions();
+        if (!suppressions.size)
+            return;
+        for (const [filePath, entries] of results.entries()) {
+            const suppressSet = suppressions.get(filePath);
+            if (!suppressSet || suppressSet.size === 0)
+                continue;
+            results.set(filePath, entries.filter((r) => r.rule !== "enforceListNesting" ||
+                !suppressSet.has(`${r.line}:${r.column}`)));
+        }
+    }
+    applySectionHeadingSuppressions(results) {
+        if (!this.opts.crossComponentAnalysis)
+            return;
+        const rules = this.opts.rules || {};
+        if (!rules.requireSectionHeading)
+            return;
+        const suppressions = this.analyzer.getSectionHeadingSuppressions();
+        if (!suppressions.size)
+            return;
+        for (const [filePath, entries] of results.entries()) {
+            const suppressSet = suppressions.get(filePath);
+            if (!suppressSet || suppressSet.size === 0)
+                continue;
+            results.set(filePath, entries.filter((r) => r.rule !== "requireSectionHeading" ||
+                !suppressSet.has(`${r.line}:${r.column}`)));
+        }
     }
 }
 exports.ProjectLinter = ProjectLinter;

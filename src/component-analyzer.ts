@@ -5,7 +5,7 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { LintResult, LinterOptions } from './linter';
 import { ComponentPathResolver } from './component-path-resolver';
-import { getJsxAttr } from './rules/utils';
+import { getJsxAttr, getJsxRenderGroup } from './rules/utils';
 import { parse as parseHtml } from './simpleHtmlParser';
 import type { Node as HtmlNode, ElementNode } from './simpleHtmlParser';
 import { extractVueScripts, extractVueTemplate, isHtmlVueTemplate } from './utils/vue-sfc';
@@ -28,6 +28,7 @@ interface ComponentReference {
     column: number;
     inListDirect?: boolean;
     inSection?: boolean;
+    renderGroup?: string;
   }>;
 }
 
@@ -277,9 +278,16 @@ export class ComponentAnalyzer {
               : '';
               const inListDirect = parentTag === 'ul' || parentTag === 'ol';
               const inSection = sectionStack.length > 0;
+              const renderGroup = getJsxRenderGroup(path);
               const location = loc
-                ? { line: loc.line - 1, column: loc.column, inListDirect, inSection }
-                : { line: 0, column: 0, inListDirect, inSection };
+                ? {
+                    line: loc.line - 1,
+                    column: loc.column,
+                    inListDirect,
+                    inSection,
+                    renderGroup,
+                  }
+                : { line: 0, column: 0, inListDirect, inSection, renderGroup };
 
             let ref: ComponentReference;
             if (existingRef) {
@@ -454,8 +462,63 @@ export class ComponentAnalyzer {
     const templateStart = templateBlock.start;
     const navStack: NavInfo[] = [];
     const sectionStack: SectionInfo[] = [];
+    const groupStack: Array<{
+      groupKey: string;
+      pendingIfGroup?: string;
+      pendingIfExclusive?: boolean;
+    }> = [];
+    let groupId = 0;
+    const mergePendingUsageGroup = (pendingId: string, baseGroup: string) => {
+      for (const ref of componentDef.usesComponents) {
+        for (const loc of ref.usageLocations) {
+          if (!loc.renderGroup) continue;
+          if (loc.renderGroup.startsWith(`${pendingId}:`)) {
+            loc.renderGroup = baseGroup;
+          }
+        }
+      }
+    };
+    const finalizePending = (ctx: {
+      groupKey: string;
+      pendingIfGroup?: string;
+      pendingIfExclusive?: boolean;
+    }) => {
+      if (!ctx.pendingIfGroup) return;
+      if (ctx.pendingIfExclusive) {
+        ctx.pendingIfGroup = undefined;
+        ctx.pendingIfExclusive = undefined;
+        return;
+      }
+      mergePendingUsageGroup(ctx.pendingIfGroup, ctx.groupKey);
+      ctx.pendingIfGroup = undefined;
+      ctx.pendingIfExclusive = undefined;
+    };
     const visit = (node: HtmlNode, parentTag: string) => {
       if (node.type === "element") {
+        const parentCtx = groupStack[groupStack.length - 1] ?? { groupKey: "root" };
+        const hasIf = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-if");
+        const hasElseIf = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-else-if");
+        const hasElse = node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "v-else");
+
+        if (!hasElseIf && !hasElse) {
+          finalizePending(parentCtx);
+        }
+
+        let groupKey = parentCtx.groupKey;
+        if (hasElseIf || hasElse) {
+          const chainId =
+            parentCtx.pendingIfGroup ?? `${parentCtx.groupKey}|cond:${++groupId}`;
+          parentCtx.pendingIfGroup = chainId;
+          parentCtx.pendingIfExclusive = true;
+          groupKey = `${chainId}:${hasElse ? "else" : "else-if"}`;
+        } else if (hasIf) {
+          const chainId = `${parentCtx.groupKey}|cond:${++groupId}`;
+          parentCtx.pendingIfGroup = chainId;
+          parentCtx.pendingIfExclusive = false;
+          groupKey = `${chainId}:if`;
+        }
+
+        groupStack.push({ groupKey });
         const tag = node.tagName;
         const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
 
@@ -542,6 +605,7 @@ export class ComponentAnalyzer {
               ...location,
               inListDirect: parentTag === "ul" || parentTag === "ol",
               inSection: sectionStack.length > 0,
+              renderGroup: groupKey,
             });
             ref = existingRef;
           } else {
@@ -555,6 +619,7 @@ export class ComponentAnalyzer {
                   ...location,
                   inListDirect: parentTag === "ul" || parentTag === "ol",
                   inSection: sectionStack.length > 0,
+                  renderGroup: groupKey,
                 },
               ],
             };
@@ -578,6 +643,8 @@ export class ComponentAnalyzer {
         if (tag === "section") {
           sectionStack.pop();
         }
+        const ctx = groupStack.pop();
+        if (ctx) finalizePending(ctx);
       }
     };
     visit(root, "root");
@@ -704,95 +771,139 @@ export class ComponentAnalyzer {
     };
 
     for (const entry of entryPoints) {
-      const comps = this.findComponentsWithRule(entry, 'singleH1', 0);
-      if (comps.length <= 1) continue;
-
-      const conflictMap = new Map<string, string[]>();
-      for (const comp of comps) {
-        const conflicts = comps
-          .filter(other => other.filePath !== comp.filePath)
-          .map(getDisplayName);
-        if (conflicts.length) conflictMap.set(comp.filePath, conflicts);
-      }
-
-      const usageMap = new Map<
+      const usageGroups = new Map<string, Set<string>>();
+      const usageEntries = new Map<
         string,
         Array<{
           parent: ComponentDefinition;
           location: { filePath: string; line: number; column: number };
+          groupKey: string;
         }>
       >();
 
       const usageStack = new Set<string>();
-      const collectUsage = (component: ComponentDefinition, depth = 0) => {
+      const collectUsage = (
+        component: ComponentDefinition,
+        groupKey: string,
+        depth = 0
+      ) => {
         if (this.maxDepth !== undefined && depth > this.maxDepth) return;
         if (usageStack.has(component.filePath)) return;
         usageStack.add(component.filePath);
 
+        if (!usageGroups.has(component.filePath)) {
+          usageGroups.set(component.filePath, new Set());
+        }
+        usageGroups.get(component.filePath)!.add(groupKey);
+
         for (const ref of component.usesComponents) {
           if (!ref.path || !this.componentRegistry.has(ref.path)) continue;
           const child = this.componentRegistry.get(ref.path)!;
-          if (!usageMap.has(child.filePath)) usageMap.set(child.filePath, []);
+          if (!usageEntries.has(child.filePath)) usageEntries.set(child.filePath, []);
           const locations =
             ref.usageLocations.length > 0 ? ref.usageLocations : [ref.sourceLocation];
           for (const loc of locations) {
-            usageMap.get(child.filePath)!.push({
+            const locGroup =
+              typeof (loc as { renderGroup?: string }).renderGroup === 'string'
+                ? (loc as { renderGroup?: string }).renderGroup!
+                : 'root';
+            const childGroup = `${groupKey}|${locGroup}`;
+            usageEntries.get(child.filePath)!.push({
               parent: component,
               location: { filePath: component.filePath, line: loc.line, column: loc.column },
+              groupKey: childGroup,
             });
+            collectUsage(child, childGroup, depth + 1);
           }
-          collectUsage(child, depth + 1);
         }
 
         usageStack.delete(component.filePath);
       };
 
-      collectUsage(entry, 0);
+      collectUsage(entry, 'root', 0);
 
-      for (const comp of comps) {
-        const conflicts = conflictMap.get(comp.filePath);
-        if (!conflicts || !conflicts.length) continue;
-        const compName = getDisplayName(comp);
-        const issues = comp.issues.get('singleH1') ?? [];
-        if (!issues.length) continue;
+      const allGroups = new Set<string>();
+      for (const groups of usageGroups.values()) {
+        for (const group of groups) allGroups.add(group);
+      }
 
-        const conflictText = conflicts.map(name => `'${name}'`).join(', ');
-        const usageEntries = usageMap.get(comp.filePath) ?? [];
-        const usageRelated = usageEntries.map(u => ({
-          filePath: u.location.filePath,
-          line: u.location.line,
-          column: u.location.column,
-          message: `Rendered via '${getDisplayName(u.parent)}'`,
-        }));
+      const groupComponents = new Map<string, Set<string>>();
+      for (const [filePath, groups] of usageGroups) {
+        const comp = this.componentRegistry.get(filePath);
+        if (!comp) continue;
+        if (!comp.headings.some((h) => h.level === 1)) continue;
+        for (const group of groups) {
+          for (const candidate of allGroups) {
+            if (candidate === group || candidate.startsWith(`${group}|`)) {
+              if (!groupComponents.has(candidate)) {
+                groupComponents.set(candidate, new Set());
+              }
+              groupComponents.get(candidate)!.add(filePath);
+            }
+          }
+        }
+      }
 
-        for (const issue of issues) {
-          addResult({
+      for (const [groupKey, componentSet] of groupComponents) {
+        if (componentSet.size <= 1) continue;
+        const componentNames = new Map<string, string>();
+        for (const filePath of componentSet) {
+          const comp = this.componentRegistry.get(filePath);
+          if (comp) componentNames.set(filePath, getDisplayName(comp));
+        }
+
+        for (const filePath of componentSet) {
+          const comp = this.componentRegistry.get(filePath);
+          if (!comp) continue;
+          const compName = componentNames.get(filePath) ?? getDisplayName(comp);
+          const conflicts = Array.from(componentNames.entries())
+            .filter(([otherPath]) => otherPath !== filePath)
+            .map(([, name]) => `'${name}'`);
+          if (!conflicts.length) continue;
+
+          const conflictText = conflicts.join(', ');
+          const issues = comp.issues.get('singleH1') ?? [];
+          if (!issues.length) continue;
+
+          const usageEntriesForGroup = (usageEntries.get(filePath) ?? []).filter(
+            (u) => u.groupKey === groupKey
+          );
+          const usageRelated = usageEntriesForGroup.map((u) => ({
+            filePath: u.location.filePath,
+            line: u.location.line,
+            column: u.location.column,
+            message: `Rendered via '${getDisplayName(u.parent)}'`,
+          }));
+
+          for (const issue of issues) {
+            addResult({
+              filePath: comp.filePath,
+              line: issue.line,
+              column: issue.column,
+              message: `Multiple <h1> tags across components. This <h1> in '${compName}' conflicts with ${conflictText}.`,
+              rule: 'singleH1',
+              related: usageRelated.length ? usageRelated : undefined,
+            });
+          }
+
+          if (!usageEntriesForGroup.length) continue;
+          const childIssueLocations = issues.map((issue) => ({
             filePath: comp.filePath,
             line: issue.line,
             column: issue.column,
-            message: `Multiple <h1> tags across components. This <h1> in '${compName}' conflicts with ${conflictText}.`,
-            rule: 'singleH1',
-            related: usageRelated,
-          });
-        }
+            message: `Defined in '${compName}'`,
+          }));
 
-        const childIssueLocations = issues.map(issue => ({
-          filePath: comp.filePath,
-          line: issue.line,
-          column: issue.column,
-          message: `Defined in '${compName}'`,
-        }));
-
-        for (const usage of usageEntries) {
-          const parentName = getDisplayName(usage.parent);
-          addResult({
-            filePath: usage.location.filePath,
-            line: usage.location.line,
-            column: usage.location.column,
-            message: `Component '${compName}' renders an extra <h1> that conflicts with ${conflictText}.`,
-            rule: 'singleH1',
-            related: childIssueLocations.length ? childIssueLocations : undefined,
-          });
+          for (const usage of usageEntriesForGroup) {
+            addResult({
+              filePath: usage.location.filePath,
+              line: usage.location.line,
+              column: usage.location.column,
+              message: `Component '${compName}' renders an extra <h1> that conflicts with ${conflictText}.`,
+              rule: 'singleH1',
+              related: childIssueLocations.length ? childIssueLocations : undefined,
+            });
+          }
         }
       }
     }

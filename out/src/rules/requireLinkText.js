@@ -36,6 +36,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = requireLinkText;
 const t = __importStar(require("@babel/types"));
 const utils_1 = require("./utils");
+function mergeTextStates(states) {
+    if (states.some((s) => s === "present"))
+        return "present";
+    if (states.some((s) => s === "possiblyEmpty"))
+        return "possiblyEmpty";
+    return "empty";
+}
+function jsxChildTextState(child) {
+    if (t.isJSXText(child))
+        return child.value.trim().length > 0 ? "present" : "empty";
+    if (t.isJSXExpressionContainer(child)) {
+        const expr = child.expression;
+        if (t.isJSXElement(expr))
+            return jsxElementTextState(expr);
+        if (t.isJSXFragment(expr)) {
+            return mergeTextStates(expr.children.map(jsxChildTextState));
+        }
+        return (0, utils_1.getJsxExpressionState)(expr, true);
+    }
+    if (t.isJSXElement(child))
+        return jsxElementTextState(child);
+    if (t.isJSXFragment(child)) {
+        return mergeTextStates(child.children.map(jsxChildTextState));
+    }
+    if (t.isJSXSpreadChild(child))
+        return "present";
+    return "empty";
+}
+function jsxElementTextState(node) {
+    return mergeTextStates(node.children.map(jsxChildTextState));
+}
 function requireLinkText() {
     const stack = [];
     return {
@@ -65,31 +96,25 @@ function requireLinkText() {
             }
             return [];
         },
-        enterJsx(path) {
-            const tag = (0, utils_1.getTag)(path);
-            if (tag === "a")
-                stack.push({ found: false });
+        enterJsx(_) {
             return [];
         },
         exitJsx(path) {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c, _d;
             const tag = (0, utils_1.getTag)(path);
             if (tag === "a") {
-                const entry = stack.pop();
-                let hasText = false;
-                const parentNode = (_a = path.parentPath) === null || _a === void 0 ? void 0 : _a.node;
-                if (t.isJSXElement(parentNode) && Array.isArray(parentNode.children)) {
-                    hasText = parentNode.children.some((c) => (t.isJSXText(c) && c.value.trim()) ||
-                        t.isJSXExpressionContainer(c));
-                }
-                if (entry && !(entry.found || hasText)) {
-                    const line = ((_c = (_b = path.node.loc) === null || _b === void 0 ? void 0 : _b.start.line) !== null && _c !== void 0 ? _c : 1) - 1;
-                    const column = (_e = (_d = path.node.loc) === null || _d === void 0 ? void 0 : _d.start.column) !== null && _e !== void 0 ? _e : 0;
+                const textState = jsxElementTextState(path.node);
+                if (textState !== "present") {
+                    const line = ((_b = (_a = path.node.loc) === null || _a === void 0 ? void 0 : _a.start.line) !== null && _b !== void 0 ? _b : 1) - 1;
+                    const column = (_d = (_c = path.node.loc) === null || _c === void 0 ? void 0 : _c.start.column) !== null && _d !== void 0 ? _d : 0;
+                    const message = textState === "possiblyEmpty"
+                        ? "<a> link text is possibly empty or undefined"
+                        : "<a> tag missing link text";
                     return [
                         {
                             line,
                             column,
-                            message: "<a> tag missing link text",
+                            message,
                             rule: "requireLinkText",
                         },
                     ];

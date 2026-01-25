@@ -128,4 +128,31 @@ const text = "Docs";
       "Expected only the empty link text to warn"
     );
   });
+
+  it("does not flag singleH1 when v-if/v-else are exclusive", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zd-vue-h1-"));
+    const file = path.join(tmp, "Page.vue");
+    fs.writeFileSync(
+      file,
+      `<template>
+  <main>
+    <h1 v-if="show">One</h1>
+    <h1 v-else>Two</h1>
+  </main>
+</template>
+<script setup>
+const show = true;
+</script>
+`,
+      "utf8"
+    );
+
+    const linter = new ProjectLinter({ rules: { singleH1: "error" } });
+    const map = await linter.lintFile(file);
+    const results = Array.from(map.values()).flat();
+    assert.ok(
+      !results.some((r) => r.rule === "singleH1"),
+      "Did not expect singleH1 warning for v-if/v-else branches"
+    );
+  });
 });

@@ -40,10 +40,18 @@ function requireHrefOnAnchors() {
     return {
         name: 'requireHrefOnAnchors',
         enterHtml(node) {
+            var _a, _b;
             if (node.type === 'element' && node.tagName === 'a') {
-                const href = node.attrs.href;
+                const href = (_b = (_a = node.attrs.href) !== null && _a !== void 0 ? _a : node.attrs[':href']) !== null && _b !== void 0 ? _b : node.attrs['v-bind:href'];
                 if (!href || !href.trim()) {
-                    return [{ line: 0, column: 0, message: '<a> tag missing non-empty href attribute', rule: 'requireHrefOnAnchors' }];
+                    return [
+                        {
+                            line: 0,
+                            column: 0,
+                            message: '<a> tag missing non-empty href attribute',
+                            rule: 'requireHrefOnAnchors',
+                        },
+                    ];
                 }
             }
             return [];
@@ -53,11 +61,14 @@ function requireHrefOnAnchors() {
             const opening = path.node.openingElement;
             const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
             if (tag === 'a') {
-                const href = (0, utils_1.getJsxAttr)(opening, 'href');
-                if (!href || !href.trim()) {
+                const hrefState = (0, utils_1.getJsxAttributeState)(opening, 'href', true);
+                if (hrefState === 'missing' || hrefState === 'empty' || hrefState === 'possiblyEmpty') {
                     const line = ((_b = (_a = opening.loc) === null || _a === void 0 ? void 0 : _a.start.line) !== null && _b !== void 0 ? _b : 1) - 1;
                     const column = (_d = (_c = opening.loc) === null || _c === void 0 ? void 0 : _c.start.column) !== null && _d !== void 0 ? _d : 0;
-                    return [{ line, column, message: '<a> tag missing non-empty href attribute', rule: 'requireHrefOnAnchors' }];
+                    const message = hrefState === 'possiblyEmpty'
+                        ? '<a> href is possibly empty or undefined'
+                        : '<a> tag missing non-empty href attribute';
+                    return [{ line, column, message, rule: 'requireHrefOnAnchors' }];
                 }
             }
             return [];

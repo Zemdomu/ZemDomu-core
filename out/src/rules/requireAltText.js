@@ -35,21 +35,24 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = requireAltText;
 const t = __importStar(require("@babel/types"));
+const utils_1 = require("./utils");
 function requireAltText() {
     return {
         name: 'requireAltText',
         enterHtml(node) {
-            if (node.type === 'element' &&
-                node.tagName === 'img' &&
-                (!('alt' in node.attrs) || !node.attrs.alt.trim())) {
-                return [
-                    {
-                        line: 0, // line/column handling omitted for brevity
-                        column: 0,
-                        message: '<img> tag missing alt attribute',
-                        rule: 'requireAltText',
-                    },
-                ];
+            var _a, _b;
+            if (node.type === 'element' && node.tagName === 'img') {
+                const alt = (_b = (_a = node.attrs.alt) !== null && _a !== void 0 ? _a : node.attrs[':alt']) !== null && _b !== void 0 ? _b : node.attrs['v-bind:alt'];
+                if (alt === undefined || !String(alt).trim()) {
+                    return [
+                        {
+                            line: 0, // line/column handling omitted for brevity
+                            column: 0,
+                            message: '<img> tag missing or empty alt attribute',
+                            rule: 'requireAltText',
+                        },
+                    ];
+                }
             }
             return [];
         },
@@ -58,16 +61,17 @@ function requireAltText() {
             const name = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
             if (name !== 'img')
                 return [];
-            const altAttr = opening.attributes.find((a) => t.isJSXAttribute(a) &&
-                t.isJSXIdentifier(a.name) &&
-                a.name.name === 'alt');
-            if (!altAttr || !t.isStringLiteral(altAttr.value) || altAttr.value.value.trim() === '') {
+            const altState = (0, utils_1.getJsxAttributeState)(opening, 'alt', true);
+            if (altState === 'missing' || altState === 'empty' || altState === 'possiblyEmpty') {
                 const loc = opening.loc.start;
+                const message = altState === 'possiblyEmpty'
+                    ? '<img> alt is possibly empty or undefined'
+                    : '<img> tag missing or empty alt attribute';
                 return [
                     {
                         line: loc.line - 1,
                         column: loc.column,
-                        message: '<img> tag missing alt attribute',
+                        message,
                         rule: 'requireAltText',
                     },
                 ];
