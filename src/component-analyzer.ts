@@ -27,6 +27,7 @@ interface ComponentReference {
     line: number;
     column: number;
     inListDirect?: boolean;
+    inSection?: boolean;
   }>;
 }
 
@@ -52,6 +53,14 @@ interface NavInfo {
   childComponents: ComponentReference[];
 }
 
+interface SectionInfo {
+  filePath: string;
+  line: number;
+  column: number;
+  hasLocalHeading: boolean;
+  childComponents: ComponentReference[];
+}
+
 interface ListItemInfo {
   filePath: string;
   line: number;
@@ -68,6 +77,8 @@ interface ComponentDefinition {
   ids: IdInfo[];
   navs: NavInfo[];
   hasLocalAnchor: boolean;
+  sections: SectionInfo[];
+  hasHeadingOutsideSection: boolean;
   listItems: ListItemInfo[];
 }
 
@@ -125,6 +136,8 @@ export class ComponentAnalyzer {
       ids: [],
       navs: [],
       hasLocalAnchor: false,
+      sections: [],
+      hasHeadingOutsideSection: false,
       listItems: [],
     };
 
@@ -151,6 +164,7 @@ export class ComponentAnalyzer {
     // Collect JSX usages, headings, ids and nav info
     t0 = Date.now();
     const navStack: NavInfo[] = [];
+    const sectionStack: SectionInfo[] = [];
     traverse(ast, {
       JSXElement: {
         enter(path) {
@@ -158,6 +172,20 @@ export class ComponentAnalyzer {
           if (!t.isJSXIdentifier(elt)) return;
           const name = elt.name;
           const tag = name.toLowerCase();
+
+          // Track <section> elements
+          if (tag === 'section') {
+            const loc = path.node.openingElement.loc?.start;
+            const sectionInfo: SectionInfo = {
+              filePath,
+              line: loc ? loc.line - 1 : 0,
+              column: loc ? loc.column : 0,
+              hasLocalHeading: false,
+              childComponents: [],
+            };
+            sectionStack.push(sectionInfo);
+            componentDef.sections.push(sectionInfo);
+          }
 
           // Track list items for cross-component nesting
           if (tag === 'li') {
@@ -195,6 +223,11 @@ export class ComponentAnalyzer {
                 column: loc.column,
                 filePath,
               });
+            }
+            if (sectionStack.length) {
+              sectionStack[sectionStack.length - 1].hasLocalHeading = true;
+            } else {
+              componentDef.hasHeadingOutsideSection = true;
             }
           }
 
@@ -242,10 +275,11 @@ export class ComponentAnalyzer {
                   ? parentElement.node.openingElement.name.name.toLowerCase()
                   : '')
               : '';
-            const inListDirect = parentTag === 'ul' || parentTag === 'ol';
-            const location = loc
-              ? { line: loc.line - 1, column: loc.column, inListDirect }
-              : { line: 0, column: 0, inListDirect };
+              const inListDirect = parentTag === 'ul' || parentTag === 'ol';
+              const inSection = sectionStack.length > 0;
+              const location = loc
+                ? { line: loc.line - 1, column: loc.column, inListDirect, inSection }
+                : { line: 0, column: 0, inListDirect, inSection };
 
             let ref: ComponentReference;
             if (existingRef) {
@@ -263,15 +297,24 @@ export class ComponentAnalyzer {
               componentDef.usesComponents.push(ref);
             }
 
-            if (navStack.length) {
-              navStack[navStack.length - 1].childComponents.push(ref);
+              if (navStack.length) {
+                navStack[navStack.length - 1].childComponents.push(ref);
+              }
+              if (sectionStack.length) {
+                sectionStack[sectionStack.length - 1].childComponents.push(ref);
+              }
             }
-          }
         },
         exit(path) {
           const elt = path.node.openingElement.name;
-          if (t.isJSXIdentifier(elt) && elt.name.toLowerCase() === 'nav') {
-            navStack.pop();
+          if (t.isJSXIdentifier(elt)) {
+            const tag = elt.name.toLowerCase();
+            if (tag === 'nav') {
+              navStack.pop();
+            }
+            if (tag === 'section') {
+              sectionStack.pop();
+            }
           }
         },
       },
@@ -355,6 +398,8 @@ export class ComponentAnalyzer {
       ids: [],
       navs: [],
       hasLocalAnchor: false,
+      sections: [],
+      hasHeadingOutsideSection: false,
       listItems: [],
     };
 
@@ -408,10 +453,23 @@ export class ComponentAnalyzer {
     const lineIndex = buildLineIndex(content);
     const templateStart = templateBlock.start;
     const navStack: NavInfo[] = [];
+    const sectionStack: SectionInfo[] = [];
     const visit = (node: HtmlNode, parentTag: string) => {
       if (node.type === "element") {
         const tag = node.tagName;
         const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
+
+        if (tag === "section") {
+          const sectionInfo: SectionInfo = {
+            filePath,
+            line: loc.line,
+            column: loc.column,
+            hasLocalHeading: false,
+            childComponents: [],
+          };
+          sectionStack.push(sectionInfo);
+          componentDef.sections.push(sectionInfo);
+        }
 
         if (/^h[1-6]$/.test(tag)) {
           const level = parseInt(tag.charAt(1), 10);
@@ -421,6 +479,11 @@ export class ComponentAnalyzer {
             column: loc.column,
             filePath,
           });
+          if (sectionStack.length) {
+            sectionStack[sectionStack.length - 1].hasLocalHeading = true;
+          } else {
+            componentDef.hasHeadingOutsideSection = true;
+          }
         }
 
         if (tag === "nav") {
@@ -478,6 +541,7 @@ export class ComponentAnalyzer {
             existingRef.usageLocations.push({
               ...location,
               inListDirect: parentTag === "ul" || parentTag === "ol",
+              inSection: sectionStack.length > 0,
             });
             ref = existingRef;
           } else {
@@ -490,6 +554,7 @@ export class ComponentAnalyzer {
                 {
                   ...location,
                   inListDirect: parentTag === "ul" || parentTag === "ol",
+                  inSection: sectionStack.length > 0,
                 },
               ],
             };
@@ -497,6 +562,9 @@ export class ComponentAnalyzer {
           }
           if (navStack.length) {
             navStack[navStack.length - 1].childComponents.push(ref);
+          }
+          if (sectionStack.length) {
+            sectionStack[sectionStack.length - 1].childComponents.push(ref);
           }
         }
 
@@ -506,6 +574,9 @@ export class ComponentAnalyzer {
 
         if (tag === "nav") {
           navStack.pop();
+        }
+        if (tag === "section") {
+          sectionStack.pop();
         }
       }
     };
@@ -1087,6 +1158,72 @@ export class ComponentAnalyzer {
       }
       suppressions.set(filePath, keySet);
     }
+    return suppressions;
+  }
+
+  getSectionHeadingSuppressions(): Map<string, Set<string>> {
+    const suppressions = new Map<string, Set<string>>();
+    const cache = new Map<string, boolean>();
+    const visiting = new Set<string>();
+
+    const hasHeadingOutsideSection = (
+      component: ComponentDefinition,
+      depth = 0
+    ): boolean => {
+      if (this.maxDepth !== undefined && depth > this.maxDepth) return false;
+      if (cache.has(component.filePath)) return cache.get(component.filePath)!;
+      if (visiting.has(component.filePath)) return false;
+      visiting.add(component.filePath);
+
+      if (component.hasHeadingOutsideSection) {
+        cache.set(component.filePath, true);
+        visiting.delete(component.filePath);
+        return true;
+      }
+
+      for (const ref of component.usesComponents) {
+        if (!ref.path || !this.componentRegistry.has(ref.path)) continue;
+        const usedOutsideSection =
+          ref.usageLocations.length === 0
+            ? true
+            : ref.usageLocations.some(
+                (loc) =>
+                  typeof (loc as { inSection?: boolean }).inSection === "boolean"
+                    ? !(loc as { inSection?: boolean }).inSection
+                    : true
+              );
+        if (!usedOutsideSection) continue;
+        const child = this.componentRegistry.get(ref.path)!;
+        if (hasHeadingOutsideSection(child, depth + 1)) {
+          cache.set(component.filePath, true);
+          visiting.delete(component.filePath);
+          return true;
+        }
+      }
+
+      cache.set(component.filePath, false);
+      visiting.delete(component.filePath);
+      return false;
+    };
+
+    for (const component of this.componentRegistry.values()) {
+      for (const section of component.sections) {
+        if (section.hasLocalHeading) continue;
+        const satisfiedByChild = section.childComponents.some((ref) => {
+          if (!ref.path || !this.componentRegistry.has(ref.path)) return false;
+          const child = this.componentRegistry.get(ref.path)!;
+          return hasHeadingOutsideSection(child, 0);
+        });
+        if (!satisfiedByChild) continue;
+        if (!suppressions.has(component.filePath)) {
+          suppressions.set(component.filePath, new Set());
+        }
+        suppressions
+          .get(component.filePath)!
+          .add(`${section.line}:${section.column}`);
+      }
+    }
+
     return suppressions;
   }
 

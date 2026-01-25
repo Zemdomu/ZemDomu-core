@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Bugfix: allow cross-component list items to satisfy list nesting when rendered inside <ul>/<ol>
+- Bugfix: allow section headings provided by child components to satisfy <section> requirements
 
 ## 1.3.15
 

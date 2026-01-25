@@ -70,6 +70,7 @@ export class ProjectLinter {
     }
 
     this.applyListNestingSuppressions(byFile);
+    this.applySectionHeadingSuppressions(byFile);
     return byFile;
   }
 
@@ -115,6 +116,7 @@ export class ProjectLinter {
       }
     }
     this.applyListNestingSuppressions(aggregated);
+    this.applySectionHeadingSuppressions(aggregated);
     return aggregated;
   }
 
@@ -132,6 +134,26 @@ export class ProjectLinter {
         entries.filter(
           (r) =>
             r.rule !== "enforceListNesting" ||
+            !suppressSet.has(`${r.line}:${r.column}`)
+        )
+      );
+    }
+  }
+
+  private applySectionHeadingSuppressions(results: Map<string, LintResult[]>): void {
+    if (!this.opts.crossComponentAnalysis) return;
+    const rules = this.opts.rules || {};
+    if (!rules.requireSectionHeading) return;
+    const suppressions = this.analyzer.getSectionHeadingSuppressions();
+    if (!suppressions.size) return;
+    for (const [filePath, entries] of results.entries()) {
+      const suppressSet = suppressions.get(filePath);
+      if (!suppressSet || suppressSet.size === 0) continue;
+      results.set(
+        filePath,
+        entries.filter(
+          (r) =>
+            r.rule !== "requireSectionHeading" ||
             !suppressSet.has(`${r.line}:${r.column}`)
         )
       );
