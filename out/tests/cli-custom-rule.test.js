@@ -25,6 +25,24 @@ if (!output.includes('Foo elements are not allowed')) {
     throw new Error('Expected custom rule message');
 }
 console.log('CLI custom rule test passed');
+// Array export should work too
+const arrayRule = path.join(customDir, 'array-rule.js');
+fs.writeFileSync(arrayRule, `module.exports = [{\n  name: 'noBar',\n  test: n => (n.type === 'element' && n.tagName === 'bar') || (n.type === 'JSXElement' && n.openingElement && n.openingElement.name && n.openingElement.name.name === 'bar'),\n  message: 'Bar elements are not allowed'\n}];\n`);
+fs.writeFileSync(htmlFile, '<bar></bar>');
+const arrayResult = spawnSync('node', [cli, htmlFile, '--custom', arrayRule], {
+    encoding: 'utf8',
+    cwd: tmp,
+});
+if (arrayResult.status === 0) {
+    console.error(arrayResult.stdout, arrayResult.stderr);
+    throw new Error('Expected CLI to fail for array rule');
+}
+const arrayOutput = arrayResult.stdout + arrayResult.stderr;
+if (!arrayOutput.includes('Bar elements are not allowed')) {
+    console.error(arrayOutput);
+    throw new Error('Expected array custom rule message');
+}
+console.log('CLI custom rule array test passed');
 // Should error when rule file is outside the custom-rules directory
 const outsideRule = path.join(tmp, 'other-rule.js');
 fs.writeFileSync(outsideRule, 'module.exports = {};');

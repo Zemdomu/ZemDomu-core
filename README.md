@@ -109,8 +109,10 @@ npx zemdomu "src/**/*.html,src/**/*.jsx"
 ```
 
 Use `--custom` (or `-c`) to provide a path to a JavaScript or TypeScript module
-exporting a custom rule or array of rules. Use `--cross` to enable cross
-component analysis.
+exporting a custom rule or array of rules. For safety, the CLI only accepts
+files inside a `./custom-rules` directory (relative to your current working
+directory). You can repeat `--custom` to load multiple rule files. Use `--cross`
+to enable cross component analysis.
 
 ### Cross-component analysis
 
@@ -200,7 +202,9 @@ attributes, while `getTag` resolves JSX element names.
 Or via the CLI:
 
 ```bash
-npx zemdomu file.html --custom my-rule.js
+mkdir -p custom-rules
+cp my-rule.js custom-rules/my-rule.js
+npx zemdomu file.html --custom custom-rules/my-rule.js
 ```
 
 ## Local development (monorepo)

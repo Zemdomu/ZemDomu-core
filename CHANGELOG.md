@@ -4,6 +4,7 @@
 - Feature: allow section headings provided by child components to satisfy <section> requirements
 - Bugfix: avoid singleH1 warnings when <h1> render paths are mutually exclusive (returns, ternaries, v-if/v-else)
 - Bugfix: allow router/link components with href/to to satisfy <nav> link requirements
+- Docs: clarify CLI custom rule usage and custom-rules directory requirement
 
 ## 1.3.15
 
