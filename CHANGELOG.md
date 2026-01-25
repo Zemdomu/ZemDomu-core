@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Bugfix: warn when <caption> exists but is empty (matches ZMD008 quick fix output)
+
 ## 1.3.16
 
 - Feature: allow cross-component list items to satisfy list nesting when rendered inside <ul>/<ol>

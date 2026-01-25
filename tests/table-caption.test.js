@@ -10,4 +10,12 @@ assert.ok(results.some(r => r.rule === 'requireTableCaption'), 'Expected table c
 html = '<table><caption>Cap</caption></table>';
 results = lint(html);
 assert.ok(!results.some(r => r.rule === 'requireTableCaption'), 'Did not expect table caption warning');
+
+// Empty caption case
+html = '<table><caption></caption></table>';
+results = lint(html);
+assert.ok(
+  results.some(r => r.rule === 'requireTableCaption' && r.message.includes('empty')),
+  'Expected empty caption warning'
+);
 console.log('table-caption tests passed');
