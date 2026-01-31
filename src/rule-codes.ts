@@ -16,6 +16,7 @@ const RULE_CODES = {
   requireNavLinks: "ZMD015",
   uniqueIds: "ZMD016",
   noTabindexGreaterThanZero: "ZMD017",
+  preventZemdomuPlaceholders: "ZMD018",
 } as const;
 
 export function getRuleCode(rule: string): string | undefined {

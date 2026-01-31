@@ -1,6 +1,10 @@
 ## Unreleased
 
 - Bugfix: warn when <caption> exists but is empty (matches ZMD008 quick fix output)
+- Bugfix: requireButtonText now checks accessible names from aria-label, aria-labelledby, content text, and img alt while ignoring hidden text
+- Bugfix: requireLabelForFormControls now respects htmlFor in JSX and aria-labelledby text resolution
+- Feature: add ZMD018 to flag unresolved TODO-ZMD placeholders in markup
+- Bugfix: ProjectLinter now attaches filePath to per-file lint results for easier attribution
 
 ## 1.3.16
 

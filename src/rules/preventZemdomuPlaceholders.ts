@@ -1,0 +1,221 @@
+import { NodePath } from "@babel/traverse";
+import * as t from "@babel/types";
+import { ElementNode, Node } from "../simpleHtmlParser";
+import { LintResult, Rule } from "../linter";
+
+const PLACEHOLDER = "TODO-ZMD";
+
+type HtmlContext = { content: string; lineIndex: number[] };
+
+function buildLineIndex(content: string): number[] {
+  const lines = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") lines.push(i + 1);
+  }
+  return lines;
+}
+
+function indexToLoc(lineIndex: number[], index: number): { line: number; column: number } {
+  let low = 0;
+  let high = lineIndex.length - 1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (lineIndex[mid] <= index) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  const line = Math.max(high, 0);
+  const column = index - lineIndex[line];
+  return { line, column };
+}
+
+function collectOccurrences(text: string, startLine: number, startColumn: number): Array<{ line: number; column: number }> {
+  const hits: Array<{ line: number; column: number }> = [];
+  let idx = text.indexOf(PLACEHOLDER);
+  while (idx !== -1) {
+    const before = text.slice(0, idx);
+    const parts = before.split(/\r?\n/);
+    const lineOffset = parts.length - 1;
+    const column =
+      lineOffset === 0 ? startColumn + parts[parts.length - 1].length : parts[parts.length - 1].length;
+    hits.push({ line: startLine + lineOffset, column });
+    idx = text.indexOf(PLACEHOLDER, idx + PLACEHOLDER.length);
+  }
+  return hits;
+}
+
+function addHtmlResults(
+  results: LintResult[],
+  htmlContext: HtmlContext | null,
+  absoluteIndex: number
+) {
+  if (!htmlContext) {
+    results.push({
+      line: 0,
+      column: 0,
+      message: "Unresolved Zemdomu placeholder detected",
+      rule: "preventZemdomuPlaceholders",
+    });
+    return;
+  }
+  const loc = indexToLoc(htmlContext.lineIndex, absoluteIndex);
+  results.push({
+    line: loc.line,
+    column: loc.column,
+    message: "Unresolved Zemdomu placeholder detected",
+    rule: "preventZemdomuPlaceholders",
+  });
+}
+
+function textNodePlaceholderResults(
+  node: Node,
+  htmlContext: HtmlContext | null
+): LintResult[] {
+  if (node.type !== "text") return [];
+  const occurrences = [];
+  let idx = node.text.indexOf(PLACEHOLDER);
+  while (idx !== -1) {
+    occurrences.push(node.startIndex + idx);
+    idx = node.text.indexOf(PLACEHOLDER, idx + PLACEHOLDER.length);
+  }
+  if (!occurrences.length) return [];
+  const results: LintResult[] = [];
+  for (const absIdx of occurrences) {
+    addHtmlResults(results, htmlContext, absIdx);
+  }
+  return results;
+}
+
+function tagPlaceholderResults(
+  node: ElementNode,
+  htmlContext: HtmlContext | null
+): LintResult[] {
+  if (!htmlContext) {
+    for (const value of Object.values(node.attrs)) {
+      if (value && value.includes(PLACEHOLDER)) {
+        return [
+          {
+            line: 0,
+            column: 0,
+            message: "Unresolved Zemdomu placeholder detected",
+            rule: "preventZemdomuPlaceholders",
+          },
+        ];
+      }
+    }
+    return [];
+  }
+  const { content } = htmlContext;
+  const tagEnd = content.indexOf(">", node.startIndex);
+  if (tagEnd === -1) return [];
+  const tagSource = content.slice(node.startIndex, tagEnd + 1);
+  const results: LintResult[] = [];
+  let idx = tagSource.indexOf(PLACEHOLDER);
+  while (idx !== -1) {
+    addHtmlResults(results, htmlContext, node.startIndex + idx);
+    idx = tagSource.indexOf(PLACEHOLDER, idx + PLACEHOLDER.length);
+  }
+  return results;
+}
+
+function resultsFromJsxText(
+  text: string,
+  loc: t.SourceLocation | null | undefined
+): LintResult[] {
+  if (!loc) return [];
+  const startLine = loc.start.line - 1;
+  const startColumn = loc.start.column;
+  const hits = collectOccurrences(text, startLine, startColumn);
+  return hits.map((hit) => ({
+    line: hit.line,
+    column: hit.column,
+    message: "Unresolved Zemdomu placeholder detected",
+    rule: "preventZemdomuPlaceholders",
+  }));
+}
+
+function checkJsxExpression(
+  expr: t.Expression | t.JSXEmptyExpression
+): { text: string; loc: t.SourceLocation | null | undefined } | null {
+  if (t.isStringLiteral(expr)) {
+    return { text: expr.value, loc: expr.loc };
+  }
+  if (t.isTemplateLiteral(expr)) {
+    const raw = expr.quasis.map((q) => q.value.cooked ?? q.value.raw).join("");
+    return { text: raw, loc: expr.loc };
+  }
+  return null;
+}
+
+function jsxAttributeResults(attr: t.JSXAttribute): LintResult[] {
+  const value = attr.value;
+  if (!value) return [];
+  if (t.isStringLiteral(value)) {
+    if (!value.value.includes(PLACEHOLDER)) return [];
+    return resultsFromJsxText(value.value, value.loc ?? attr.loc);
+  }
+  if (t.isJSXExpressionContainer(value)) {
+    const expr = checkJsxExpression(value.expression);
+    if (!expr || !expr.text.includes(PLACEHOLDER)) return [];
+    return resultsFromJsxText(expr.text, expr.loc ?? value.loc ?? attr.loc);
+  }
+  return [];
+}
+
+function jsxChildResults(child: t.JSXElement["children"][number]): LintResult[] {
+  if (t.isJSXText(child)) {
+    if (!child.value.includes(PLACEHOLDER)) return [];
+    return resultsFromJsxText(child.value, child.loc);
+  }
+  if (t.isJSXExpressionContainer(child)) {
+    const expr = checkJsxExpression(child.expression);
+    if (!expr || !expr.text.includes(PLACEHOLDER)) return [];
+    return resultsFromJsxText(expr.text, expr.loc ?? child.loc);
+  }
+  if (t.isJSXFragment(child)) {
+    const results: LintResult[] = [];
+    for (const fragmentChild of child.children) {
+      results.push(...jsxChildResults(fragmentChild));
+    }
+    return results;
+  }
+  return [];
+}
+
+export default function preventZemdomuPlaceholders(): Rule {
+  let htmlContext: HtmlContext | null = null;
+
+  return {
+    name: "preventZemdomuPlaceholders",
+    setHtmlContext(ctx: HtmlContext) {
+      htmlContext = {
+        content: ctx.content,
+        lineIndex: ctx.lineIndex.length ? ctx.lineIndex : buildLineIndex(ctx.content),
+      };
+    },
+    enterHtml(node: Node): LintResult[] {
+      if (node.type === "text") {
+        return textNodePlaceholderResults(node, htmlContext);
+      }
+      if (node.type === "element") {
+        return tagPlaceholderResults(node, htmlContext);
+      }
+      return [];
+    },
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const results: LintResult[] = [];
+      const opening = path.node.openingElement;
+      for (const attr of opening.attributes) {
+        if (t.isJSXAttribute(attr)) {
+          results.push(...jsxAttributeResults(attr));
+        }
+      }
+      for (const child of path.node.children) {
+        results.push(...jsxChildResults(child));
+      }
+      return results;
+    },
+  };
+}

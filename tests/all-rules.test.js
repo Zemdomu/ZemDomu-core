@@ -24,6 +24,7 @@ const html = `
 <nav></nav>
 <div id="dup"></div>
 <div id="dup"></div>
+<p>TODO-ZMD</p>
 </body>
 </html>
 `;
@@ -46,6 +47,7 @@ const expected = [
   'requireImageInputAlt',
   'requireNavLinks',
   'uniqueIds',
+  'preventZemdomuPlaceholders',
 ];
 for (const rule of expected) {
   assert.ok(results.some(r => r.rule === rule), `Expected ${rule} warning`);

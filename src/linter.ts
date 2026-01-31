@@ -20,6 +20,7 @@ import requireImageInputAlt from "./rules/requireImageInputAlt";
 import requireNavLinks from "./rules/requireNavLinks";
 import uniqueIds from "./rules/uniqueIds";
 import noTabindexGreaterThanZero from "./rules/noTabindexGreaterThanZero";
+import preventZemdomuPlaceholders from "./rules/preventZemdomuPlaceholders";
 import { applyRuleCode } from "./rule-codes";
 
 const builtInRules: Record<string, () => Rule> = {
@@ -40,6 +41,7 @@ const builtInRules: Record<string, () => Rule> = {
   requireNavLinks,
   uniqueIds,
   noTabindexGreaterThanZero,
+  preventZemdomuPlaceholders,
 };
 export type RuleSeverity = "error" | "warning" | "off";
 
@@ -74,6 +76,7 @@ export interface Rule {
   name: string;
   /** Called before traversal begins */
   init?: () => void;
+  setHtmlContext?: (ctx: { content: string; lineIndex: number[] }) => void;
   enterHtml?: (node: Node) => LintResult[];
   exitHtml?: (node: Node) => LintResult[];
   enterJsx?: (path: NodePath<t.JSXElement>) => LintResult[];
@@ -104,9 +107,18 @@ const defaultOptions: LinterOptions = {
     requireNavLinks: "warning",
     uniqueIds: "error",
     noTabindexGreaterThanZero: "warning",
+    preventZemdomuPlaceholders: "warning",
   },
   customRules: [],
 };
+
+function buildLineIndex(content: string): number[] {
+  const lines = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") lines.push(i + 1);
+  }
+  return lines;
+}
 /**
  * Lint HTML/JSX/TSX content.
  */
@@ -275,6 +287,21 @@ export function lint(
   if (onlyComments) {
     parseErrors = [];
   }
+  const lineIndex = buildLineIndex(content);
+  activeRules.forEach(({ rule }) => {
+    if (rule.setHtmlContext) {
+      try {
+        rule.setHtmlContext({ content, lineIndex });
+      } catch (e) {
+        console.error(
+          `[ZemDomu] Error in rule ${rule.name} (${
+            opts.filePath ?? "unknown"
+          }):`,
+          e
+        );
+      }
+    }
+  });
   const walk = (node: Node) => {
     for (const { rule, severity } of activeRules) {
       if (rule.enterHtml) {

@@ -51,13 +51,16 @@ export class ProjectLinter {
       filePath,
       forceHtml: isVue || this.opts.forceHtml,
     });
+    const resolvedResults = results.map((result) =>
+      result.filePath ? result : { ...result, filePath }
+    );
     const byFile = new Map<string, LintResult[]>();
-    byFile.set(filePath, [...results]);
+    byFile.set(filePath, [...resolvedResults]);
 
     const xmlMode = /\.(jsx|tsx)$/.test(filePath) || isVue;
     if (xmlMode) {
       const component = await this.analyzer.analyzeFile(filePath);
-      if (component) this.analyzer.registerComponent(component, results);
+      if (component) this.analyzer.registerComponent(component, resolvedResults);
 
       if (this.opts.crossComponentAnalysis) {
         const cross = this.analyzer.analyzeComponentTree();
