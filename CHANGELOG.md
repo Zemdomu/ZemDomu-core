@@ -5,6 +5,7 @@
 - Bugfix: requireLabelForFormControls now respects htmlFor in JSX and aria-labelledby text resolution
 - Feature: add ZMD018 to flag unresolved TODO-ZMD placeholders in markup
 - Bugfix: ProjectLinter now attaches filePath to per-file lint results for easier attribution
+- Feature: allow aria-label/aria-labelledby to satisfy section heading requirements (ZMD001)
 
 ## 1.3.16
 
