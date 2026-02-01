@@ -1,7 +1,7 @@
 # Node.js dependencies
 node_modules/
 
-# Build outputs
+# Build outputs (generated during tests/build)
 dist/
 out/
 *.tsbuildinfo

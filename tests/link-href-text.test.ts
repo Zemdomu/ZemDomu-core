@@ -60,7 +60,7 @@ describe("link href and text with dynamic values", () => {
     );
     assert.ok(
       textWarning?.message.includes("possibly empty or undefined"),
-      "Expected possible-empty text message"
+      "Expected possible-empty accessible-name message"
     );
   });
 
@@ -74,6 +74,47 @@ describe("link href and text with dynamic values", () => {
     assert.ok(
       !results.some((r) => r.rule === "requireLinkText"),
       "Did not expect link text warning for mustache text"
+    );
+  });
+
+  it("allows aria-label or aria-labelledby to provide link names in HTML", () => {
+    const html = `
+      <span id="settings-label">Settings</span>
+      <a href="/settings" aria-labelledby="settings-label"></a>
+      <a href="/home" aria-label="Home"></a>
+    `;
+    const results = lint(html, { forceHtml: true });
+    assert.ok(
+      !results.some((r) => r.rule === "requireLinkText"),
+      "Did not expect link name warning when aria-label/aria-labelledby is present"
+    );
+  });
+
+  it("allows image alt text to provide link names", () => {
+    const html = `<a href="/"><img src="/logo.png" alt="ZemDomu home"></a>`;
+    const results = lint(html, { forceHtml: true });
+    assert.ok(
+      !results.some((r) => r.rule === "requireLinkText"),
+      "Did not expect link name warning when img alt provides label"
+    );
+  });
+
+  it("allows JSX aria-label and img alt to provide link names", () => {
+    const jsx = `
+      export default function Nav() {
+        return (
+          <>
+            <a href="/settings" aria-label="Settings"><svg aria-hidden="true"></svg></a>
+            <a href="/home"><img alt={label} src="/logo.png" /></a>
+          </>
+        );
+      }
+      const label = "ZemDomu home";
+    `;
+    const results = lint(jsx);
+    assert.ok(
+      !results.some((r) => r.rule === "requireLinkText"),
+      "Did not expect link name warning when aria-label or img alt is present"
     );
   });
 });

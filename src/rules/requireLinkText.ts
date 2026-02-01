@@ -1,92 +1,341 @@
 import { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
-import { Node } from "../simpleHtmlParser";
+import { ElementNode, Node } from "../simpleHtmlParser";
 import { LintResult, Rule } from "../linter";
-import { getTag, getJsxExpressionState, JsxValueState } from "./utils";
+import { getJsxAttribute, getJsxAttributeState, getJsxExpressionState, JsxValueState } from "./utils";
+
+type HtmlLink = ElementNode;
+type JsxLink = { node: t.JSXElement; line: number; column: number };
+
+const HTML_ARIA_LABEL_ATTRS = ["aria-label", ":aria-label", "v-bind:aria-label"];
+const HTML_ARIA_LABELLEDBY_ATTRS = [
+  "aria-labelledby",
+  ":aria-labelledby",
+  "v-bind:aria-labelledby",
+];
+const HTML_ARIA_HIDDEN_ATTRS = ["aria-hidden"];
+const HTML_HIDDEN_ATTRS = ["hidden"];
+const HTML_IMG_ALT_ATTRS = ["alt", ":alt", "v-bind:alt"];
+
+function getHtmlAttrValue(
+  attrs: Record<string, string>,
+  names: string[]
+): string | undefined {
+  for (const name of names) {
+    if (Object.prototype.hasOwnProperty.call(attrs, name)) {
+      return attrs[name];
+    }
+  }
+  return undefined;
+}
+
+function hasHtmlAttr(
+  attrs: Record<string, string>,
+  names: string[]
+): boolean {
+  return names.some((name) => Object.prototype.hasOwnProperty.call(attrs, name));
+}
+
+function normalizeStyle(style: string): string {
+  return style.toLowerCase().replace(/\s+/g, "");
+}
+
+function isHiddenStyle(style?: string): boolean {
+  if (!style) return false;
+  const normalized = normalizeStyle(style);
+  return (
+    normalized.includes("display:none") ||
+    normalized.includes("visibility:hidden") ||
+    normalized.includes("visibility:collapse")
+  );
+}
+
+function isHtmlHidden(node: ElementNode): boolean {
+  if (hasHtmlAttr(node.attrs, HTML_HIDDEN_ATTRS)) return true;
+  const ariaHidden = getHtmlAttrValue(node.attrs, HTML_ARIA_HIDDEN_ATTRS);
+  if (typeof ariaHidden === "string" && ariaHidden.trim().toLowerCase() === "true") {
+    return true;
+  }
+  return isHiddenStyle(node.attrs.style);
+}
+
+function hasHtmlNonEmptyAriaLabel(node: ElementNode): boolean {
+  const aria = getHtmlAttrValue(node.attrs, HTML_ARIA_LABEL_ATTRS);
+  if (aria === undefined) return false;
+  return aria.trim().length > 0;
+}
+
+function htmlImgAltPresent(node: ElementNode): boolean {
+  const alt = getHtmlAttrValue(node.attrs, HTML_IMG_ALT_ATTRS);
+  return typeof alt === "string" && alt.trim().length > 0;
+}
+
+function hasHtmlAccessibleText(node: Node, hidden: boolean): boolean {
+  if (hidden) return false;
+  if (node.type === "text") {
+    return node.text.trim().length > 0;
+  }
+  if (node.type === "element") {
+    const isHidden = hidden || isHtmlHidden(node);
+    if (isHidden) return false;
+    if (node.tagName === "img") {
+      return htmlImgAltPresent(node);
+    }
+    return node.children.some((child) => hasHtmlAccessibleText(child, isHidden));
+  }
+  return false;
+}
+
+function hasHtmlAriaLabelledByText(
+  node: ElementNode,
+  idMap: Map<string, ElementNode[]>
+): boolean {
+  const labelledBy = getHtmlAttrValue(node.attrs, HTML_ARIA_LABELLEDBY_ATTRS);
+  if (!labelledBy) return false;
+  const ids = labelledBy.trim().split(/\s+/).filter(Boolean);
+  if (!ids.length) return false;
+  for (const id of ids) {
+    const targets = idMap.get(id);
+    if (!targets) continue;
+    for (const target of targets) {
+      if (hasHtmlAccessibleText(target, false)) return true;
+    }
+  }
+  return false;
+}
+
+function hasHtmlDynamicAriaLabelledBy(node: ElementNode): boolean {
+  const dynamic =
+    getHtmlAttrValue(node.attrs, [":aria-labelledby", "v-bind:aria-labelledby"]);
+  if (dynamic === undefined) return false;
+  return dynamic.trim().length > 0;
+}
+
+function getJsxTagName(opening: t.JSXOpeningElement): string {
+  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : "";
+}
+
+function getStaticJsxAttrText(
+  opening: t.JSXOpeningElement,
+  name: string
+): string | undefined | null {
+  const attr = getJsxAttribute(opening, name);
+  if (!attr) return undefined;
+  if (!attr.value) return "";
+  if (t.isStringLiteral(attr.value)) return attr.value.value;
+  if (t.isJSXExpressionContainer(attr.value)) {
+    const expr = attr.value.expression;
+    if (t.isStringLiteral(expr)) return expr.value;
+    if (t.isTemplateLiteral(expr) && expr.expressions.length === 0) {
+      const raw = expr.quasis.map((q) => q.value.cooked ?? q.value.raw).join("");
+      return raw;
+    }
+  }
+  return null;
+}
+
+function isJsxHidden(opening: t.JSXOpeningElement): boolean {
+  const attr = getJsxAttribute(opening, "hidden");
+  if (!attr) return false;
+  if (!attr.value) return true;
+  if (t.isStringLiteral(attr.value)) return true;
+  if (t.isJSXExpressionContainer(attr.value)) {
+    const expr = attr.value.expression;
+    if (t.isBooleanLiteral(expr)) return expr.value;
+  }
+  return false;
+}
+
+function isJsxAriaHidden(opening: t.JSXOpeningElement): boolean {
+  const attr = getJsxAttribute(opening, "aria-hidden");
+  if (!attr) return false;
+  if (!attr.value) return true;
+  if (t.isStringLiteral(attr.value)) {
+    return attr.value.value.trim().toLowerCase() === "true";
+  }
+  if (t.isJSXExpressionContainer(attr.value)) {
+    const expr = attr.value.expression;
+    if (t.isBooleanLiteral(expr)) return expr.value;
+    if (t.isStringLiteral(expr)) {
+      return expr.value.trim().toLowerCase() === "true";
+    }
+  }
+  return false;
+}
+
+function isJsxStyleHidden(opening: t.JSXOpeningElement): boolean {
+  const attr = getJsxAttribute(opening, "style");
+  if (!attr || !attr.value) return false;
+  if (t.isStringLiteral(attr.value)) {
+    return isHiddenStyle(attr.value.value);
+  }
+  if (t.isJSXExpressionContainer(attr.value)) {
+    const expr = attr.value.expression;
+    if (t.isStringLiteral(expr)) return isHiddenStyle(expr.value);
+  }
+  return false;
+}
+
+function isJsxHiddenFromAT(opening: t.JSXOpeningElement): boolean {
+  return isJsxHidden(opening) || isJsxAriaHidden(opening) || isJsxStyleHidden(opening);
+}
 
 type JsxChild = t.JSXElement["children"][number];
 
-function mergeTextStates(states: JsxValueState[]): JsxValueState {
-  if (states.some((s) => s === "present")) return "present";
-  if (states.some((s) => s === "possiblyEmpty")) return "possiblyEmpty";
+function mergeStates(states: JsxValueState[]): JsxValueState {
+  const filtered = states.filter((s) => s !== "missing");
+  if (!filtered.length) return "empty";
+  if (filtered.some((s) => s === "present")) return "present";
+  if (filtered.some((s) => s === "possiblyEmpty")) return "possiblyEmpty";
   return "empty";
 }
 
-function jsxChildTextState(child: JsxChild): JsxValueState {
+function jsxImgAltState(opening: t.JSXOpeningElement): JsxValueState {
+  return getJsxAttributeState(opening, "alt", true);
+}
+
+function jsxChildTextState(child: JsxChild, hidden: boolean): JsxValueState {
+  if (hidden) return "empty";
   if (t.isJSXText(child)) return child.value.trim().length > 0 ? "present" : "empty";
   if (t.isJSXExpressionContainer(child)) {
     const expr = child.expression;
-    if (t.isJSXElement(expr)) return jsxElementTextState(expr);
+    if (t.isJSXElement(expr)) return jsxElementTextState(expr, hidden);
     if (t.isJSXFragment(expr)) {
-      return mergeTextStates(expr.children.map(jsxChildTextState));
+      return mergeStates(expr.children.map((c) => jsxChildTextState(c, hidden)));
     }
     return getJsxExpressionState(expr, true);
   }
-  if (t.isJSXElement(child)) return jsxElementTextState(child);
+  if (t.isJSXElement(child)) return jsxElementTextState(child, hidden);
   if (t.isJSXFragment(child)) {
-    return mergeTextStates(child.children.map(jsxChildTextState));
+    return mergeStates(child.children.map((c) => jsxChildTextState(c, hidden)));
   }
   if (t.isJSXSpreadChild(child)) return "present";
   return "empty";
 }
 
-function jsxElementTextState(node: t.JSXElement): JsxValueState {
-  return mergeTextStates(node.children.map(jsxChildTextState));
+function jsxElementTextState(node: t.JSXElement, parentHidden: boolean): JsxValueState {
+  const opening = node.openingElement;
+  const isHidden = parentHidden || isJsxHiddenFromAT(opening);
+  if (isHidden) return "empty";
+  const tag = getJsxTagName(opening);
+  if (tag === "img") {
+    return jsxImgAltState(opening);
+  }
+  return mergeStates(node.children.map((c) => jsxChildTextState(c, isHidden)));
+}
+
+function hasJsxAriaLabelledByText(
+  opening: t.JSXOpeningElement,
+  idMap: Map<string, t.JSXElement[]>
+): boolean {
+  const labelledBy = getStaticJsxAttrText(opening, "aria-labelledby");
+  if (!labelledBy) return false;
+  const ids = labelledBy.trim().split(/\s+/).filter(Boolean);
+  if (!ids.length) return false;
+  for (const id of ids) {
+    const targets = idMap.get(id);
+    if (!targets) continue;
+    for (const target of targets) {
+      const state = jsxElementTextState(target, false);
+      if (state === "present") return true;
+    }
+  }
+  return false;
+}
+
+function getJsxLabelledByState(
+  opening: t.JSXOpeningElement,
+  idMap: Map<string, t.JSXElement[]>
+): JsxValueState {
+  const attrState = getJsxAttributeState(opening, "aria-labelledby", true);
+  if (attrState === "missing") return "missing";
+  const labelledBy = getStaticJsxAttrText(opening, "aria-labelledby");
+  if (labelledBy === undefined) return attrState;
+  if (labelledBy === null) return attrState;
+  if (labelledBy.trim().length === 0) return "empty";
+  return hasJsxAriaLabelledByText(opening, idMap) ? "present" : "empty";
 }
 
 export default function requireLinkText(): Rule {
-  const stack: Array<{ found: boolean }> = [];
+  const htmlLinks: HtmlLink[] = [];
+  const htmlIds = new Map<string, ElementNode[]>();
+  const jsxLinks: JsxLink[] = [];
+  const jsxIds = new Map<string, t.JSXElement[]>();
+
   return {
     name: "requireLinkText",
     enterHtml(node: Node): LintResult[] {
-      if (node.type === "element" && node.tagName === "a") {
-        stack.push({ found: false });
-      } else if (node.type === "text") {
-        if (stack.length && node.text.trim())
-          stack[stack.length - 1].found = true;
-      }
-      return [];
-    },
-    exitHtml(node: Node): LintResult[] {
-      if (node.type === "element" && node.tagName === "a") {
-        const entry = stack.pop();
-        if (entry && !entry.found)
-          return [
-            {
-              line: 0,
-              column: 0,
-              message: "<a> tag missing link text",
-              rule: "requireLinkText",
-            },
-          ];
-      }
-      return [];
-    },
-    enterJsx(_: NodePath<t.JSXElement>): LintResult[] {
-      return [];
-    },
-    exitJsx(path: NodePath<t.JSXElement>): LintResult[] {
-      const tag = getTag(path);
-      if (tag === "a") {
-        const textState = jsxElementTextState(path.node);
-        if (textState !== "present") {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
-          const message =
-            textState === "possiblyEmpty"
-              ? "<a> link text is possibly empty or undefined"
-              : "<a> tag missing link text";
-          return [
-            {
-              line,
-              column,
-              message,
-              rule: "requireLinkText",
-            },
-          ];
+      if (node.type === "element") {
+        const id = node.attrs.id;
+        if (id && id.trim().length > 0) {
+          const trimmedId = id.trim();
+          if (!htmlIds.has(trimmedId)) htmlIds.set(trimmedId, []);
+          htmlIds.get(trimmedId)!.push(node);
+        }
+        if (node.tagName === "a") {
+          htmlLinks.push(node);
         }
       }
       return [];
+    },
+    enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
+      const opening = path.node.openingElement;
+      const tag = getJsxTagName(opening);
+      const id = getStaticJsxAttrText(opening, "id");
+      if (typeof id === "string" && id.trim().length > 0) {
+        const trimmedId = id.trim();
+        if (!jsxIds.has(trimmedId)) jsxIds.set(trimmedId, []);
+        jsxIds.get(trimmedId)!.push(path.node);
+      }
+      if (tag === "a") {
+        const line = (opening.loc?.start.line ?? 1) - 1;
+        const column = opening.loc?.start.column ?? 0;
+        jsxLinks.push({ node: path.node, line, column });
+      }
+      return [];
+    },
+    end(): LintResult[] {
+      const results: LintResult[] = [];
+
+      for (const node of htmlLinks) {
+        if (isHtmlHidden(node)) continue;
+        const hasLabel = hasHtmlNonEmptyAriaLabel(node);
+        const hasLabelledBy =
+          hasHtmlAriaLabelledByText(node, htmlIds) ||
+          hasHtmlDynamicAriaLabelledBy(node);
+        const hasContent = hasHtmlAccessibleText(node, false);
+        if (!hasLabel && !hasLabelledBy && !hasContent) {
+          results.push({
+            line: 0,
+            column: 0,
+            message: "<a> missing accessible name",
+            rule: "requireLinkText",
+          });
+        }
+      }
+
+      for (const { node, line, column } of jsxLinks) {
+        const opening = node.openingElement;
+        if (isJsxHiddenFromAT(opening)) continue;
+        const ariaState = getJsxAttributeState(opening, "aria-label", true);
+        const labelledByState = getJsxLabelledByState(opening, jsxIds);
+        const contentState = jsxElementTextState(node, false);
+        const nameState = mergeStates([ariaState, labelledByState, contentState]);
+        if (nameState !== "present") {
+          const message =
+            nameState === "possiblyEmpty"
+              ? "<a> accessible name is possibly empty or undefined"
+              : "<a> missing accessible name";
+          results.push({
+            line,
+            column,
+            message,
+            rule: "requireLinkText",
+          });
+        }
+      }
+
+      return results;
     },
   };
 }

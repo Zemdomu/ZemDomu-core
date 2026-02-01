@@ -1,5 +1,14 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: requireLinkText now accepts accessible names from aria-label, aria-labelledby, and img alt text.
+- Bugfix: validate <html lang> values against a BCP47-ish format and flag invalid tags.
+
+### Chore
+
+- Chore: remove tracked out/ build output and clean it after tests.
+
 ## 1.3.17
 
 - Feature: add ZMD018 to flag unresolved TODO-ZMD placeholders in markup
