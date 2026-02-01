@@ -4,6 +4,7 @@
 
 - Bugfix: requireLinkText now accepts accessible names from aria-label, aria-labelledby, and img alt text.
 - Bugfix: validate <html lang> values against a BCP47-ish format and flag invalid tags.
+- Bugfix: requireAltText now checks inline SVG icons used as images or icon-only controls.
 
 ### Chore
 
