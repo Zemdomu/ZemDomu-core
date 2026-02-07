@@ -231,11 +231,8 @@ npm run build
 
 ## Links
 
-Development happens in a private monorepo; this repository is the public mirror
-for issues and updates.
-
 - NPM package: https://www.npmjs.com/package/zemdomu
-- Public mirror: https://github.com/Zemdomu/ZemDomu-core
+- Website: https://zemdomu.dev/
 - Issues and suggestions: https://github.com/Zemdomu/ZemDomu-core/issues
 - VS Code extension: https://marketplace.visualstudio.com/items?itemName=ZachariasErydBerlin.zemdomu
 - GitHub Action: https://github.com/Zemdomu/ZemDomu-action

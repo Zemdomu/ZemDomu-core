@@ -6,6 +6,10 @@
 - Bugfix: validate <html lang> values against a BCP47-ish format and flag invalid tags.
 - Bugfix: requireAltText now checks inline SVG icons used as images or icon-only controls.
 
+### Security
+
+- Security: override @isaacs/brace-expansion to 5.0.1 to address the dependabot alert.
+
 ### Chore
 
 - Chore: remove tracked out/ build output and clean it after tests.
