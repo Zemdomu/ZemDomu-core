@@ -6,9 +6,14 @@
 - Bugfix: validate <html lang> values against a BCP47-ish format and flag invalid tags.
 - Bugfix: requireAltText now checks inline SVG icons used as images or icon-only controls.
 
+### Feature
+
+- Feature: add npm funding metadata linking to Buy Me a Coffee for `npm fund`.
+
 ### Security
 
 - Security: override @isaacs/brace-expansion to 5.0.1 to address the dependabot alert.
+- Security: add dependency overrides for diff, minimatch, and serialize-javascript to resolve dependabot vulnerability alerts without changing core lint behavior.
 
 ### Chore
 
