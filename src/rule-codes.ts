@@ -17,6 +17,9 @@ const RULE_CODES = {
   uniqueIds: "ZMD016",
   noTabindexGreaterThanZero: "ZMD017",
   preventZemdomuPlaceholders: "ZMD018",
+  requireDocumentTitle: "ZMD019",
+  requireSingleMain: "ZMD020",
+  ariaValidAttrValue: "ZMD021",
 } as const;
 
 export function getRuleCode(rule: string): string | undefined {

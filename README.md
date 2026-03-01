@@ -23,6 +23,16 @@ semantic violations.
 - Shared by the extension and GitHub Action.
 - Simple API: `lint(content, options)`.
 
+## Why ZemDomu vs alternatives
+
+Compared with generic linters and scanner-only workflows, ZemDomu is designed
+to keep semantic analysis practical in real component codebases:
+
+- Cross-component analysis catches issues that only appear when components are composed.
+- One shared rules engine powers VS Code, CLI, and GitHub Action for consistent results.
+- Diagnostics focus on semantic HTML and accessible naming, not broad style noise.
+- Custom-rule support lets teams extend checks without rebuilding a lint stack.
+
 ## Installation
 
 ```bash

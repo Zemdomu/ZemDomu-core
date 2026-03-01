@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 1.3.18
+
 ### Bugfix
 
 - Bugfix: requireLinkText now accepts accessible names from aria-label, aria-labelledby, and img alt text.
@@ -8,6 +10,9 @@
 
 ### Feature
 
+- Feature: add `requireDocumentTitle` (ZMD019) to require a non-empty `<title>` in HTML documents.
+- Feature: add `requireSingleMain` (ZMD020) to enforce exactly one `<main>` landmark in HTML documents.
+- Feature: add `ariaValidAttrValue` (ZMD021) to validate supported static ARIA attribute values.
 - Feature: add npm funding metadata linking to Buy Me a Coffee for `npm fund`.
 
 ### Security
@@ -18,6 +23,10 @@
 ### Chore
 
 - Chore: remove tracked out/ build output and clean it after tests.
+
+### Docs
+
+- Docs: add a "Why ZemDomu vs alternatives" section to the core README.
 
 ## 1.3.17
 

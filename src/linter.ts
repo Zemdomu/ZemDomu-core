@@ -21,6 +21,9 @@ import requireNavLinks from "./rules/requireNavLinks";
 import uniqueIds from "./rules/uniqueIds";
 import noTabindexGreaterThanZero from "./rules/noTabindexGreaterThanZero";
 import preventZemdomuPlaceholders from "./rules/preventZemdomuPlaceholders";
+import requireDocumentTitle from "./rules/requireDocumentTitle";
+import requireSingleMain from "./rules/requireSingleMain";
+import ariaValidAttrValue from "./rules/ariaValidAttrValue";
 import { applyRuleCode } from "./rule-codes";
 
 const builtInRules: Record<string, () => Rule> = {
@@ -42,6 +45,9 @@ const builtInRules: Record<string, () => Rule> = {
   uniqueIds,
   noTabindexGreaterThanZero,
   preventZemdomuPlaceholders,
+  requireDocumentTitle,
+  requireSingleMain,
+  ariaValidAttrValue,
 };
 export type RuleSeverity = "error" | "warning" | "off";
 
@@ -108,6 +114,9 @@ const defaultOptions: LinterOptions = {
     uniqueIds: "error",
     noTabindexGreaterThanZero: "warning",
     preventZemdomuPlaceholders: "warning",
+    requireDocumentTitle: "error",
+    requireSingleMain: "error",
+    ariaValidAttrValue: "error",
   },
   customRules: [],
 };

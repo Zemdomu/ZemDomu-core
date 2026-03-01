@@ -6,6 +6,7 @@ const { lint, ProjectLinter } = require('../out/index');
 
 const html = `
 <html>
+<head></head>
 <body>
 <section></section>
 <h1>One</h1>
@@ -24,6 +25,7 @@ const html = `
 <nav></nav>
 <div id="dup"></div>
 <div id="dup"></div>
+<div aria-hidden="maybe"></div>
 <p>TODO-ZMD</p>
 </body>
 </html>
@@ -48,6 +50,9 @@ const expected = [
   'requireNavLinks',
   'uniqueIds',
   'preventZemdomuPlaceholders',
+  'requireDocumentTitle',
+  'requireSingleMain',
+  'ariaValidAttrValue',
 ];
 for (const rule of expected) {
   assert.ok(results.some(r => r.rule === rule), `Expected ${rule} warning`);
