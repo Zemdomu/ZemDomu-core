@@ -350,13 +350,14 @@ export default function requireAltText(): Rule {
           htmlIds.get(trimmedId)!.push(node);
         }
         if (node.tagName === 'img') {
-          const alt = node.attrs.alt ?? node.attrs[':alt'] ?? node.attrs['v-bind:alt'];
-          if (alt === undefined || !String(alt).trim()) {
+          const hasStaticAlt = Object.prototype.hasOwnProperty.call(node.attrs, 'alt');
+          const boundAlt = node.attrs[':alt'] ?? node.attrs['v-bind:alt'];
+          if (!hasStaticAlt && (boundAlt === undefined || !String(boundAlt).trim())) {
             return [
               {
                 line: 0, // line/column handling omitted for brevity
                 column: 0,
-                message: '<img> tag missing or empty alt attribute',
+                message: '<img> tag missing alt attribute',
                 rule: 'requireAltText',
               },
             ];
@@ -378,18 +379,14 @@ export default function requireAltText(): Rule {
       const opening = path.node.openingElement;
       const name = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (name !== 'img') return [];
-      const altState = getJsxAttributeState(opening, 'alt', true);
-      if (altState === 'missing' || altState === 'empty' || altState === 'possiblyEmpty') {
+      const altAttr = getJsxAttribute(opening, 'alt');
+      if (!altAttr) {
         const loc = opening.loc!.start;
-        const message =
-          altState === 'possiblyEmpty'
-            ? '<img> alt is possibly empty or undefined'
-            : '<img> tag missing or empty alt attribute';
         return [
           {
             line: loc.line - 1,
             column: loc.column,
-            message,
+            message: '<img> tag missing alt attribute',
             rule: 'requireAltText',
           },
         ];

@@ -8,7 +8,7 @@ assert.ok(results.some(r => r.rule === 'requireAltText'), 'Expected alt text war
 
 html = '<img alt="">';
 results = lint(html);
-assert.ok(results.some(r => r.rule === 'requireAltText'), 'Expected empty alt text warning');
+assert.ok(!results.some(r => r.rule === 'requireAltText'), 'Did not expect warning for decorative empty alt');
 
 // Positive case
 html = '<img alt="desc">';

@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: allow explicit empty `alt=""` values for decorative images while still warning when `<img>` has no alt attribute.
+
 ## 1.3.18
 
 ### Bugfix

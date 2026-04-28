@@ -17,27 +17,25 @@ describe("img alt text with dynamic values", () => {
     );
   });
 
-  it("flags explicitly empty JSX alt values", () => {
+  it("allows explicitly empty JSX alt values for decorative images", () => {
     const jsx = `export default () => <img src="/avatar.png" alt={""} />;`;
     const results = lint(jsx);
     assert.ok(
-      results.some((r) => r.rule === "requireAltText"),
-      "Expected alt warning for empty JSX alt"
+      !results.some((r) => r.rule === "requireAltText"),
+      "Did not expect alt warning for decorative empty JSX alt"
     );
   });
 
-  it("uses possible-empty messaging for conditional alt", () => {
+  it("allows conditional alt values that may intentionally render empty", () => {
     const jsx = `
       export default function Avatar({ user }) {
         return <img src="/avatar.png" alt={user ? user.label : ""} />;
       }
     `;
     const results = lint(jsx);
-    const warning = results.find((r) => r.rule === "requireAltText");
-    assert.ok(warning, "Expected alt warning for possibly empty alt");
     assert.ok(
-      warning?.message.includes("possibly empty or undefined"),
-      "Expected possible-empty alt message"
+      !results.some((r) => r.rule === "requireAltText"),
+      "Did not expect alt warning for conditional empty alt"
     );
   });
 

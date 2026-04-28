@@ -25,6 +25,7 @@ const html = `
 <nav></nav>
 <div id="dup"></div>
 <div id="dup"></div>
+<div tabindex="2"></div>
 <div aria-hidden="maybe"></div>
 <p>TODO-ZMD</p>
 </body>
@@ -49,6 +50,7 @@ const expected = [
   'requireImageInputAlt',
   'requireNavLinks',
   'uniqueIds',
+  'noTabindexGreaterThanZero',
   'preventZemdomuPlaceholders',
   'requireDocumentTitle',
   'requireSingleMain',
