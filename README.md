@@ -1,15 +1,35 @@
 # ZemDomu Core
 
-Semantic HTML linting engine for clean, accessible, and SEO-friendly markup.
-This package provides the shared core logic used by the ZemDomu VS Code
-extension and the GitHub Action.
+> The semantic rules engine behind ZemDomu.
 
-## What it is
+ZemDomu Core is the shared engine that powers the ZemDomu ecosystem. It parses
+HTML, JSX, TSX, and Vue templates and returns semantic issues that affect
+structure, accessibility, and search visibility.
 
-ZemDomu is a semantic-first linter that helps developers write better HTML and
-JSX by catching accessibility and structural issues. It parses `.html`, `.jsx`,
-`.tsx`, and `.vue` files and exposes a simple `lint()` function that returns
-semantic violations.
+Most linters check syntax. ZemDomu checks meaning.
+
+## What It Is
+
+ZemDomu Core is a semantic-first linting engine for modern frontend codebases.
+It helps developers catch issues like missing landmarks, confusing heading
+structure, unlabeled controls, weak semantic relationships, and cross-component
+composition problems before those issues become late-stage audit findings.
+
+This package provides the shared logic used by:
+
+- the ZemDomu CLI
+- the ZemDomu VS Code Extension
+- the ZemDomu GitHub Action
+
+## Why ZemDomu
+
+Compared with generic linters and scanner-only workflows, ZemDomu is designed
+to keep semantic analysis practical in real component codebases.
+
+- Cross-component analysis catches issues that only appear when components are composed.
+- One shared rules engine powers editor, CLI, and CI behavior consistently.
+- Diagnostics focus on semantic HTML, accessible naming, and document structure.
+- Custom-rule support lets teams extend checks without rebuilding a lint stack.
 
 ## Features
 
@@ -20,18 +40,7 @@ semantic violations.
 - Command line interface with `--custom` and `--cross`.
 - Configurable rule severity (`error`, `warning`, `off`).
 - Performance diagnostics for profiling lint runs.
-- Shared by the extension and GitHub Action.
 - Simple API: `lint(content, options)`.
-
-## Why ZemDomu vs alternatives
-
-Compared with generic linters and scanner-only workflows, ZemDomu is designed
-to keep semantic analysis practical in real component codebases:
-
-- Cross-component analysis catches issues that only appear when components are composed.
-- One shared rules engine powers VS Code, CLI, and GitHub Action for consistent results.
-- Diagnostics focus on semantic HTML and accessible naming, not broad style noise.
-- Custom-rule support lets teams extend checks without rebuilding a lint stack.
 
 ## Installation
 
@@ -54,14 +63,10 @@ console.log(results);
 //   {
 //     line: 0,
 //     column: 0,
-//     message: '<img> tag missing alt attribute',
-//     rule: 'requireAltText'
+//     message: "<img> tag missing alt attribute",
+//     rule: "requireAltText"
 //   }
 // ]
-
-// Custom rules can be supplied via the `customRules` option
-// const myRule = { name: 'demo', test: node => false, message: 'demo' };
-// lint(html, { customRules: [myRule] });
 ```
 
 ## API
@@ -74,6 +79,7 @@ console.log(results);
 - `options.rules`: severity settings for built-in rules.
 - `options.customRules`: array of additional rules.
 - `options.filePath`: optional source file path.
+- `options.forceHtml`: treat input as HTML.
 - `options.perf`: attach a `PerformanceRecorder` instance.
 
 ### Example `LinterOptions`
@@ -88,7 +94,7 @@ interface LinterOptions {
 }
 ```
 
-Example enabling one rule as a warning:
+Example enabling rule severities:
 
 ```ts
 const results = lint(html, {
@@ -107,11 +113,11 @@ interface LintResult {
 }
 ```
 
-## CLI usage
+## CLI Usage
 
-Run the linter from the command line by installing the package globally or
+Run the linter from the command line by installing the package globally or by
 using `npx`. Provide one or more glob patterns to specify the files to lint.
-Patterns may be separated by spaces, commas, or newlines:
+Patterns may be separated by spaces, commas, or newlines.
 
 ```bash
 npx zemdomu "src/**/*.{html,jsx,tsx,vue}" --custom my-rule.js
@@ -120,27 +126,30 @@ npx zemdomu "src/**/*.html,src/**/*.jsx"
 
 Use `--custom` (or `-c`) to provide a path to a JavaScript or TypeScript module
 exporting a custom rule or array of rules. For safety, the CLI only accepts
-files inside a `./custom-rules` directory (relative to your current working
-directory). You can repeat `--custom` to load multiple rule files. Use `--cross`
-to enable cross component analysis.
+files inside a `./custom-rules` directory relative to your current working
+directory. You can repeat `--custom` to load multiple rule files.
+
+Use `--cross` to enable cross-component analysis.
 
 Use `--perf` to emit a JSON timing report to stdout, and `--perf-slowest` to
 also print the slowest file and phase.
 
-### Cross-component analysis
+## Cross-Component Analysis
 
-When analyzing JSX or Vue projects you can track `<h1>` usage or similar
-patterns across component boundaries. Instantiate `ProjectLinter` with the
+When analyzing JSX or Vue projects you can track semantic issues across
+component boundaries. Instantiate `ProjectLinter` with the
 `crossComponentAnalysis` option or pass `--cross` to the CLI. Use
-`crossComponentDepth` (or `--cross-depth`) to limit how deep component trees are
-traversed during analysis:
+`crossComponentDepth` or `--cross-depth` to limit how deep component trees are
+traversed during analysis.
 
 ```ts
 import { ProjectLinter } from "zemdomu";
+
 const linter = new ProjectLinter({
   crossComponentAnalysis: true,
-  crossComponentDepth: 2
+  crossComponentDepth: 2,
 });
+
 await linter.lintFile("App.jsx");
 ```
 
@@ -148,23 +157,24 @@ await linter.lintFile("App.jsx");
 npx zemdomu "src/**/*.{jsx,tsx,vue}" --cross --cross-depth 2
 ```
 
-### Performance diagnostics
+## Performance Diagnostics
 
-Attach a `PerformanceDiagnostics` recorder to gather timing information for
-each file and rule:
+Attach a `PerformanceDiagnostics` recorder to gather timing information for each
+file and rule.
 
 ```ts
 import { lint, PerformanceDiagnostics } from "zemdomu";
+
 const perf = new PerformanceDiagnostics();
 lint(code, { perf });
 console.log(perf.getAsJSON());
 ```
 
-## Writing custom rules
+## Writing Custom Rules
 
-Custom rules are simple objects implementing the `Rule` interface. At minimum
-provide a `name`, a `test` function that returns `true` when a node violates the
-rule, and a `message` describing the problem:
+Custom rules are simple objects implementing the `Rule` interface. At minimum,
+provide a `name`, a `test` function that returns `true` when a node violates
+the rule, and a `message` describing the problem.
 
 ```ts
 interface Rule {
@@ -187,13 +197,14 @@ Use it programmatically:
 
 ```ts
 import { lint } from "zemdomu";
+
 const results = lint("<foo></foo>", { customRules: [require("./my-rule")] });
 ```
 
-### Helper utilities
+### Helper Utilities
 
 For more advanced rules you may need direct access to the parsed HTML or JSX
-AST. ZemDomu exposes a few helpers to make this easier:
+AST. ZemDomu exposes helpers for traversal and attribute inspection:
 
 ```ts
 import {
@@ -211,13 +222,6 @@ import {
 } from "zemdomu";
 ```
 
-`parseHtml` returns the root `ElementNode`. The `visitHtml` function performs a
-simple depth-first traversal using an `HtmlVisitor` with optional `enter` and
-`exit` callbacks. Utility functions like `getAttr` and `getJsxAttr` help reading
-attributes. JSX helpers like `getJsxAttribute`, `getJsxAttributeState`, and
-`getJsxExpressionState` help interpret JSX attributes and expressions, while
-`getTag` resolves JSX element names.
-
 Or via the CLI:
 
 ```bash
@@ -227,9 +231,10 @@ npx zemdomu file.html --custom custom-rules/my-rule.js
 npx zemdomu "src/**/*.{html,jsx,tsx,vue}" --perf --perf-slowest
 ```
 
-There is a sample rule in `custom-rules/example-rule.js` you can copy and edit.
+There is a sample rule in `custom-rules/example-rule.js` that you can copy and
+edit.
 
-## Local development (monorepo)
+## Local Development
 
 From the core package:
 
@@ -241,11 +246,11 @@ npm run build
 
 ## Links
 
-- NPM package: https://www.npmjs.com/package/zemdomu
+- npm package: https://www.npmjs.com/package/zemdomu
 - Website: https://zemdomu.dev/
-- Issues and suggestions: https://github.com/Zemdomu/ZemDomu-core/issues
+- Issues and suggestions: https://github.com/ZemDomu/ZemDomu-core/issues
 - VS Code extension: https://marketplace.visualstudio.com/items?itemName=ZachariasErydBerlin.zemdomu
-- GitHub Action: https://github.com/Zemdomu/ZemDomu-action
+- GitHub Action: https://github.com/ZemDomu/ZemDomu-action
 
 ## License
 
