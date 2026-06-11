@@ -9,6 +9,70 @@ import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
 import { applyRuleCode } from "./rule-codes";
 
+const FRAMEWORK_HOST_DOCUMENT_RULES = [
+  "requireHtmlLang",
+  "requireDocumentTitle",
+  "requireSingleMain",
+];
+
+function isHtmlFile(filePath: string): boolean {
+  return /\.(html|htm)$/i.test(filePath);
+}
+
+function getHtmlTagAttribute(tag: string, name: string): string | null {
+  const match = new RegExp(
+    `\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`,
+    "i"
+  ).exec(tag);
+  return match ? match[1] ?? match[2] ?? match[3] ?? "" : null;
+}
+
+function hasFrameworkMountPoint(content: string): boolean {
+  return /<[a-z][\w:-]*\b(?=[^>]*\bid\s*=\s*["'](?:app|root|app-root|mount|__nuxt|__next|svelte)["'])[^>]*>/i.test(
+    content
+  );
+}
+
+function isFrameworkEntrySrc(src: string): boolean {
+  const normalized = src.replace(/[?#].*$/, "").replace(/\\/g, "/");
+  return /(?:^|\/)(?:src\/)?(?:main|index|app)\.(?:[cm]?[jt]sx?|vue)$/i.test(
+    normalized
+  );
+}
+
+function hasFrameworkModuleEntry(content: string): boolean {
+  const scriptRe = /<script\b[^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = scriptRe.exec(content))) {
+    const tag = match[0];
+    const type = getHtmlTagAttribute(tag, "type");
+    if (!type || type.toLowerCase() !== "module") continue;
+    const src = getHtmlTagAttribute(tag, "src");
+    if (src && isFrameworkEntrySrc(src)) return true;
+  }
+
+  return /<script\b(?=[^>]*\btype\s*=\s*["']?module["']?)[^>]*>[\s\S]*?\b(?:createApp|createRoot|ReactDOM\.render|new\s+Vue)\s*\(/i.test(
+    content
+  );
+}
+
+function isFrameworkHostHtml(filePath: string, content: string): boolean {
+  if (path.basename(filePath).toLowerCase() !== "index.html") return false;
+  if (!hasFrameworkMountPoint(content)) return false;
+  return hasFrameworkModuleEntry(content);
+}
+
+function suppressRules(
+  options: ProjectLinterOptions,
+  ruleNames: string[]
+): ProjectLinterOptions {
+  const rules = { ...(options.rules ?? {}) };
+  for (const ruleName of ruleNames) {
+    rules[ruleName] = "off";
+  }
+  return { ...options, rules };
+}
+
 export interface ProjectLinterOptions extends LinterOptions {
   crossComponentAnalysis?: boolean;
   crossComponentDepth?: number;
@@ -39,17 +103,22 @@ export class ProjectLinter {
       content = await fs.readFile(filePath, "utf8");
     }
 
-    const isVue = path.extname(filePath).toLowerCase() === ".vue";
+    const ext = path.extname(filePath).toLowerCase();
+    const isVue = ext === ".vue";
+    const isHtml = isHtmlFile(filePath);
     let lintContent = content;
     if (isVue) {
       const template = extractVueTemplate(content);
       lintContent = isHtmlVueTemplate(template) ? template.content : "";
     }
 
+    const lintOptions = isHtml && isFrameworkHostHtml(filePath, content)
+      ? suppressRules(this.opts, FRAMEWORK_HOST_DOCUMENT_RULES)
+      : this.opts;
     const results = lint(lintContent, {
-      ...this.opts,
+      ...lintOptions,
       filePath,
-      forceHtml: isVue || this.opts.forceHtml,
+      forceHtml: isHtml || isVue || this.opts.forceHtml,
     });
     const resolvedResults = results.map((result) =>
       result.filePath ? result : { ...result, filePath }
