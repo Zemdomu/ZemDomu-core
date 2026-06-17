@@ -1,9 +1,15 @@
 ## Unreleased
 
+## 1.3.19
+
 ### Bugfix
 
 - Bugfix: allow explicit empty `alt=""` values for decorative images while still warning when `<img>` has no alt attribute.
 - Bugfix: treat framework host `index.html` files as app shells so document-only rules do not report ZMD013, ZMD019, or ZMD020 there, while parsing `.html` files as HTML to avoid false parse errors.
+
+### Security
+
+- Security: update Core build dependency and dependency overrides to clear npm audit vulnerabilities.
 
 ## 1.3.18
 
