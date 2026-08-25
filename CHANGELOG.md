@@ -1,4 +1,4 @@
-## Unreleased
+## 1.3.20 - 2026-08-25
 
 ### Security
 
