@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Security
+
+- Security: update dependency overrides and the lockfile to patched js-yaml, brace-expansion, and related transitive versions.
+
 ## 1.3.19
 
 ### Bugfix
