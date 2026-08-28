@@ -2,7 +2,7 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
-import { getJsxAttr } from './utils';
+import { getJsxAttributeState } from './utils';
 
 export default function requireIframeTitle(): Rule {
   return {
@@ -23,11 +23,16 @@ export default function requireIframeTitle(): Rule {
       const opening = path.node.openingElement;
       const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
       if (tag === 'iframe') {
-        const title = getJsxAttr(opening, 'title');
-        if (!title || !title.trim()) {
+        const titleState = getJsxAttributeState(opening, 'title', true);
+        if (titleState === 'missing') {
           const line = (opening.loc?.start.line ?? 1) - 1;
           const column = opening.loc?.start.column ?? 0;
           return [{ line, column, message: '<iframe> missing title attribute', rule: 'requireIframeTitle' }];
+        }
+        if (titleState === 'empty') {
+          const line = (opening.loc?.start.line ?? 1) - 1;
+          const column = opening.loc?.start.column ?? 0;
+          return [{ line, column, message: '<iframe> title attribute is empty', rule: 'requireIframeTitle' }];
         }
       }
       return [];

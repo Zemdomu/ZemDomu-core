@@ -24,6 +24,19 @@ describe("requireSingleMain", () => {
     );
   });
 
+  it("reports every extra main at a distinct location", () => {
+    const html =
+      "<html><head><title>ZemDomu</title></head><body><main>One</main><main>Two</main><main>Three</main></body></html>";
+    const results = lint(html, { forceHtml: true }).filter(
+      (result) => result.rule === "requireSingleMain"
+    );
+    assert.strictEqual(results.length, 2);
+    assert.deepStrictEqual(
+      results.map((result) => result.offset),
+      [html.indexOf("<main>Two"), html.indexOf("<main>Three")]
+    );
+  });
+
   it("passes when exactly one <main> exists in an html document", () => {
     const html =
       "<html><head><title>ZemDomu</title></head><body><main>Only main</main></body></html>";

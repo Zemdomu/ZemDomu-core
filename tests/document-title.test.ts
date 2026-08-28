@@ -33,6 +33,16 @@ describe("requireDocumentTitle", () => {
     );
   });
 
+  it("does not accept a title outside head", () => {
+    const html =
+      "<html><head></head><body><title>Wrong place</title><main>Content</main></body></html>";
+    const results = lint(html, { forceHtml: true });
+    assert.ok(
+      results.some((r) => r.rule === "requireDocumentTitle"),
+      "Expected a title outside head to remain reportable"
+    );
+  });
+
   it("does not enforce when there is no <html> root", () => {
     const html = "<div><title>Fragment title</title></div>";
     const results = lint(html, { forceHtml: true });

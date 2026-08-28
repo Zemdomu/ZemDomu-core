@@ -122,11 +122,12 @@ function tagPlaceholderResults(
 
 function resultsFromJsxText(
   text: string,
-  loc: t.SourceLocation | null | undefined
+  loc: t.SourceLocation | null | undefined,
+  startColumnAdjustment = 0
 ): LintResult[] {
   if (!loc) return [];
   const startLine = loc.start.line - 1;
-  const startColumn = loc.start.column;
+  const startColumn = loc.start.column + startColumnAdjustment;
   const hits = collectOccurrences(text, startLine, startColumn);
   return hits.map((hit) => ({
     line: hit.line,
@@ -138,13 +139,13 @@ function resultsFromJsxText(
 
 function checkJsxExpression(
   expr: t.Expression | t.JSXEmptyExpression
-): { text: string; loc: t.SourceLocation | null | undefined } | null {
+): { text: string; loc: t.SourceLocation | null | undefined; startColumnAdjustment: number } | null {
   if (t.isStringLiteral(expr)) {
-    return { text: expr.value, loc: expr.loc };
+    return { text: expr.value, loc: expr.loc, startColumnAdjustment: 1 };
   }
   if (t.isTemplateLiteral(expr)) {
     const raw = expr.quasis.map((q) => q.value.cooked ?? q.value.raw).join("");
-    return { text: raw, loc: expr.loc };
+    return { text: raw, loc: expr.loc, startColumnAdjustment: 1 };
   }
   return null;
 }
@@ -154,12 +155,16 @@ function jsxAttributeResults(attr: t.JSXAttribute): LintResult[] {
   if (!value) return [];
   if (t.isStringLiteral(value)) {
     if (!value.value.includes(PLACEHOLDER)) return [];
-    return resultsFromJsxText(value.value, value.loc ?? attr.loc);
+    return resultsFromJsxText(value.value, value.loc ?? attr.loc, 1);
   }
   if (t.isJSXExpressionContainer(value)) {
     const expr = checkJsxExpression(value.expression);
     if (!expr || !expr.text.includes(PLACEHOLDER)) return [];
-    return resultsFromJsxText(expr.text, expr.loc ?? value.loc ?? attr.loc);
+    return resultsFromJsxText(
+      expr.text,
+      expr.loc ?? value.loc ?? attr.loc,
+      expr.startColumnAdjustment
+    );
   }
   return [];
 }
@@ -172,7 +177,11 @@ function jsxChildResults(child: t.JSXElement["children"][number]): LintResult[] 
   if (t.isJSXExpressionContainer(child)) {
     const expr = checkJsxExpression(child.expression);
     if (!expr || !expr.text.includes(PLACEHOLDER)) return [];
-    return resultsFromJsxText(expr.text, expr.loc ?? child.loc);
+    return resultsFromJsxText(
+      expr.text,
+      expr.loc ?? child.loc,
+      expr.startColumnAdjustment
+    );
   }
   if (t.isJSXFragment(child)) {
     const results: LintResult[] = [];

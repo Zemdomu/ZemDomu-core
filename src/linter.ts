@@ -65,6 +65,8 @@ export interface LinterOptions {
 export interface LintResult {
   line: number;
   column: number;
+  /** Zero-based absolute source offset for reliable editor actions. */
+  offset?: number;
   message: string;
   rule: string;
   code?: string;
@@ -96,14 +98,14 @@ export interface Rule {
 
 const defaultOptions: LinterOptions = {
   rules: {
-    requireSectionHeading: "error",
+    requireSectionHeading: "warning",
     enforceHeadingOrder: "error",
-    singleH1: "error",
+    singleH1: "warning",
     requireAltText: "error",
     requireLabelForFormControls: "error",
     enforceListNesting: "error",
     requireLinkText: "error",
-    requireTableCaption: "error",
+    requireTableCaption: "warning",
     preventEmptyInlineTags: "warning",
     requireHrefOnAnchors: "error",
     requireButtonText: "error",
@@ -128,6 +130,258 @@ function buildLineIndex(content: string): number[] {
   }
   return lines;
 }
+
+function locationAt(lineIndex: number[], offset: number): { line: number; column: number } {
+  const safeOffset = Math.max(0, offset);
+  let low = 0;
+  let high = lineIndex.length - 1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (lineIndex[mid] <= safeOffset) low = mid + 1;
+    else high = mid - 1;
+  }
+  const line = Math.max(0, high);
+  return { line, column: safeOffset - lineIndex[line] };
+}
+
+function attributeNameForResult(result: LintResult): string | undefined {
+  if (result.rule === "noTabindexGreaterThanZero") return "tabindex";
+  if (result.rule === "uniqueIds") return "id";
+  const quotedAria = /ARIA attribute "([^"]+)"/.exec(result.message)?.[1];
+  if (quotedAria) return quotedAria;
+  const namedAttribute = /\b(alt|href|lang|title) attribute (?:is empty|is invalid)/i.exec(
+    result.message
+  )?.[1];
+  return namedAttribute?.toLowerCase();
+}
+
+function attributeOffset(content: string, node: ElementNode, name: string): number | undefined {
+  const tagEnd = content.indexOf(">", node.startIndex);
+  if (tagEnd === -1) return undefined;
+  const openingTag = content.slice(node.startIndex, tagEnd + 1);
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`(?:^|\\s)(${escaped})(?=\\s|=|/?>)`, "i").exec(openingTag);
+  if (!match || match.index === undefined) return undefined;
+  return node.startIndex + match.index + match[0].indexOf(match[1]);
+}
+
+function withHtmlLocation(
+  result: LintResult,
+  node: Node,
+  content: string,
+  lineIndex: number[]
+): LintResult {
+  let offset = result.offset;
+  if (offset === undefined && (result.line !== 0 || result.column !== 0)) {
+    offset = (lineIndex[result.line] ?? 0) + result.column;
+  }
+  if (offset === undefined && node.type === "element") {
+    const attribute = attributeNameForResult(result);
+    offset = attribute ? attributeOffset(content, node, attribute) : undefined;
+  }
+  if (offset === undefined) offset = node.startIndex;
+  return { ...result, ...locationAt(lineIndex, offset), offset };
+}
+
+function withJsxOffset(
+  result: LintResult,
+  path: NodePath<t.JSXElement>,
+  lineIndex: number[]
+): LintResult {
+  const attributeName = attributeNameForResult(result);
+  const attributeOffset = attributeName
+    ? path.node.openingElement.attributes.find(
+        (attribute): attribute is t.JSXAttribute =>
+          t.isJSXAttribute(attribute) &&
+          t.isJSXIdentifier(attribute.name) &&
+          attribute.name.name.toLowerCase() === attributeName.toLowerCase()
+      )?.start
+    : undefined;
+  const openingLoc = path.node.openingElement.loc?.start;
+  const hasExplicitLocation =
+    result.line !== 0 ||
+    result.column !== 0 ||
+    (openingLoc?.line === 1 && openingLoc.column === 0);
+  const locationOffset = hasExplicitLocation
+    ? (lineIndex[result.line] ?? 0) + result.column
+    : undefined;
+  const offset =
+    result.offset ??
+    attributeOffset ??
+    locationOffset ??
+    path.node.openingElement.start ??
+    path.node.start;
+  return offset === null || offset === undefined
+    ? result
+    : { ...result, ...locationAt(lineIndex, offset), offset };
+}
+
+type InlineDirective = {
+  action: "disable" | "enable" | "disable-next";
+  rules: Set<string> | null;
+  offset: number;
+  endOffset: number;
+  line: number;
+  targetLine?: number;
+};
+
+type SourceComment = { text: string; start: number; end: number };
+
+function getJsxComments(content: string): SourceComment[] | null {
+  try {
+    const ast = parseJs(content, {
+      sourceType: "module",
+      plugins: ["typescript", "jsx"],
+      errorRecovery: true,
+    }) as t.File & { comments?: Array<{ value: string; start?: number | null; end?: number | null }> };
+    return (ast.comments ?? []).flatMap((comment) => {
+      const start = comment.start;
+      const end = comment.end;
+      if (start === null || start === undefined || end === null || end === undefined) {
+        return [];
+      }
+      if (content[start - 1] !== "{" || content[end] !== "}") return [];
+      return [{ text: comment.value, start: start - 1, end: end + 1 }];
+    });
+  } catch {
+    return null;
+  }
+}
+
+function getHtmlComments(content: string): SourceComment[] {
+  const comments: SourceComment[] = [];
+  const root = parseHtmlDom(content);
+  const visit = (node: Node, excluded: boolean) => {
+    if (node.type === "comment") {
+      if (!excluded) {
+        comments.push({
+          text: node.text,
+          start: node.startIndex,
+          end: node.startIndex + 7 + node.text.length,
+        });
+      }
+      return;
+    }
+    if (node.type !== "element") return;
+    const childExcluded =
+      excluded || node.tagName === "script" || node.tagName === "style";
+    for (const child of node.children) visit(child, childExcluded);
+  };
+  visit(root, false);
+  return comments;
+}
+
+function getSourceComments(content: string): SourceComment[] {
+  return getJsxComments(content) ?? getHtmlComments(content);
+}
+
+function parseInlineDirectives(content: string, lineIndex: number[]): InlineDirective[] {
+  const directives: InlineDirective[] = [];
+  const comments = getSourceComments(content);
+  const directivePattern = /^\s*zemdomu-(disable-next|disable|enable)\b([\s\S]*?)\s*$/i;
+  const masked = content.split("");
+  for (const comment of comments) {
+    for (let index = comment.start; index < comment.end; index += 1) {
+      if (masked[index] !== "\n" && masked[index] !== "\r") masked[index] = " ";
+    }
+  }
+  const maskedLines = masked.join("").split(/\r?\n/);
+
+  for (const comment of comments) {
+    const match = directivePattern.exec(comment.text);
+    if (!match) continue;
+    const action = match[1].toLowerCase() as InlineDirective["action"];
+    const rawRules = match[2].trim();
+    const rules = rawRules
+      ? new Set(rawRules.split(/[\s,]+/).filter(Boolean))
+      : null;
+    const line = locationAt(lineIndex, comment.start).line;
+    let targetLine: number | undefined;
+    if (action === "disable-next") {
+      const endColumn = locationAt(lineIndex, comment.end).column;
+      const restOfLine = maskedLines[line]?.slice(endColumn) ?? "";
+      if (restOfLine.trim()) targetLine = line;
+      else {
+        targetLine = line + 1;
+        while (
+          targetLine < maskedLines.length &&
+          !maskedLines[targetLine].trim()
+        ) {
+          targetLine += 1;
+        }
+      }
+    }
+    directives.push({
+      action,
+      rules,
+      offset: comment.start,
+      endOffset: comment.end,
+      line,
+      targetLine,
+    });
+  }
+  return directives;
+}
+
+function ruleMatches(rules: Set<string> | null, rule: string): boolean {
+  return rules === null || rules.has(rule) || rules.has("*");
+}
+
+export function applyInlineDisableDirectives(
+  content: string,
+  results: LintResult[]
+): LintResult[] {
+  if (!content.includes("zemdomu-disable") && !content.includes("zemdomu-enable")) {
+    return results;
+  }
+  const lineIndex = buildLineIndex(content);
+  const directives = parseInlineDirectives(content, lineIndex);
+  if (!directives.length) return results;
+
+  return results.filter((result) => {
+    const offset = result.offset ?? (lineIndex[result.line] ?? 0) + result.column;
+    const disabled = new Set<string>();
+    const enabledWhileAllDisabled = new Set<string>();
+    let disableAll = false;
+    for (const directive of directives) {
+      if (directive.action === "disable-next") {
+        const afterDirective =
+          result.line !== directive.line || offset >= directive.endOffset;
+        if (
+          directive.targetLine === result.line &&
+          afterDirective &&
+          ruleMatches(directive.rules, result.rule)
+        ) {
+          return false;
+        }
+        continue;
+      }
+      if (directive.offset > offset) break;
+      if (directive.action === "disable") {
+        if (directive.rules === null || directive.rules.has("*")) {
+          disableAll = true;
+          enabledWhileAllDisabled.clear();
+        } else {
+          for (const rule of directive.rules) {
+            disabled.add(rule);
+            enabledWhileAllDisabled.delete(rule);
+          }
+        }
+      } else if (directive.rules === null || directive.rules.has("*")) {
+        disableAll = false;
+        disabled.clear();
+        enabledWhileAllDisabled.clear();
+      } else {
+        for (const rule of directive.rules) {
+          disabled.delete(rule);
+          if (disableAll) enabledWhileAllDisabled.add(rule);
+        }
+      }
+    }
+    const isDisabledByAll = disableAll && !enabledWhileAllDisabled.has(result.rule);
+    return !(isDisabledByAll || disabled.has(result.rule));
+  });
+}
 /**
  * Lint HTML/JSX/TSX content.
  */
@@ -144,6 +398,7 @@ export function lint(
   };
 
   const results: LintResult[] = [];
+  const sourceLineIndex = buildLineIndex(content);
   const timings: Record<string, number> = {};
   const ruleTimes: Record<string, number> = {};
   const totalStart = Date.now();
@@ -195,7 +450,11 @@ export function lint(
                 results.push(
                   ...rule
                     .enterJsx(path)
-                    .map((r) => applyRuleCode({ ...r, severity }))
+                    .map((r) =>
+                      applyRuleCode(
+                        withJsxOffset({ ...r, severity }, path, sourceLineIndex)
+                      )
+                    )
                 );
                 ruleTimes[rule.name] =
                   (ruleTimes[rule.name] || 0) + (Date.now() - s);
@@ -213,13 +472,19 @@ export function lint(
               try {
                 const ts = Date.now();
                 if (rule.test(path.node)) {
-                  results.push({
-                    line: 0,
-                    column: 0,
-                    message: rule.message,
-                    rule: rule.name,
-                    severity,
-                  });
+                  results.push(
+                    withJsxOffset(
+                      {
+                        line: 0,
+                        column: 0,
+                        message: rule.message,
+                        rule: rule.name,
+                        severity,
+                      },
+                      path,
+                      sourceLineIndex
+                    )
+                  );
                 }
                 ruleTimes[rule.name] =
                   (ruleTimes[rule.name] || 0) + (Date.now() - ts);
@@ -242,7 +507,11 @@ export function lint(
                 results.push(
                   ...rule
                     .exitJsx(path)
-                    .map((r) => applyRuleCode({ ...r, severity }))
+                    .map((r) =>
+                      applyRuleCode(
+                        withJsxOffset({ ...r, severity }, path, sourceLineIndex)
+                      )
+                    )
                 );
                 ruleTimes[rule.name] =
                   (ruleTimes[rule.name] || 0) + (Date.now() - s);
@@ -284,7 +553,7 @@ export function lint(
     }
     timings.total = Date.now() - totalStart;
     if (opts.perf && opts.filePath) opts.perf.record(opts.filePath, timings);
-    return results;
+    return applyInlineDisableDirectives(content, results);
   }
 
   const root = parseHtmlDom(content);
@@ -296,7 +565,7 @@ export function lint(
   if (onlyComments) {
     parseErrors = [];
   }
-  const lineIndex = buildLineIndex(content);
+  const lineIndex = sourceLineIndex;
   activeRules.forEach(({ rule }) => {
     if (rule.setHtmlContext) {
       try {
@@ -319,7 +588,11 @@ export function lint(
           results.push(
             ...rule
               .enterHtml(node)
-              .map((r) => applyRuleCode({ ...r, severity }))
+              .map((r) =>
+                applyRuleCode(
+                  withHtmlLocation({ ...r, severity }, node, content, lineIndex)
+                )
+              )
           );
           ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
         } catch (e) {
@@ -336,13 +609,20 @@ export function lint(
         try {
           const ts = Date.now();
           if (rule.test(node)) {
-            results.push({
-              line: 0,
-              column: 0,
-              message: rule.message,
-              rule: rule.name,
-              severity,
-            });
+            results.push(
+              withHtmlLocation(
+                {
+                  line: 0,
+                  column: 0,
+                  message: rule.message,
+                  rule: rule.name,
+                  severity,
+                },
+                node,
+                content,
+                lineIndex
+              )
+            );
           }
           ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - ts);
         } catch (e) {
@@ -365,7 +645,13 @@ export function lint(
         try {
           const s = Date.now();
           results.push(
-            ...rule.exitHtml(node).map((r) => applyRuleCode({ ...r, severity }))
+            ...rule
+              .exitHtml(node)
+              .map((r) =>
+                applyRuleCode(
+                  withHtmlLocation({ ...r, severity }, node, content, lineIndex)
+                )
+              )
           );
           ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
         } catch (e) {
@@ -383,7 +669,14 @@ export function lint(
   activeRules.forEach(({ rule, severity }) => {
     if (rule.end) {
       const s = Date.now();
-      results.push(...rule.end().map((r) => applyRuleCode({ ...r, severity })));
+      results.push(
+        ...rule.end().map((r) => {
+          const located = r.offset === undefined
+            ? { ...r, severity }
+            : { ...r, ...locationAt(lineIndex, r.offset), severity };
+          return applyRuleCode(located);
+        })
+      );
       ruleTimes[rule.name] = (ruleTimes[rule.name] || 0) + (Date.now() - s);
     }
   });
@@ -401,5 +694,5 @@ export function lint(
   }
   timings.total = Date.now() - totalStart;
   if (opts.perf && opts.filePath) opts.perf.record(opts.filePath, timings);
-  return results;
+  return applyInlineDisableDirectives(content, results);
 }

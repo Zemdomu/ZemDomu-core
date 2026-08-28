@@ -138,7 +138,13 @@ export function collectLocalDeps(entries: string[], ctx: ResolveCtx): string[] {
       if (!spec) return;
 
       const resolved = resolveAlias(spec, path.dirname(file), ctx);
-      if (resolved && resolved.startsWith(root)) {
+      const relative = resolved ? path.relative(root, resolved) : "";
+      const isInsideRoot = Boolean(resolved) &&
+        relative !== "" &&
+        !relative.startsWith(`..${path.sep}`) &&
+        relative !== ".." &&
+        !path.isAbsolute(relative);
+      if (resolved && isInsideRoot) {
         q.push({ file: resolved, depth: depth + 1 });
       }
     });

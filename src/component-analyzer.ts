@@ -91,15 +91,24 @@ interface ComponentDefinition {
 export class ComponentAnalyzer {
   private componentRegistry = new Map<string, ComponentDefinition>();
   private importToComponentMap = new Map<string, Map<string, string>>();
-  private options: LinterOptions & { crossComponentAnalysis?: boolean; crossComponentDepth?: number };
+  private options: LinterOptions & {
+    crossComponentAnalysis?: boolean;
+    crossComponentDepth?: number;
+    rootDir?: string;
+  };
   private processingComponentStack = new Set<string>(); // To prevent circular references
   private perf?: PerformanceRecorder;
-  private resolver = new ComponentPathResolver();
+  private resolver: ComponentPathResolver;
   private maxDepth: number | undefined;
 
-  constructor(options: LinterOptions & { crossComponentAnalysis?: boolean; crossComponentDepth?: number }, perf?: PerformanceRecorder) {
+  constructor(options: LinterOptions & {
+    crossComponentAnalysis?: boolean;
+    crossComponentDepth?: number;
+    rootDir?: string;
+  }, perf?: PerformanceRecorder) {
     this.options = options;
     this.perf = perf;
+    this.resolver = new ComponentPathResolver(options.rootDir ?? process.cwd());
     this.maxDepth = typeof options.crossComponentDepth === 'number' ? options.crossComponentDepth : undefined;
   }
 
@@ -1564,8 +1573,5 @@ function indexToLoc(lineIndex: number[], index: number): { line: number; column:
 
 function shouldWarnForHeadingOrder(newLevel: number, lastLevel: number): boolean {
   if (!lastLevel) return false;
-  if (newLevel === 1 && lastLevel !== 1) return true;
-  if (newLevel > lastLevel + 1) return true;
-  if (lastLevel > newLevel + 1) return true;
-  return false;
+  return newLevel > lastLevel + 1;
 }

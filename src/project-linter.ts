@@ -1,9 +1,13 @@
 import * as fs from "fs/promises";
 import path from "path";
 import * as ts from "typescript";
-import { lint, LintResult, LinterOptions } from "./linter";
+import {
+  applyInlineDisableDirectives,
+  lint,
+  LintResult,
+  LinterOptions,
+} from "./linter";
 import { ComponentAnalyzer } from "./component-analyzer";
-import { ComponentPathResolver } from "./component-path-resolver";
 import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
@@ -17,6 +21,39 @@ const FRAMEWORK_HOST_DOCUMENT_RULES = [
 
 function isHtmlFile(filePath: string): boolean {
   return /\.(html|htm)$/i.test(filePath);
+}
+
+function buildLineIndex(content: string): number[] {
+  const lines = [0];
+  for (let i = 0; i < content.length; i += 1) {
+    if (content[i] === "\n") lines.push(i + 1);
+  }
+  return lines;
+}
+
+function locationAt(lineIndex: number[], offset: number): { line: number; column: number } {
+  let low = 0;
+  let high = lineIndex.length - 1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (lineIndex[mid] <= offset) low = mid + 1;
+    else high = mid - 1;
+  }
+  const line = Math.max(0, high);
+  return { line, column: offset - lineIndex[line] };
+}
+
+function rebaseVueResult(
+  result: LintResult,
+  templateContent: string,
+  templateStart: number,
+  documentContent: string
+): LintResult {
+  const templateLines = buildLineIndex(templateContent);
+  const relativeOffset = result.offset ??
+    (templateLines[result.line] ?? 0) + result.column;
+  const offset = templateStart + relativeOffset;
+  return { ...result, ...locationAt(buildLineIndex(documentContent), offset), offset };
 }
 
 function getHtmlTagAttribute(tag: string, name: string): string | null {
@@ -86,8 +123,6 @@ export class ProjectLinter {
 
   constructor(options: ProjectLinterOptions = {}) {
     this.opts = options;
-    const rootDir = this.opts.rootDir ?? process.cwd();
-    ComponentPathResolver.setRootDir(rootDir);
     this.analyzer = new ComponentAnalyzer(this.opts, options.perf);
   }
 
@@ -107,9 +142,11 @@ export class ProjectLinter {
     const isVue = ext === ".vue";
     const isHtml = isHtmlFile(filePath);
     let lintContent = content;
+    let vueTemplateStart: number | undefined;
     if (isVue) {
       const template = extractVueTemplate(content);
       lintContent = isHtmlVueTemplate(template) ? template.content : "";
+      vueTemplateStart = isHtmlVueTemplate(template) ? template.start : undefined;
     }
 
     const lintOptions = isHtml && isFrameworkHostHtml(filePath, content)
@@ -120,9 +157,12 @@ export class ProjectLinter {
       filePath,
       forceHtml: isHtml || isVue || this.opts.forceHtml,
     });
-    const resolvedResults = results.map((result) =>
-      result.filePath ? result : { ...result, filePath }
-    );
+    const resolvedResults = results.map((result) => {
+      const rebased = isVue && vueTemplateStart !== undefined
+        ? rebaseVueResult(result, lintContent, vueTemplateStart, content)
+        : result;
+      return rebased.filePath ? rebased : { ...rebased, filePath };
+    });
     const byFile = new Map<string, LintResult[]>();
     byFile.set(filePath, [...resolvedResults]);
 
@@ -143,6 +183,7 @@ export class ProjectLinter {
 
     this.applyListNestingSuppressions(byFile);
     this.applySectionHeadingSuppressions(byFile);
+    await this.applyInlineDisableDirectives(byFile, filePath, content);
     return byFile;
   }
 
@@ -229,6 +270,27 @@ export class ProjectLinter {
             !suppressSet.has(`${r.line}:${r.column}`)
         )
       );
+    }
+  }
+
+  private async applyInlineDisableDirectives(
+    results: Map<string, LintResult[]>,
+    currentFilePath: string,
+    currentContent: string
+  ): Promise<void> {
+    const currentResolved = path.resolve(currentFilePath);
+    for (const [resultFilePath, entries] of results.entries()) {
+      let source: string;
+      if (path.resolve(resultFilePath) === currentResolved) {
+        source = currentContent;
+      } else {
+        try {
+          source = await fs.readFile(resultFilePath, "utf8");
+        } catch {
+          continue;
+        }
+      }
+      results.set(resultFilePath, applyInlineDisableDirectives(source, entries));
     }
   }
 }

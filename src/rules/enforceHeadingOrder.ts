@@ -5,15 +5,12 @@ import { LintResult, Rule } from "../linter";
 import { getTag } from "./utils";
 
 /**
- * Enforce heading order with symmetric skip detection.
+ * Enforce heading order by detecting skipped levels when opening subsections.
  *
  * Flags:
  *  - Upward skip:   h2 -> h4 (new > last + 1)
- *  - Downward skip: h6 -> h4 (last > new + 1)
- *  - Reset to h1:   any h1 after a non-h1 (e.g. h6 -> h1)
- *
  * First heading in a file never warns.
- * Does not auto-reset on <section>/<article> yet; add if you want outline semantics.
+ * Returning to a lower rank closes subsections and is valid (for example h4 -> h2).
  */
 export default function enforceHeadingOrder(): Rule {
   let last = 0; // 0 means “no heading seen yet”
@@ -35,11 +32,11 @@ export default function enforceHeadingOrder(): Rule {
       last = lvl;
 
       if (!msg) return [];
-      // simpleHtmlParser nodes don’t carry source positions here; anchor at (0,0)
       return [
         {
           line: 0,
           column: 0,
+          offset: node.startIndex,
           message: msg,
           rule: "enforceHeadingOrder",
         },
@@ -82,18 +79,8 @@ function computeMessage(
 ): string | null {
   if (lastLvl === 0) return null; // first heading seen
 
-  // Any h1 after a non-h1 is considered a reset-skip
-  if (newLvl === 1 && lastLvl !== 1) {
-    return `Heading level skipped: <${newTag}> after <h${lastLvl}>`;
-  }
-
   // Upward skip (e.g. h2 -> h4)
   if (newLvl > lastLvl + 1) {
-    return `Heading level skipped: <${newTag}> after <h${lastLvl}>`;
-  }
-
-  // Downward skip (e.g. h6 -> h4)
-  if (lastLvl > newLvl + 1) {
     return `Heading level skipped: <${newTag}> after <h${lastLvl}>`;
   }
 

@@ -208,6 +208,7 @@ export default function requireSectionHeading(): Rule {
         results.push({
           line: 0,
           column: 0,
+          offset: section.node.startIndex,
           message:
             '<section> missing heading (<h1>-<h6>) or accessible label (aria-label / aria-labelledby)',
           rule: 'requireSectionHeading',
@@ -222,6 +223,7 @@ export default function requireSectionHeading(): Rule {
         results.push({
           line: section.line,
           column: section.column,
+          offset: section.node.openingElement.start ?? undefined,
           message:
             '<section> missing heading (<h1>-<h6>) or accessible label (aria-label / aria-labelledby)',
           rule: 'requireSectionHeading',

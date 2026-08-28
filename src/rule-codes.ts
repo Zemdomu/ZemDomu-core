@@ -22,6 +22,17 @@ const RULE_CODES = {
   ariaValidAttrValue: "ZMD021",
 } as const;
 
+export type RuleClassification = "conformance" | "advisory" | "house-style";
+
+export const RULE_CLASSIFICATIONS: Partial<
+  Record<keyof typeof RULE_CODES, RuleClassification>
+> = {
+  singleH1: "house-style",
+  requireTableCaption: "advisory",
+  requireSectionHeading: "advisory",
+  requireNavLinks: "house-style",
+};
+
 export function getRuleCode(rule: string): string | undefined {
   return RULE_CODES[rule as keyof typeof RULE_CODES];
 }

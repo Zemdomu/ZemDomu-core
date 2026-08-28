@@ -2,12 +2,23 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { ElementNode, Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
-import { getJsxAttr, getJsxAttributeState, getJsxExpressionState, JsxValueState } from './utils';
+import {
+  getJsxAttr,
+  getJsxAttribute,
+  getJsxAttributeState,
+  getJsxExpressionState,
+  JsxValueState,
+} from './utils';
 
 const FORM_CONTROLS = ['input', 'select', 'textarea'];
 
-type HtmlControl = ElementNode;
-type JsxControl = { node: t.JSXElement; line: number; column: number };
+type HtmlControl = { node: ElementNode; implicitLabel?: ElementNode };
+type JsxControl = {
+  node: t.JSXElement;
+  line: number;
+  column: number;
+  implicitLabel?: t.JSXElement;
+};
 
 function isHiddenStyle(style?: string): boolean {
   if (!style) return false;
@@ -64,13 +75,68 @@ function hasHtmlAriaLabelledByText(
 }
 
 function isJsxHidden(opening: t.JSXOpeningElement): boolean {
-  const hiddenAttr = getJsxAttr(opening, 'hidden');
-  if (hiddenAttr !== undefined) return true;
+  const hidden = getJsxAttribute(opening, 'hidden');
+  if (hidden) {
+    if (!hidden.value) return true;
+    if (t.isJSXExpressionContainer(hidden.value)) {
+      const expression = hidden.value.expression;
+      if (t.isBooleanLiteral(expression)) return expression.value;
+      if (t.isNullLiteral(expression)) return false;
+      if (t.isIdentifier(expression, { name: 'undefined' })) return false;
+    }
+    return true;
+  }
   const ariaHidden = getJsxAttr(opening, 'aria-hidden');
   if (ariaHidden && ariaHidden.trim().toLowerCase() === 'true') return true;
   const style = getJsxAttr(opening, 'style');
   if (style) return isHiddenStyle(style);
   return false;
+}
+
+function getStaticJsxString(
+  opening: t.JSXOpeningElement,
+  name: string
+): string | undefined {
+  const attribute = getJsxAttribute(opening, name);
+  if (!attribute?.value) return undefined;
+  if (t.isStringLiteral(attribute.value)) return attribute.value.value;
+  if (!t.isJSXExpressionContainer(attribute.value)) return undefined;
+  const expression = attribute.value.expression;
+  if (t.isStringLiteral(expression)) return expression.value;
+  if (t.isTemplateLiteral(expression) && expression.expressions.length === 0) {
+    return expression.quasis
+      .map((quasi) => quasi.value.cooked ?? quasi.value.raw)
+      .join('');
+  }
+  return undefined;
+}
+
+function isHtmlInputExempt(node: ElementNode): boolean {
+  if (node.tagName !== 'input') return false;
+  if (isHtmlHidden(node)) return true;
+  const type = (node.attrs.type ?? 'text').trim().toLowerCase();
+  if (type === 'hidden') return true;
+  if (type === 'image') return Boolean(node.attrs.alt?.trim());
+  if (type === 'submit' || type === 'reset') {
+    return node.attrs.value === undefined || node.attrs.value.trim().length > 0;
+  }
+  return type === 'button' && Boolean(node.attrs.value?.trim());
+}
+
+function isJsxInputExempt(opening: t.JSXOpeningElement): boolean {
+  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  if (tag !== 'input') return false;
+  if (isJsxHidden(opening)) return true;
+  const type = (getStaticJsxString(opening, 'type') ?? 'text')
+    .trim()
+    .toLowerCase();
+  if (type === 'hidden') return true;
+  if (type === 'image') return getJsxAttributeState(opening, 'alt', true) === 'present';
+  const valueState = getJsxAttributeState(opening, 'value', true);
+  if (type === 'submit' || type === 'reset') {
+    return valueState === 'missing' || valueState === 'present';
+  }
+  return type === 'button' && valueState === 'present';
 }
 
 type JsxChild = t.JSXElement['children'][number];
@@ -134,6 +200,7 @@ export default function requireLabelForFormControls(): Rule {
   const htmlLabels = new Set<string>();
   const htmlIds = new Map<string, ElementNode[]>();
   const htmlControls: HtmlControl[] = [];
+  const htmlLabelStack: ElementNode[] = [];
 
   const jsxLabels = new Set<string>();
   const jsxIds = new Map<string, t.JSXElement[]>();
@@ -150,11 +217,15 @@ export default function requireLabelForFormControls(): Rule {
           htmlIds.get(trimmedId)!.push(node);
         }
         if (node.tagName === 'label') {
+          htmlLabelStack.push(node);
           const htmlFor = node.attrs['for'];
           if (htmlFor && htmlFor.trim()) htmlLabels.add(htmlFor.trim());
         }
         if (FORM_CONTROLS.includes(node.tagName)) {
-          htmlControls.push(node);
+          htmlControls.push({
+            node,
+            implicitLabel: htmlLabelStack[htmlLabelStack.length - 1],
+          });
         }
       }
       return [];
@@ -175,14 +246,33 @@ export default function requireLabelForFormControls(): Rule {
       if (FORM_CONTROLS.includes(tag)) {
         const line = (opening.loc?.start.line ?? 1) - 1;
         const column = opening.loc?.start.column ?? 0;
-        jsxControls.push({ node: path.node, line, column });
+        const labelPath = path.findParent(
+          (parent) =>
+            parent.isJSXElement() &&
+            t.isJSXIdentifier(parent.node.openingElement.name) &&
+            parent.node.openingElement.name.name.toLowerCase() === 'label'
+        );
+        jsxControls.push({
+          node: path.node,
+          line,
+          column,
+          implicitLabel: labelPath?.isJSXElement() ? labelPath.node : undefined,
+        });
       }
+      return [];
+    },
+    exitHtml(node: Node): LintResult[] {
+      if (node.type === 'element' && node.tagName === 'label') htmlLabelStack.pop();
       return [];
     },
     end(): LintResult[] {
       const results: LintResult[] = [];
 
-      for (const node of htmlControls) {
+      for (const { node, implicitLabel } of htmlControls) {
+        if (
+          (implicitLabel && hasHtmlAccessibleText(implicitLabel, false)) ||
+          isHtmlInputExempt(node)
+        ) continue;
         const aria = node.attrs['aria-label'];
         if (aria && aria.trim()) continue;
         if (hasHtmlAriaLabelledByText(node, htmlIds)) continue;
@@ -192,6 +282,7 @@ export default function requireLabelForFormControls(): Rule {
           results.push({
             line: 0,
             column: 0,
+            offset: node.startIndex,
             message: 'Form control missing id or aria-label',
             rule: 'requireLabelForFormControls',
           });
@@ -201,6 +292,7 @@ export default function requireLabelForFormControls(): Rule {
           results.push({
             line: 0,
             column: 0,
+            offset: node.startIndex,
             message: `Form control with id="${id}" missing <label for="${id}">`,
             rule: 'requireLabelForFormControls',
           });
@@ -209,6 +301,11 @@ export default function requireLabelForFormControls(): Rule {
 
       for (const entry of jsxControls) {
         const opening = entry.node.openingElement;
+        if (
+          (entry.implicitLabel &&
+            jsxElementTextState(entry.implicitLabel, false) === 'present') ||
+          isJsxInputExempt(opening)
+        ) continue;
         const ariaState = getJsxAttributeState(opening, 'aria-label', true);
         if (ariaState === 'present') continue;
         if (hasJsxAriaLabelledByText(opening, jsxIds)) continue;
@@ -218,6 +315,7 @@ export default function requireLabelForFormControls(): Rule {
           results.push({
             line: entry.line,
             column: entry.column,
+            offset: opening.start ?? undefined,
             message: 'Form control missing id or aria-label',
             rule: 'requireLabelForFormControls',
           });
@@ -227,6 +325,7 @@ export default function requireLabelForFormControls(): Rule {
           results.push({
             line: entry.line,
             column: entry.column,
+            offset: opening.start ?? undefined,
             message: `Form control with id="${id}" missing <label for="${id}">`,
             rule: 'requireLabelForFormControls',
           });

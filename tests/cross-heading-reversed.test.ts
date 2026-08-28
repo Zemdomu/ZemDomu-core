@@ -5,7 +5,7 @@ import path from 'path';
 import { ProjectLinter } from '../src/index';
 
 describe('cross component heading order reversed', () => {
-  it('flags h1 after h2 across components', async () => {
+  it('allows h1 after h2 when closing a subsection across components', async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zd-cc-heading-'));
     const a = path.join(tmp, 'A.jsx');
     const b = path.join(tmp, 'B.jsx');
@@ -25,8 +25,8 @@ describe('cross component heading order reversed', () => {
     const results = Array.from(map.values()).flat();
 
     assert.ok(
-      results.some(r => r.rule === 'enforceHeadingOrder'),
-      'Expected cross-component heading order warning for h2 before h1'
+      !results.some(r => r.rule === 'enforceHeadingOrder'),
+      'Did not expect a warning when heading rank decreases'
     );
   });
 });

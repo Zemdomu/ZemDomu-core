@@ -2,39 +2,52 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { glob } from 'glob';
 
-
-let vscodeApi: any | undefined;
-try {
-  vscodeApi = require('vscode');
-} catch {
-  vscodeApi = undefined;
-}
-
 export class ComponentPathResolver {
-  private static resolveCache = new Map<string, string | null>();
-  private static statCache = new Map<string, boolean>();
-  private static aliasCache = new Map<string, Map<string, string>>();
-  private static unresolved = new Set<string>();
-  private static devMode = false;
-  private static tsconfigLoaded = false;
-  private static tsAliases: Array<{ prefix: string; wildcard: boolean; targets: string[] }> = [];
-  private static readonly aliasFileLimit = 100;
-  private static rootDir: string = process.cwd();
+  private static defaultRootDir = process.cwd();
+  private static defaultDevMode = false;
+  private resolveCache = new Map<string, string | null>();
+  private statCache = new Map<string, boolean>();
+  private aliasCache = new Map<string, Map<string, string>>();
+  private unresolved = new Set<string>();
+  private devMode = ComponentPathResolver.defaultDevMode;
+  private tsconfigLoaded = false;
+  private tsAliases: Array<{ prefix: string; wildcard: boolean; targets: string[] }> = [];
+  private readonly aliasFileLimit = 100;
+  private rootDir: string;
 
-  static setRootDir(dir: string) {
-    this.rootDir = dir;
+  constructor(rootDir: string = ComponentPathResolver.defaultRootDir) {
+    this.rootDir = path.resolve(rootDir);
   }
 
+  /** @deprecated Pass rootDir to the constructor instead. */
+  static setRootDir(dir: string) {
+    this.defaultRootDir = path.resolve(dir);
+  }
+
+  /** @deprecated Configure an individual resolver with updateDevMode instead. */
   static updateDevMode(dev: boolean) {
+    this.defaultDevMode = dev;
+  }
+
+  setRootDir(dir: string) {
+    this.rootDir = path.resolve(dir);
+    this.resolveCache.clear();
+    this.statCache.clear();
+    this.aliasCache.clear();
+    this.unresolved.clear();
+    this.tsconfigLoaded = false;
+    this.tsAliases = [];
+  }
+
+  updateDevMode(dev: boolean) {
     this.devMode = dev;
   }
 
-  private static async loadTsconfig() {
+  private async loadTsconfig() {
     if (this.tsconfigLoaded) return;
     this.tsconfigLoaded = true;
 
-    const folder = vscodeApi?.workspace.workspaceFolders?.[0];
-    const root = folder ? folder.uri.fsPath : this.rootDir;
+    const root = this.rootDir;
     const tsconfigPath = path.join(root, 'tsconfig.json');
     try {
       const buf = await fs.readFile(tsconfigPath, 'utf8');
@@ -76,8 +89,8 @@ export class ComponentPathResolver {
   }
 
   private async resolveWithTsconfig(importPath: string): Promise<string | null> {
-    await ComponentPathResolver.loadTsconfig();
-    for (const entry of ComponentPathResolver.tsAliases) {
+    await this.loadTsconfig();
+    for (const entry of this.tsAliases) {
       if (entry.wildcard) {
         if (!importPath.startsWith(entry.prefix)) continue;
         const rest = importPath.substring(entry.prefix.length);
@@ -114,15 +127,15 @@ export class ComponentPathResolver {
   }
 
   private async fileExists(p: string): Promise<boolean> {
-    if (ComponentPathResolver.statCache.has(p)) {
-      return ComponentPathResolver.statCache.get(p)!;
+    if (this.statCache.has(p)) {
+      return this.statCache.get(p)!;
     }
     try {
       await fs.stat(p);
-      ComponentPathResolver.statCache.set(p, true);
+      this.statCache.set(p, true);
       return true;
     } catch {
-      ComponentPathResolver.statCache.set(p, false);
+      this.statCache.set(p, false);
       return false;
     }
   }
@@ -133,9 +146,9 @@ export class ComponentPathResolver {
       ? path.resolve(path.dirname(currentPath), importPath)
       : importPath;
     const key = ComponentPathResolver.normalizeKey(rawKey);
-    if (ComponentPathResolver.unresolved.has(key)) return null;
-    if (ComponentPathResolver.resolveCache.has(key)) {
-      return ComponentPathResolver.resolveCache.get(key)!;
+    if (this.unresolved.has(key)) return null;
+    if (this.resolveCache.has(key)) {
+      return this.resolveCache.get(key)!;
     }
 
     let result: string | null = null;
@@ -148,17 +161,17 @@ export class ComponentPathResolver {
 
         if (!result) {
           const prefix = importPath.split('/')[0];
-          let alias = ComponentPathResolver.aliasCache.get(prefix);
+          let alias = this.aliasCache.get(prefix);
           if (!alias) {
           const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js,vue}`;
           const files = await glob(pattern, {
-            cwd: ComponentPathResolver.rootDir,
+            cwd: this.rootDir,
             ignore: '**/node_modules/**',
             nodir: true,
           });
           alias = new Map();
-          for (const relPath of files.slice(0, ComponentPathResolver.aliasFileLimit)) {
-            const rel = path.resolve(ComponentPathResolver.rootDir, relPath).replace(/\\/g, '/');
+          for (const relPath of files.slice(0, this.aliasFileLimit)) {
+            const rel = path.resolve(this.rootDir, relPath).replace(/\\/g, '/');
             const idx = rel.lastIndexOf(`/${prefix}/`);
             if (idx === -1) continue;
             const after = rel.substring(idx + prefix.length + 2).replace(/\.(tsx|ts|jsx|js|vue)$/, '');
@@ -169,7 +182,7 @@ export class ComponentPathResolver {
               alias.set(ComponentPathResolver.normalizeKey(`${prefix}/${trimmed}`), rel);
             }
           }
-          ComponentPathResolver.aliasCache.set(prefix, alias);
+          this.aliasCache.set(prefix, alias);
           }
 
           const normImport = ComponentPathResolver.normalizeKey(importPath);
@@ -182,22 +195,22 @@ export class ComponentPathResolver {
             ];
             for (const ptn of patterns) {
               const pKey = `glob:${ptn}`;
-              if (ComponentPathResolver.resolveCache.has(pKey)) {
-                const cached = ComponentPathResolver.resolveCache.get(pKey)!;
+              if (this.resolveCache.has(pKey)) {
+                const cached = this.resolveCache.get(pKey)!;
                 if (cached) { result = cached; break; }
                 continue;
               }
               const matches = await glob(ptn, {
-                cwd: ComponentPathResolver.rootDir,
+                cwd: this.rootDir,
                 ignore: '**/node_modules/**',
                 nodir: true,
               });
               if (matches.length) {
-                result = path.resolve(ComponentPathResolver.rootDir, matches[0]);
-                ComponentPathResolver.resolveCache.set(pKey, result);
+                result = path.resolve(this.rootDir, matches[0]);
+                this.resolveCache.set(pKey, result);
                 break;
               } else {
-                ComponentPathResolver.resolveCache.set(pKey, null);
+                this.resolveCache.set(pKey, null);
               }
             }
           }
@@ -206,10 +219,10 @@ export class ComponentPathResolver {
     } catch {
       result = null;
     }
-    ComponentPathResolver.resolveCache.set(key, result);
-    if (result === null) ComponentPathResolver.unresolved.add(key);
+    this.resolveCache.set(key, result);
+    if (result === null) this.unresolved.add(key);
     const tTotal = Date.now() - tStart;
-    if (ComponentPathResolver.devMode) {
+    if (this.devMode) {
       console.debug(`[ZemDomu] resolved ${importPath} -> ${result} (${tTotal}ms)`);
     }
     return result;

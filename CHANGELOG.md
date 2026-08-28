@@ -1,5 +1,19 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: accept explicitly named icon-only links and buttons without requiring a redundant accessible name on their child SVG.
+- Bugfix: report exact HTML element and attribute locations, expose absolute diagnostic offsets, and rebase Vue template findings to full-document positions so repeated violations and quick fixes target the correct source.
+- Bugfix: support valid implicit form labels and avoid label false positives for hidden inputs, named image inputs, and named submit, reset, and button inputs.
+- Bugfix: allow heading rank decreases that close subsections in both local and cross-component heading-order analysis.
+- Bugfix: isolate component resolution, tsconfig aliases, and caches per project root so multiple workspace roots cannot contaminate one another.
+- Bugfix: recognize non-empty nested inline content, require document titles to appear inside `<head>`, report every extra `<main>`, detect JSX/TSX `tabIndex`, and anchor JSX attribute diagnostics to the exact attribute.
+
+### Feature
+
+- Feature: support `zemdomu-disable-next`, `zemdomu-disable`, and `zemdomu-enable` directives in HTML, JSX, TSX, and Vue ProjectLinter analysis.
+- Feature: export advisory and house-style rule classification metadata and default `singleH1`, `requireTableCaption`, `requireSectionHeading`, and `requireNavLinks` to warning severity.
+
 ### Security
 
 - Security: update dependency overrides and the lockfile to patched js-yaml, brace-expansion, and related transitive versions.

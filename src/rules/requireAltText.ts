@@ -157,6 +157,15 @@ function hasHtmlSvgAccessibleName(
   return hasHtmlTitleText(node);
 }
 
+function hasHtmlExplicitAccessibleName(
+  node: ElementNode,
+  idMap: Map<string, ElementNode[]>
+): boolean {
+  const ariaLabel = getHtmlAttrWithName(node.attrs, HTML_ARIA_LABEL_ATTRS);
+  if (ariaLabel && String(ariaLabel.value ?? '').trim().length > 0) return true;
+  return hasHtmlAriaLabelledByText(node, idMap);
+}
+
 function getJsxTagName(opening: t.JSXOpeningElement): string {
   return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
 }
@@ -329,6 +338,16 @@ function getJsxLabelledByState(
   return hasJsxAriaLabelledByText(opening, idMap) ? 'present' : 'empty';
 }
 
+function hasJsxExplicitAccessibleName(
+  opening: t.JSXOpeningElement,
+  idMap: Map<string, t.JSXElement[]>
+): boolean {
+  return (
+    getJsxAttributeState(opening, 'aria-label', true) === 'present' ||
+    getJsxLabelledByState(opening, idMap) === 'present'
+  );
+}
+
 export default function requireAltText(): Rule {
   const htmlIds = new Map<string, ElementNode[]>();
   const htmlSvgs: HtmlSvgEntry[] = [];
@@ -357,6 +376,7 @@ export default function requireAltText(): Rule {
               {
                 line: 0, // line/column handling omitted for brevity
                 column: 0,
+                offset: node.startIndex,
                 message: '<img> tag missing alt attribute',
                 rule: 'requireAltText',
               },
@@ -426,12 +446,14 @@ export default function requireAltText(): Rule {
         const iconOnly =
           parent &&
           (parent.tagName === 'a' || parent.tagName === 'button') &&
-          isHtmlIconOnlyParent(parent, node);
+          isHtmlIconOnlyParent(parent, node) &&
+          !hasHtmlExplicitAccessibleName(parent, htmlIds);
         if (!roleImg && !iconOnly) continue;
         if (!hasHtmlSvgAccessibleName(node, htmlIds)) {
           results.push({
             line: 0,
             column: 0,
+            offset: node.startIndex,
             message: '<svg> missing accessible name',
             rule: 'requireAltText',
           });
@@ -446,7 +468,8 @@ export default function requireAltText(): Rule {
           parent &&
           (getJsxTagName(parent.openingElement) === 'a' ||
             getJsxTagName(parent.openingElement) === 'button') &&
-          isJsxIconOnlyParent(parent);
+          isJsxIconOnlyParent(parent) &&
+          !hasJsxExplicitAccessibleName(parent.openingElement, jsxIds);
         if (!roleImg && !iconOnly) continue;
 
         const ariaState = getJsxAttributeState(opening, 'aria-label', true);
@@ -461,6 +484,7 @@ export default function requireAltText(): Rule {
           results.push({
             line,
             column,
+            offset: opening.start ?? undefined,
             message,
             rule: 'requireAltText',
           });

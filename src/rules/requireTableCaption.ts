@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { Node } from '../simpleHtmlParser';
+import { ElementNode, Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
 import { getTag } from './utils';
 
@@ -25,15 +25,22 @@ function jsxElementHasText(node: t.JSXElement): boolean {
 }
 
 export default function requireTableCaption(): Rule {
-  const stack: Array<{found:boolean; hasText:boolean}> = [];
+  const stack: Array<{
+    found: boolean;
+    hasText: boolean;
+    table?: ElementNode;
+    caption?: ElementNode;
+    captionLoc?: { line: number; column: number; offset?: number };
+  }> = [];
   let captionDepth = 0;
   return {
     name: 'requireTableCaption',
     enterHtml(node: Node): LintResult[] {
       if (node.type === 'element') {
-        if (node.tagName === 'table') stack.push({found:false, hasText:false});
+        if (node.tagName === 'table') stack.push({found:false, hasText:false, table: node});
         if (node.tagName === 'caption' && stack.length) {
           stack[stack.length-1].found = true;
+          stack[stack.length-1].caption = node;
           captionDepth += 1;
         }
       } else if (node.type === 'text') {
@@ -51,10 +58,10 @@ export default function requireTableCaption(): Rule {
         if (node.tagName === 'table') {
           const entry = stack.pop();
           if (entry && !entry.found) {
-            return [{ line: 0, column: 0, message: '<table> missing <caption>', rule: 'requireTableCaption' }];
+            return [{ line: 0, column: 0, offset: entry.table?.startIndex, message: '<table> missing <caption>', rule: 'requireTableCaption' }];
           }
           if (entry && entry.found && !entry.hasText) {
-            return [{ line: 0, column: 0, message: '<caption> is empty', rule: 'requireTableCaption' }];
+            return [{ line: 0, column: 0, offset: entry.caption?.startIndex, message: '<caption> is empty', rule: 'requireTableCaption' }];
           }
         }
       }
@@ -65,6 +72,11 @@ export default function requireTableCaption(): Rule {
       if (tag === 'table') stack.push({found:false, hasText:false});
       if (tag === 'caption' && stack.length) {
         stack[stack.length-1].found = true;
+        stack[stack.length-1].captionLoc = {
+          line: (path.node.loc?.start.line ?? 1) - 1,
+          column: path.node.loc?.start.column ?? 0,
+          offset: path.node.openingElement.start ?? undefined,
+        };
         if (jsxElementHasText(path.node)) stack[stack.length-1].hasText = true;
       }
       return [];
@@ -79,9 +91,12 @@ export default function requireTableCaption(): Rule {
           return [{ line, column, message: '<table> missing <caption>', rule: 'requireTableCaption' }];
         }
         if (entry && entry.found && !entry.hasText) {
-          const line = (path.node.loc?.start.line ?? 1) - 1;
-          const column = path.node.loc?.start.column ?? 0;
-          return [{ line, column, message: '<caption> is empty', rule: 'requireTableCaption' }];
+          const location = entry.captionLoc ?? {
+            line: (path.node.loc?.start.line ?? 1) - 1,
+            column: path.node.loc?.start.column ?? 0,
+            offset: path.node.openingElement.start ?? undefined,
+          };
+          return [{ ...location, message: '<caption> is empty', rule: 'requireTableCaption' }];
         }
       }
       return [];

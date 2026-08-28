@@ -308,6 +308,7 @@ export default function requireLinkText(): Rule {
           results.push({
             line: 0,
             column: 0,
+            offset: node.startIndex,
             message: "<a> missing accessible name",
             rule: "requireLinkText",
           });
@@ -329,6 +330,7 @@ export default function requireLinkText(): Rule {
           results.push({
             line,
             column,
+            offset: opening.start ?? undefined,
             message,
             rule: "requireLinkText",
           });

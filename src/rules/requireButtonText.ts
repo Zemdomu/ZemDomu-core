@@ -280,6 +280,7 @@ export default function requireButtonText(): Rule {
           results.push({
             line: 0,
             column: 0,
+            offset: node.startIndex,
             message: '<button> missing accessible text',
             rule: 'requireButtonText',
           });
@@ -298,6 +299,7 @@ export default function requireButtonText(): Rule {
           results.push({
             line,
             column,
+            offset: opening.start ?? undefined,
             message: '<button> missing accessible text',
             rule: 'requireButtonText',
           });

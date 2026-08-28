@@ -19,7 +19,7 @@ export default function noTabindexGreaterThanZero(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tabindex = getJsxAttr(opening, 'tabindex');
+      const tabindex = getJsxAttr(opening, 'tabIndex') ?? getJsxAttr(opening, 'tabindex');
       if (tabindex !== undefined) {
         const value = Number(tabindex);
         if (!Number.isNaN(value) && value > 0) {

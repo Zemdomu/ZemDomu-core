@@ -14,9 +14,15 @@ describe('heading order', () => {
     assert.ok(!results.some(r => r.rule === 'enforceHeadingOrder'), 'Did not expect heading order warning');
   });
 
-  it('flags h2 before h1', () => {
+  it('allows returning to h1 after closing a subsection', () => {
     const html = '<h2>Two</h2><h1>One</h1>';
     const results = lint(html);
-    assert.ok(results.some(r => r.rule === 'enforceHeadingOrder'), 'Expected heading order warning for h2 before h1');
+    assert.ok(!results.some(r => r.rule === 'enforceHeadingOrder'));
+  });
+
+  it('allows downward rank changes that close nested subsections', () => {
+    const html = '<h1>One</h1><h2>Two</h2><h4>Four</h4><h2>Another section</h2>';
+    const results = lint(html).filter(r => r.rule === 'enforceHeadingOrder');
+    assert.strictEqual(results.length, 1, 'Only the upward h2 to h4 skip should warn');
   });
 });

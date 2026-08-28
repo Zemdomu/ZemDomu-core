@@ -94,10 +94,6 @@ describe("cross component heading order", () => {
       .filter((r) => r.rule === "enforceHeadingOrder")
       .map((r) => r.message || "");
     assert.ok(
-      headingMessages.some((msg) => msg.includes("<h1>") && msg.includes("after <h3>")),
-      "Expected cross-component reset <h1> warning"
-    );
-    assert.ok(
       headingMessages.some((msg) => msg.includes("<h5>") && msg.includes("after <h1>")),
       "Expected cross-component skipped <h5> warning"
     );
