@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "tranche": "01-public-pilot",
+  "status": "candidate",
+  "repositories": [
+    {
+      "id": "50projects50days",
+      "repository": "https://github.com/bradtraversy/50projects50days.git",
+      "commit": "c92b0bc3a87fc95d44b89552b7b6a2eeb36ca481",
+      "syntax": "html",
+      "include": ["**/*.html"],
+      "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**"],
+      "maxFiles": 10,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "nextjs-postgres-auth-starter",
+      "repository": "https://github.com/vercel/nextjs-postgres-auth-starter.git",
+      "commit": "fde8ecf1da9337223081f70cf88b420060039d6e",
+      "syntax": "tsx",
+      "include": ["**/*.tsx"],
+      "exclude": ["**/node_modules/**", "**/.next/**", "**/dist/**"],
+      "maxFiles": 7,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "vuejs-docs",
+      "repository": "https://github.com/vuejs/docs.git",
+      "commit": "b75d188ab16bf83bd1f364a77dfd2315be8f3fa4",
+      "syntax": "vue",
+      "include": ["**/*.vue"],
+      "exclude": ["**/node_modules/**", "**/.vitepress/cache/**", "**/dist/**"],
+      "maxFiles": 10,
+      "selection": "lexicographic-path"
+    }
+  ]
+}

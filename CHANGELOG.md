@@ -11,8 +11,18 @@
 
 ### Feature
 
+- Feature: add a versioned page/document model with configured and opt-in React/Vue filesystem route adapters, nested component trees, and ordered heading, landmark, section, navigation, and document-ID facts with source/component provenance.
+- Feature: infer single, unconditional React and Vue component outputs such as `<header>`, `<nav>`, `<main>`, and `<button>` with source-backed evidence paths and explicit inferred or unknown confidence states.
+- Feature: expose a versioned, framework-neutral semantic graph contract for files, components, native rendered elements, imports, composition, semantic facts, page roots, provenance, and explicit unknown analysis boundaries.
+- Feature: add deterministic `ProjectLinter.buildSemanticGraph()` output for supported React and Vue component projects, including source-backed imports and composition plus conservative alias, conditional, cycle, unresolved, dynamic, and depth-limit states.
+- Feature: expose a versioned canonical diagnostic contract and JSON serializer with stable rule codes, severity, source locations, related context, suggestions, and semantic provenance metadata while preserving the existing lint result API.
 - Feature: support `zemdomu-disable-next`, `zemdomu-disable`, and `zemdomu-enable` directives in HTML, JSX, TSX, and Vue ProjectLinter analysis.
 - Feature: export advisory and house-style rule classification metadata and default `singleH1`, `requireTableCaption`, `requireSectionHeading`, and `requireNavLinks` to warning severity.
+
+### Docs
+
+- Docs: approve canonical ZemDomu positioning, public product names, fair comparison principles, and separate Core capability and VS Code Extension 1.0 milestones.
+- Docs: define the supported `zemdomu` package-root API for file and project analysis, including subpath deprecation and integration ownership boundaries.
 
 ### Security
 

@@ -12,6 +12,16 @@ import type { PerformanceRecorder } from "./performance-diagnostics";
 import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
 import { applyRuleCode } from "./rule-codes";
+import type { SemanticGraph } from "./semantic-graph";
+import {
+  composeSemanticPageModel,
+  createConfiguredRouteAdapter,
+} from "./page-model";
+import type {
+  SemanticPageConfiguration,
+  SemanticPageModel,
+  SemanticRouteAdapter,
+} from "./page-model";
 
 const FRAMEWORK_HOST_DOCUMENT_RULES = [
   "requireHtmlLang",
@@ -115,6 +125,8 @@ export interface ProjectLinterOptions extends LinterOptions {
   crossComponentDepth?: number;
   perf?: PerformanceRecorder;
   rootDir?: string;
+  pages?: readonly SemanticPageConfiguration[];
+  routeAdapters?: readonly SemanticRouteAdapter[];
 }
 
 export class ProjectLinter {
@@ -188,6 +200,53 @@ export class ProjectLinter {
   }
 
   async lintFiles(filePaths: string[]): Promise<Map<string, LintResult[]>> {
+    const uniqueTargets = this.resolveTargets(
+      filePaths,
+      Boolean(this.opts.crossComponentAnalysis)
+    );
+
+    const aggregated = new Map<string, LintResult[]>();
+    for (const filePath of uniqueTargets) {
+      const fileMap = await this.lintFile(filePath);
+      for (const [fp, res] of fileMap.entries()) {
+        if (!aggregated.has(fp)) aggregated.set(fp, []);
+        aggregated.get(fp)!.push(...res);
+      }
+    }
+    this.applyListNestingSuppressions(aggregated);
+    this.applySectionHeadingSuppressions(aggregated);
+    return aggregated;
+  }
+
+  /**
+   * Analyze the supplied entries and their supported local dependencies into
+   * the public semantic graph without running or changing lint rules.
+   */
+  async buildSemanticGraph(filePaths: string[]): Promise<SemanticGraph> {
+    this.clear();
+    const targets = this.resolveTargets(filePaths, true);
+    for (const filePath of targets) {
+      await this.analyzer.analyzeFile(filePath);
+    }
+    return this.analyzer.buildSemanticGraph();
+  }
+
+  /** Compose configured or adapter-discovered pages from the public graph. */
+  async buildPageModel(filePaths: string[]): Promise<SemanticPageModel> {
+    const graph = await this.buildSemanticGraph(filePaths);
+    const adapters = [
+      ...(this.opts.pages?.length
+        ? [createConfiguredRouteAdapter(this.opts.pages)]
+        : []),
+      ...(this.opts.routeAdapters ?? []),
+    ];
+    return composeSemanticPageModel(graph, adapters);
+  }
+
+  private resolveTargets(
+    filePaths: string[],
+    includeDependencies: boolean
+  ): string[] {
     const root = this.opts.rootDir ?? process.cwd();
 
     const configPath = ts.findConfigFile(
@@ -207,7 +266,7 @@ export class ProjectLinter {
       paths = cfg?.compilerOptions?.paths;
     }
 
-    const targets = this.opts.crossComponentAnalysis
+    const targets = includeDependencies
       ? collectLocalDeps(filePaths, {
           rootDir: root,
           baseUrl,
@@ -219,18 +278,7 @@ export class ProjectLinter {
     const uniqueTargets = Array.from(
       new Set(targets.map((p) => path.resolve(p)))
     );
-
-    const aggregated = new Map<string, LintResult[]>();
-    for (const filePath of uniqueTargets) {
-      const fileMap = await this.lintFile(filePath);
-      for (const [fp, res] of fileMap.entries()) {
-        if (!aggregated.has(fp)) aggregated.set(fp, []);
-        aggregated.get(fp)!.push(...res);
-      }
-    }
-    this.applyListNestingSuppressions(aggregated);
-    this.applySectionHeadingSuppressions(aggregated);
-    return aggregated;
+    return uniqueTargets;
   }
 
   private applyListNestingSuppressions(results: Map<string, LintResult[]>): void {

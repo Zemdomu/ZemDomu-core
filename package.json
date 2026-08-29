@@ -24,6 +24,7 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
+    "test:accuracy-corpus": "npm run compile && mocha out/tests/accuracy-corpus.test.js",
     "prepublishOnly": "npm run build",
     "test": "npm run compile && mocha out/**/*.test.js",
     "posttest": "node -e \"require('fs').rmSync('out',{recursive:true,force:true});\""

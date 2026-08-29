@@ -1,8 +1,10 @@
 # ZemDomu Core
 
-> The semantic rules engine behind ZemDomu.
+> Static analysis for semantic HTML architecture across component-based applications.
 
-ZemDomu Core is the shared engine that powers the ZemDomu ecosystem. It parses
+ZemDomu is static analysis for semantic HTML architecture across component-based
+applications. ZemDomu Core is the shared engine that powers the ZemDomu
+ecosystem. It parses
 HTML, JSX, TSX, and Vue templates and returns semantic issues that affect
 structure, accessibility, and search visibility.
 
@@ -73,6 +75,43 @@ console.log(results);
 
 `lint(content: string, options?: LinterOptions): LintResult[]`
 
+### Supported package entry point
+
+Import public APIs only from the package root, `zemdomu`. Use `lint()` for one
+in-memory source and `ProjectLinter` for file or project analysis. Subpath
+imports such as `zemdomu/linter` are deprecated compatibility paths and can be
+removed in the next major release.
+
+```ts
+import { lint, ProjectLinter } from "zemdomu";
+
+const inMemoryResults = lint(source, { filePath: "src/Card.tsx" });
+const project = new ProjectLinter({ crossComponentAnalysis: true });
+const projectResults = await project.lintFiles(["src/Card.tsx"]);
+const semanticGraph = await project.buildSemanticGraph(["src/Card.tsx"]);
+const pageModel = await project.buildPageModel(["src/AppLayout.tsx"]);
+```
+
+`buildSemanticGraph()` follows supported local React/JSX/TSX and Vue imports
+and returns the public schema `1.0` graph. IDs and array order are deterministic
+for the same project inputs. Source-backed files, components, imports,
+composition usages, headings, navigation landmarks, list items, sections, and
+static document IDs retain zero-based locations. Each component also exposes a
+`semanticOutput`: a single unconditional native root is inferred with an
+ordered component evidence path and the certain native source location.
+Transitive wrappers can inherit that output, while conditional returns,
+fragments, children/slots, multiple roots, unresolved imports, cycles,
+configured depth limits, and unknown route identity remain explicit unknown or
+boundary states.
+
+`buildPageModel()` composes graph output into page-scoped component trees and
+ordered heading, landmark, section, navigation, and document-ID facts. Supply
+`pages: [{ route, entryFile }]` for certain route identity, or opt into
+`createReactFileRouteAdapter()` / `createVueFileRouteAdapter()` for inferred
+filesystem conventions. Custom adapters implement `SemanticRouteAdapter`, so
+the graph and page model do not hard-code a router. With no applicable adapter,
+entry roots and route identity remain explicit unknowns.
+
 ### Parameters
 
 - `content`: HTML, JSX, TSX, or Vue template string input.
@@ -112,6 +151,39 @@ interface LintResult {
   rule: string;
 }
 ```
+
+### Canonical diagnostics
+
+`LintResult` remains the compatibility shape returned by `lint()` and
+`ProjectLinter`; its `code`, `severity`, and `filePath` fields can be absent for
+legacy and custom-rule results. Integrations that need a stable machine-readable
+contract should adapt results with `toZemDomuDiagnostic()` and serialize them
+with `serializeZemDomuDiagnostics()`.
+
+```ts
+import {
+  lint,
+  serializeZemDomuDiagnostics,
+  toZemDomuDiagnostic,
+} from "zemdomu";
+
+const results = lint(source, { filePath: "src/Card.tsx" });
+const diagnostics = results.map((result) =>
+  toZemDomuDiagnostic(result, { sourceFile: "src/Card.tsx" })
+);
+console.log(serializeZemDomuDiagnostics(diagnostics, 2));
+```
+
+Every `ZemDomuDiagnostic` has `schemaVersion`, `rule`, `code`, `severity`,
+`message`, and a source file/line/column. Lines and columns are zero-based, as
+they are in `LintResult`. Page identity, component path, related locations,
+suggestions, provenance, and confidence are optional. Schema `1.0` uses the
+rule name as the code fallback for parse errors or custom rules that do not
+provide a registered or explicit code. Missing legacy severity defaults to
+`error`; pass `defaultSeverity` when another canonical severity is appropriate.
+When present, confidence is one of `certain`, `inferred`, or `unknown`.
+The adapter requires `result.filePath` or `context.sourceFile` and throws if
+neither is available. It does not mutate the legacy result.
 
 ## CLI Usage
 

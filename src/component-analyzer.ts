@@ -14,6 +14,24 @@ import {
 import { parse as parseHtml } from './simpleHtmlParser';
 import type { Node as HtmlNode, ElementNode } from './simpleHtmlParser';
 import { extractVueScripts, extractVueTemplate, isHtmlVueTemplate } from './utils/vue-sfc';
+import {
+  assertValidSemanticGraph,
+  SEMANTIC_GRAPH_SCHEMA_VERSION,
+} from './semantic-graph';
+import type {
+  SemanticCompositionEdge,
+  SemanticComponentOutput,
+  SemanticComponentId,
+  SemanticFileId,
+  SemanticGraph,
+  SemanticImportEdge,
+  SemanticNativeElementNode,
+  SemanticRenderCondition,
+  SemanticRenderNode,
+  SemanticSourceProvenance,
+  SemanticTraversalState,
+  SemanticUnknown,
+} from './semantic-graph';
 
 interface PerformanceRecorder {
   record(filePath: string, timings: Record<string, number>): void;
@@ -23,6 +41,12 @@ interface ComponentReference {
   name: string;
   path: string | null;
   rawImportPath: string | null;
+  importKind?: 'default' | 'named';
+  importedName?: string;
+  importLocation?: {
+    line: number;
+    column: number;
+  };
   sourceLocation: {
     line: number;
     column: number;
@@ -34,7 +58,26 @@ interface ComponentReference {
     inListDirect?: boolean;
     inSection?: boolean;
     renderGroup?: string;
+    /** Original branch group before rule-specific Vue exclusivity merging. */
+    semanticRenderGroup?: string;
+    /** True only when the usage is a statically observed component render root. */
+    isRenderRoot?: boolean;
   }>;
+}
+
+interface NativeElementInfo {
+  tagName: string;
+  line: number;
+  column: number;
+  renderGroup?: string;
+  isRenderRoot: boolean;
+}
+
+interface UnknownRenderRootInfo {
+  reason: SemanticUnknown['reason'];
+  line: number;
+  column: number;
+  message: string;
 }
 
 interface HeadingInfo {
@@ -46,6 +89,7 @@ interface HeadingInfo {
 
 interface IdInfo {
   id: string;
+  tagName: string;
   line: number;
   column: number;
   filePath: string;
@@ -86,6 +130,8 @@ interface ComponentDefinition {
   sections: SectionInfo[];
   hasHeadingOutsideSection: boolean;
   listItems: ListItemInfo[];
+  nativeElements: NativeElementInfo[];
+  unknownRenderRoots: UnknownRenderRootInfo[];
 }
 
 export class ComponentAnalyzer {
@@ -154,10 +200,21 @@ export class ComponentAnalyzer {
       sections: [],
       hasHeadingOutsideSection: false,
       listItems: [],
+      nativeElements: [],
+      unknownRenderRoots: [],
     };
 
     // Track imported components
     const importedComponents = new Map<string, string>();
+    const importedComponentDetails = new Map<
+      string,
+      {
+        importKind: 'default' | 'named';
+        importedName?: string;
+        line: number;
+        column: number;
+      }
+    >();
     
     // Collect imports
     t0 = Date.now();
@@ -169,6 +226,16 @@ export class ComponentAnalyzer {
             const name = spec.local.name;
             if (/^[A-Z]/.test(name)) {
               importedComponents.set(name, source);
+              const loc = spec.loc?.start ?? path.node.loc?.start;
+              importedComponentDetails.set(name, {
+                importKind: t.isImportDefaultSpecifier(spec) ? 'default' : 'named',
+                importedName:
+                  t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)
+                    ? spec.imported.name
+                    : undefined,
+                line: loc ? loc.line - 1 : 0,
+                column: loc ? loc.column : 0,
+              });
             }
           }
         });
@@ -187,6 +254,17 @@ export class ComponentAnalyzer {
           if (!t.isJSXIdentifier(elt)) return;
           const name = elt.name;
           const tag = name.toLowerCase();
+          const isComponentTag = /^[A-Z]/.test(name);
+          if (!isComponentTag) {
+            const loc = path.node.openingElement.loc?.start;
+            componentDef.nativeElements.push({
+              tagName: tag,
+              line: loc ? loc.line - 1 : 0,
+              column: loc ? loc.column : 0,
+              renderGroup: getSemanticJsxRenderGroup(path),
+              isRenderRoot: isReturnedJsxRoot(path, componentName),
+            });
+          }
 
           // Track <section> elements
           if (tag === 'section') {
@@ -261,9 +339,6 @@ export class ComponentAnalyzer {
           }
 
           // Track link-like elements
-          const isComponentTag =
-            t.isJSXIdentifier(path.node.openingElement.name) &&
-            /^[A-Z]/.test(path.node.openingElement.name.name);
           if (tag === 'a' || (isComponentTag && hasJsxLinkAttribute(path.node.openingElement))) {
             componentDef.hasLocalAnchor = true;
             navStack.forEach(n => (n.hasLocalLink = true));
@@ -275,6 +350,7 @@ export class ComponentAnalyzer {
             const loc = path.node.openingElement.loc?.start;
             componentDef.ids.push({
               id: idAttr,
+              tagName: tag,
               line: loc ? loc.line - 1 : 0,
               column: loc ? loc.column : 0,
               filePath,
@@ -296,6 +372,7 @@ export class ComponentAnalyzer {
               const inListDirect = parentTag === 'ul' || parentTag === 'ol';
               const inSection = sectionStack.length > 0;
               const renderGroup = getJsxRenderGroup(path);
+              const semanticRenderGroup = getSemanticJsxRenderGroup(path);
               const location = loc
                 ? {
                     line: loc.line - 1,
@@ -303,8 +380,18 @@ export class ComponentAnalyzer {
                     inListDirect,
                     inSection,
                     renderGroup,
+                    semanticRenderGroup,
+                    isRenderRoot: isReturnedJsxRoot(path, componentName),
                   }
-                : { line: 0, column: 0, inListDirect, inSection, renderGroup };
+                : {
+                    line: 0,
+                    column: 0,
+                    inListDirect,
+                    inSection,
+                    renderGroup,
+                    semanticRenderGroup,
+                    isRenderRoot: isReturnedJsxRoot(path, componentName),
+                  };
 
             let ref: ComponentReference;
             if (existingRef) {
@@ -312,10 +399,16 @@ export class ComponentAnalyzer {
               ref = existingRef;
             } else {
               const rawImportPath = importedComponents.get(name) || null;
+              const importDetails = importedComponentDetails.get(name);
               ref = {
                 name,
                 path: null,
                 rawImportPath,
+                importKind: importDetails?.importKind,
+                importedName: importDetails?.importedName,
+                importLocation: importDetails
+                  ? { line: importDetails.line, column: importDetails.column }
+                  : undefined,
                 sourceLocation: location,
                 usageLocations: [location],
               };
@@ -342,6 +435,45 @@ export class ComponentAnalyzer {
             }
           }
         },
+      },
+      JSXFragment(path) {
+        if (!isReturnedJsxRoot(path, componentName)) return;
+        const loc = path.node.loc?.start;
+        componentDef.unknownRenderRoots.push({
+          reason: 'fragment-boundary',
+          line: loc ? loc.line - 1 : 0,
+          column: loc ? loc.column : 0,
+          message: 'A fragment render root does not prove one native semantic output.',
+        });
+      },
+      ReturnStatement(path) {
+        const functionPath = path.findParent((candidate) => candidate.isFunction());
+        if (!functionPath || !isComponentFunctionPath(functionPath, componentName)) {
+          return;
+        }
+        const argument = unwrapJsxReturnExpression(path.node.argument);
+        if (
+          argument &&
+          (t.isJSXElement(argument) ||
+            t.isJSXFragment(argument) ||
+            t.isConditionalExpression(argument) ||
+            t.isLogicalExpression(argument))
+        ) {
+          return;
+        }
+        const loc = path.node.loc?.start;
+        componentDef.unknownRenderRoots.push({
+          reason:
+            argument &&
+            (t.isIdentifier(argument, { name: 'children' }) ||
+              (t.isMemberExpression(argument) &&
+                t.isIdentifier(argument.property, { name: 'children' })))
+              ? 'slot-or-children'
+              : 'runtime-composition',
+          line: loc ? loc.line - 1 : 0,
+          column: loc ? loc.column : 0,
+          message: `A non-JSX return path in '${componentName}' prevents a single semantic-output inference.`,
+        });
       },
     });
     timings.jsxCollect = Date.now() - t0;
@@ -426,10 +558,22 @@ export class ComponentAnalyzer {
       sections: [],
       hasHeadingOutsideSection: false,
       listItems: [],
+      nativeElements: [],
+      unknownRenderRoots: [],
     };
 
     const importedComponents = new Map<string, string>();
+    const importedComponentDetails = new Map<
+      string,
+      {
+        importKind: 'default' | 'named';
+        importedName?: string;
+        line: number;
+        column: number;
+      }
+    >();
     const normalizedImports = new Map<string, string>();
+    const lineIndex = buildLineIndex(content);
 
     let t0 = Date.now();
     const scripts = extractVueScripts(content);
@@ -455,6 +599,21 @@ export class ComponentAnalyzer {
                 const name = spec.local.name;
                 if (/^[A-Z]/.test(name)) {
                   importedComponents.set(name, source);
+                  const relativeLoc = spec.loc?.start ?? path.node.loc?.start;
+                  const scriptLineIndex = buildLineIndex(script.content);
+                  const relativeOffset = relativeLoc
+                    ? (scriptLineIndex[relativeLoc.line - 1] ?? 0) + relativeLoc.column
+                    : 0;
+                  const loc = indexToLoc(lineIndex, script.start + relativeOffset);
+                  importedComponentDetails.set(name, {
+                    importKind: t.isImportDefaultSpecifier(spec) ? 'default' : 'named',
+                    importedName:
+                      t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)
+                        ? spec.imported.name
+                        : undefined,
+                    line: loc.line,
+                    column: loc.column,
+                  });
                 }
               }
             });
@@ -475,7 +634,6 @@ export class ComponentAnalyzer {
     timings.parseTemplate = Date.now() - tParse;
 
     t0 = Date.now();
-    const lineIndex = buildLineIndex(content);
     const templateStart = templateBlock.start;
     const navStack: NavInfo[] = [];
     const sectionStack: SectionInfo[] = [];
@@ -538,6 +696,28 @@ export class ComponentAnalyzer {
         groupStack.push({ groupKey });
         const tag = node.tagName;
         const loc = indexToLoc(lineIndex, templateStart + node.startIndex);
+        const componentTag = isVueComponentTag(tag);
+        if (!componentTag && tag !== "root") {
+          if (parentTag === "root" && (tag === "template" || tag === "slot")) {
+            componentDef.unknownRenderRoots.push({
+              reason: tag === "slot" ? "slot-or-children" : "fragment-boundary",
+              line: loc.line,
+              column: loc.column,
+              message:
+                tag === "slot"
+                  ? "A root slot is supplied at runtime and has no statically proven native output."
+                  : "A root template fragment does not prove one native semantic output.",
+            });
+          } else {
+            componentDef.nativeElements.push({
+              tagName: tag,
+              line: loc.line,
+              column: loc.column,
+              renderGroup: groupKey,
+              isRenderRoot: parentTag === "root",
+            });
+          }
+        }
 
         if (tag === "section") {
           const sectionInfo: SectionInfo = {
@@ -601,13 +781,14 @@ export class ComponentAnalyzer {
         if (node.attrs && node.attrs.id !== undefined) {
           componentDef.ids.push({
             id: String(node.attrs.id),
+            tagName: tag,
             line: loc.line,
             column: loc.column,
             filePath,
           });
         }
 
-        if (isVueComponentTag(tag)) {
+        if (componentTag) {
           const lookupKey = normalizeComponentKey(tag);
           const importName = normalizedImports.get(lookupKey);
           const componentName = importName ?? tag;
@@ -623,13 +804,23 @@ export class ComponentAnalyzer {
               inListDirect: parentTag === "ul" || parentTag === "ol",
               inSection: sectionStack.length > 0,
               renderGroup: groupKey,
+              semanticRenderGroup: groupKey,
+              isRenderRoot: parentTag === "root",
             });
             ref = existingRef;
           } else {
+            const importDetails = importName
+              ? importedComponentDetails.get(importName)
+              : undefined;
             ref = {
               name: componentName,
               path: null,
               rawImportPath,
+              importKind: importDetails?.importKind,
+              importedName: importDetails?.importedName,
+              importLocation: importDetails
+                ? { line: importDetails.line, column: importDetails.column }
+                : undefined,
               sourceLocation: location,
               usageLocations: [
                 {
@@ -637,6 +828,8 @@ export class ComponentAnalyzer {
                   inListDirect: parentTag === "ul" || parentTag === "ol",
                   inSection: sectionStack.length > 0,
                   renderGroup: groupKey,
+                  semanticRenderGroup: groupKey,
+                  isRenderRoot: parentTag === "root",
                 },
               ],
             };
@@ -736,6 +929,20 @@ export class ComponentAnalyzer {
       component.issues.get(rule)!.push(issue);
     }
     this.componentRegistry.set(component.filePath, component);
+  }
+
+  /**
+   * Return a deterministic semantic graph for the components analyzed by this
+   * instance. This is additive to the existing rule-oriented traversal.
+   */
+  buildSemanticGraph(): SemanticGraph {
+    const graph = createSemanticGraph(
+      this.componentRegistry,
+      this.options.rootDir ?? process.cwd(),
+      this.maxDepth
+    );
+    assertValidSemanticGraph(graph);
+    return graph;
   }
 
   private getRuleType(msg: string): string {
@@ -1375,6 +1582,865 @@ export class ComponentAnalyzer {
     dfs(root, depth);
     return res;
   }
+}
+
+function isComponentFunctionPath(
+  functionPath: NodePath<t.Node>,
+  componentName: string
+): boolean {
+  const isDefaultExport = functionPath.parentPath?.isExportDefaultDeclaration() ?? false;
+  let declaredName: string | undefined;
+  if (functionPath.isFunctionDeclaration() || functionPath.isFunctionExpression()) {
+    declaredName = functionPath.node.id?.name;
+  }
+  if (
+    !declaredName &&
+    (functionPath.isArrowFunctionExpression() || functionPath.isFunctionExpression()) &&
+    functionPath.parentPath?.isVariableDeclarator() &&
+    t.isIdentifier(functionPath.parentPath.node.id)
+  ) {
+    declaredName = functionPath.parentPath.node.id.name;
+  }
+  return isDefaultExport || declaredName === componentName;
+}
+
+function isReturnedJsxRoot(
+  jsxPath: NodePath<t.JSXElement | t.JSXFragment>,
+  componentName: string
+): boolean {
+  const functionPath = jsxPath.findParent((candidate) => candidate.isFunction());
+  if (!functionPath || !isComponentFunctionPath(functionPath, componentName)) {
+    return false;
+  }
+
+  let current: NodePath<t.Node> = jsxPath as NodePath<t.Node>;
+  let parent = current.parentPath;
+  while (parent && parent !== functionPath) {
+    if (parent.isJSXElement() || parent.isJSXFragment()) return false;
+    if (parent.isReturnStatement()) {
+      return parent.node.argument === current.node;
+    }
+    current = parent as NodePath<t.Node>;
+    parent = parent.parentPath;
+  }
+
+  return (
+    functionPath.isArrowFunctionExpression() &&
+    functionPath.node.body === current.node
+  );
+}
+
+function getSemanticJsxRenderGroup(path: NodePath<t.Node>): string {
+  const base = getJsxRenderGroup(path);
+  if (base.includes('|cond:')) return base;
+  const logicalPath = path.findParent((candidate) => candidate.isLogicalExpression());
+  if (!logicalPath || !logicalPath.node.loc) return base;
+  const loc = logicalPath.node.loc.start;
+  return `${base}|cond:logical-${loc.line}:${loc.column}:branch`;
+}
+
+function unwrapJsxReturnExpression(
+  expression: t.Expression | null | undefined
+): t.Expression | null {
+  let current = expression ?? null;
+  while (
+    current &&
+    (t.isTSAsExpression(current) ||
+      t.isTSTypeAssertion(current) ||
+      t.isTSNonNullExpression(current) ||
+      t.isParenthesizedExpression(current))
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
+function createSemanticGraph(
+  registry: Map<string, ComponentDefinition>,
+  rootDirectory: string,
+  maxDepth: number | undefined
+): SemanticGraph {
+  const root = path.resolve(rootDirectory);
+  const components = Array.from(registry.values()).sort((left, right) =>
+    normalizeGraphPath(left.filePath).localeCompare(
+      normalizeGraphPath(right.filePath)
+    )
+  );
+  const fileIds = new Map<string, SemanticFileId>();
+  const componentIds = new Map<string, SemanticComponentId>();
+
+  for (const component of components) {
+    const key = graphPathKey(root, component.filePath);
+    fileIds.set(component.filePath, `file:${key}`);
+    componentIds.set(
+      component.filePath,
+      `component:${key}#${encodeURIComponent(component.name)}`
+    );
+  }
+
+  const frameworkFor = (filePath: string): 'react' | 'vue' =>
+    path.extname(filePath).toLowerCase() === '.vue' ? 'vue' : 'react';
+  const sourceProvenance = (
+    filePath: string,
+    line = 0,
+    column = 0,
+    description?: string
+  ): SemanticSourceProvenance => ({
+    kind: 'source',
+    fileId: fileIds.get(filePath)!,
+    range: { start: { line, column } },
+    framework: frameworkFor(filePath),
+    extractor: 'ComponentAnalyzer',
+    confidence: 'certain',
+    description,
+  });
+  const unknown = (
+    filePath: string,
+    reason: SemanticUnknown['reason'],
+    line: number,
+    column: number,
+    message: string
+  ): SemanticUnknown => ({
+    state: 'unknown',
+    reason,
+    message,
+    provenance: sourceProvenance(filePath, line, column),
+  });
+
+  const importedFiles = new Set<string>();
+  for (const component of components) {
+    for (const ref of component.usesComponents) {
+      if (ref.path && registry.has(ref.path)) importedFiles.add(ref.path);
+    }
+  }
+  const entryComponents = components.filter(
+    (component) => !importedFiles.has(component.filePath)
+  );
+  const depths = collectComponentDepths(entryComponents, registry);
+  const boundaryUnknowns: SemanticUnknown[] = [];
+  const renderNodes: SemanticRenderNode[] = [];
+  const composition: SemanticCompositionEdge[] = [];
+  const imports: SemanticImportEdge[] = [];
+  const fragmentIds = new Map<string, string>();
+  const nativeNodesByComponent = new Map<
+    string,
+    Map<string, SemanticNativeElementNode>
+  >();
+
+  for (const component of components) {
+    const fileId = fileIds.get(component.filePath)!;
+    const componentId = componentIds.get(component.filePath)!;
+    const key = graphPathKey(root, component.filePath);
+    const fragmentId = `render:${key}#root`;
+    fragmentIds.set(component.filePath, fragmentId);
+    renderNodes.push({
+      kind: 'fragment',
+      id: fragmentId,
+      fileId,
+      fragmentKind:
+        frameworkFor(component.filePath) === 'vue' ? 'vue-template' : 'unknown',
+      provenance: sourceProvenance(
+        component.filePath,
+        0,
+        0,
+        'Normalized render ownership; the current analyzer does not retain a full native-element tree.'
+      ),
+    });
+    composition.push({
+      kind: 'composition',
+      id: `composition:${key}#root`,
+      from: componentId,
+      to: { state: 'resolved', id: fragmentId },
+      relation: 'renders',
+      order: { state: 'known', value: 0 },
+      cardinality: 'one',
+      condition: { kind: 'always' },
+      traversal: { state: 'complete' },
+      provenance: sourceProvenance(component.filePath),
+    });
+
+    const nativeElements = collectNativeElements(
+      component,
+      fileId,
+      key,
+      sourceProvenance
+    );
+    renderNodes.push(...nativeElements);
+    nativeNodesByComponent.set(
+      component.filePath,
+      new Map(
+        nativeElements.map((node) => [
+          nativeElementKey(
+            node.tagName,
+            node.provenance.range?.start.line ?? 0,
+            node.provenance.range?.start.column ?? 0
+          ),
+          node,
+        ])
+      )
+    );
+    const orderedItems: Array<
+      | {
+          kind: 'native';
+          line: number;
+          column: number;
+          id: string;
+          renderGroup?: string;
+        }
+      | {
+          kind: 'component';
+          line: number;
+          column: number;
+          ref: ComponentReference;
+          usageIndex: number;
+        }
+    > = nativeElements.map((node) => {
+      const line = node.provenance.range?.start.line ?? 0;
+      const column = node.provenance.range?.start.column ?? 0;
+      return {
+        kind: 'native',
+        line,
+        column,
+        id: node.id,
+        renderGroup: component.nativeElements.find(
+          (candidate) =>
+            candidate.tagName === node.tagName &&
+            candidate.line === line &&
+            candidate.column === column
+        )?.renderGroup,
+      };
+    });
+    for (const ref of component.usesComponents) {
+      const usages = ref.usageLocations.length ? ref.usageLocations : [ref.sourceLocation];
+      usages.forEach((usage, usageIndex) => {
+        orderedItems.push({
+          kind: 'component',
+          line: usage.line,
+          column: usage.column,
+          ref,
+          usageIndex,
+        });
+      });
+
+      if (ref.rawImportPath) {
+        const loc = ref.importLocation ?? ref.sourceLocation;
+        const targetId = ref.path ? componentIds.get(ref.path) : undefined;
+        const target = targetId
+          ? ({ state: 'resolved', id: targetId } as const)
+          : unknown(
+              component.filePath,
+              ref.path ? 'unsupported-syntax' : 'unresolved-import',
+              loc.line,
+              loc.column,
+              ref.path
+                ? `Resolved '${ref.rawImportPath}', but no supported component was extracted from it.`
+                : `ComponentPathResolver could not resolve '${ref.rawImportPath}'.`
+            );
+        if (target.state === 'unknown') boundaryUnknowns.push(target);
+        imports.push({
+          kind: 'import',
+          id: `import:${key}#${encodeURIComponent(ref.name)}`,
+          sourceFileId: fileId,
+          specifier: ref.rawImportPath,
+          importKind: ref.importKind ?? 'default',
+          importedName: ref.importedName,
+          localName: ref.name,
+          target,
+          provenance: sourceProvenance(component.filePath, loc.line, loc.column),
+        });
+      }
+    }
+
+    orderedItems.sort((left, right) =>
+      left.line - right.line ||
+      left.column - right.column ||
+      (left.kind === right.kind ? 0 : left.kind === 'native' ? -1 : 1)
+    );
+    orderedItems.forEach((item, order) => {
+      if (item.kind === 'native') {
+        const condition = conditionForRenderGroup(
+          item.renderGroup,
+          component.filePath,
+          item.line,
+          item.column,
+          unknown
+        );
+        if (condition.kind === 'branch' && condition.expression.state === 'unknown') {
+          boundaryUnknowns.push(condition.expression);
+        } else if (condition.kind === 'unknown') {
+          boundaryUnknowns.push(condition.unknown);
+        }
+        composition.push({
+          kind: 'composition',
+          id: `composition:${key}#native-${order}`,
+          from: fragmentId,
+          to: { state: 'resolved', id: item.id },
+          relation: 'renders',
+          order: { state: 'known', value: order },
+          cardinality: condition.kind === 'always' ? 'one' : 'optional',
+          condition,
+          traversal: { state: 'complete' },
+          provenance: sourceProvenance(component.filePath, item.line, item.column),
+        });
+        return;
+      }
+
+      const { ref } = item;
+      const resolvedId = ref.path ? componentIds.get(ref.path) : undefined;
+      const observedDepth = (depths.get(component.filePath) ?? 0) + 1;
+      const depthLimited = maxDepth !== undefined && observedDepth > maxDepth;
+      const target = resolvedId
+        ? ({ state: 'resolved', id: resolvedId } as const)
+        : unknown(
+            component.filePath,
+            depthLimited
+              ? 'depth-limit'
+              : ref.rawImportPath
+                ? ref.path
+                  ? 'unsupported-syntax'
+                  : 'unresolved-import'
+                : 'runtime-composition',
+            item.line,
+            item.column,
+            depthLimited
+              ? `Component traversal stopped beyond configured depth ${maxDepth}.`
+              : ref.rawImportPath
+                ? `No supported component output is available for '${ref.name}'.`
+                : `Component '${ref.name}' has no statically resolved import.`
+          );
+      if (target.state === 'unknown') boundaryUnknowns.push(target);
+
+      let traversal: SemanticTraversalState = { state: 'complete' };
+      if (resolvedId && ref.path) {
+        const backPath = findComponentPath(ref.path, component.filePath, registry);
+        if (backPath) {
+          const cycle = [
+            componentId,
+            ...backPath.map((filePath) => componentIds.get(filePath)!),
+          ];
+          const cycleUnknown = unknown(
+            component.filePath,
+            'cycle',
+            item.line,
+            item.column,
+            `Component composition cycle: ${cycle.join(' -> ')}`
+          );
+          boundaryUnknowns.push(cycleUnknown);
+          traversal = {
+            state: 'boundary',
+            reason: 'cycle',
+            cycle,
+            unknown: cycleUnknown,
+          };
+        } else if (depthLimited) {
+          const depthUnknown = unknown(
+            component.filePath,
+            'depth-limit',
+            item.line,
+            item.column,
+            `Component traversal stopped at depth ${observedDepth}; maximum is ${maxDepth}.`
+          );
+          boundaryUnknowns.push(depthUnknown);
+          traversal = {
+            state: 'boundary',
+            reason: 'depth-limit',
+            depth: observedDepth,
+            maxDepth: maxDepth!,
+            unknown: depthUnknown,
+          };
+        }
+      } else if (depthLimited) {
+        const depthUnknown = target.state === 'unknown'
+          ? target
+          : unknown(
+              component.filePath,
+              'depth-limit',
+              item.line,
+              item.column,
+              `Component traversal stopped beyond configured depth ${maxDepth}.`
+            );
+        traversal = {
+          state: 'boundary',
+          reason: 'depth-limit',
+          depth: observedDepth,
+          maxDepth: maxDepth!,
+          unknown: depthUnknown,
+        };
+      }
+
+      const condition = conditionForRenderGroup(
+        ref.usageLocations[item.usageIndex]?.semanticRenderGroup ??
+          ref.usageLocations[item.usageIndex]?.renderGroup,
+        component.filePath,
+        item.line,
+        item.column,
+        unknown
+      );
+      if (condition.kind === 'branch' && condition.expression.state === 'unknown') {
+        boundaryUnknowns.push(condition.expression);
+      } else if (condition.kind === 'unknown') {
+        boundaryUnknowns.push(condition.unknown);
+      }
+      composition.push({
+        kind: 'composition',
+        id: `composition:${key}#component-${encodeURIComponent(ref.name)}-${item.usageIndex}`,
+        from: fragmentId,
+        to: target,
+        relation: 'uses-component',
+        order: { state: 'known', value: order },
+        cardinality: condition.kind === 'always' ? 'one' : 'optional',
+        condition,
+        traversal,
+        provenance: sourceProvenance(component.filePath, item.line, item.column),
+      });
+    });
+  }
+
+  const semanticOutputs = new Map<string, SemanticComponentOutput>();
+  const inferSemanticOutput = (
+    component: ComponentDefinition,
+    stack: readonly string[] = []
+  ): SemanticComponentOutput => {
+    const cached = semanticOutputs.get(component.filePath);
+    if (cached) return cached;
+    const componentId = componentIds.get(component.filePath)!;
+    if (stack.includes(component.filePath)) {
+      return unknown(
+        component.filePath,
+        'cycle',
+        0,
+        0,
+        `Semantic output inference stopped at the component cycle containing '${component.name}'.`
+      );
+    }
+
+    const unknownRoot = component.unknownRenderRoots[0];
+    if (unknownRoot) {
+      const result = unknown(
+        component.filePath,
+        unknownRoot.reason,
+        unknownRoot.line,
+        unknownRoot.column,
+        unknownRoot.message
+      );
+      semanticOutputs.set(component.filePath, result);
+      return result;
+    }
+
+    const nativeRoots = component.nativeElements
+      .filter((candidate) => candidate.isRenderRoot)
+      .map((candidate) => ({ kind: 'native' as const, candidate }));
+    const componentRoots = component.usesComponents.flatMap((ref) =>
+      ref.usageLocations
+        .filter((usage) => usage.isRenderRoot)
+        .map((usage) => ({ kind: 'component' as const, ref, usage }))
+    );
+    const roots = [...nativeRoots, ...componentRoots];
+    const hasConditionalRoot = roots.some((root) => {
+      const group = root.kind === 'native'
+        ? root.candidate.renderGroup
+        : root.usage.semanticRenderGroup ?? root.usage.renderGroup;
+      return group?.includes('|cond:') ?? false;
+    });
+
+    if (roots.length !== 1 || hasConditionalRoot) {
+      const first = roots[0];
+      const line = first
+        ? first.kind === 'native'
+          ? first.candidate.line
+          : first.usage.line
+        : 0;
+      const column = first
+        ? first.kind === 'native'
+          ? first.candidate.column
+          : first.usage.column
+        : 0;
+      const result = unknown(
+        component.filePath,
+        hasConditionalRoot ? 'conditional-render' : 'runtime-composition',
+        line,
+        column,
+        roots.length === 0
+          ? `No single returned native or custom-component root is statically proven for '${component.name}'.`
+          : hasConditionalRoot
+            ? `Conditional output for '${component.name}' remains unknown even when a branch contains semantic markup.`
+            : `Multiple possible render roots for '${component.name}' do not prove one semantic output.`
+      );
+      semanticOutputs.set(component.filePath, result);
+      return result;
+    }
+
+    const rootCandidate = roots[0];
+    if (rootCandidate.kind === 'native') {
+      const { candidate } = rootCandidate;
+      const node = nativeNodesByComponent
+        .get(component.filePath)
+        ?.get(nativeElementKey(candidate.tagName, candidate.line, candidate.column));
+      if (!node) {
+        const result = unknown(
+          component.filePath,
+          'unsupported-syntax',
+          candidate.line,
+          candidate.column,
+          `The native render root for '${component.name}' was not normalized into the graph.`
+        );
+        semanticOutputs.set(component.filePath, result);
+        return result;
+      }
+      const result: SemanticComponentOutput = {
+        state: 'known',
+        tagName: node.tagName,
+        namespace: node.namespace,
+        confidence: 'inferred',
+        evidence: {
+          componentPath: [componentId],
+          renderNodeId: node.id,
+          provenance: node.provenance,
+        },
+        provenance: {
+          ...sourceProvenance(
+            component.filePath,
+            candidate.line,
+            candidate.column,
+            `Inferred '${component.name}' as <${node.tagName}> from its single unconditional native render root.`
+          ),
+          kind: 'inferred',
+          confidence: 'inferred',
+        },
+      };
+      semanticOutputs.set(component.filePath, result);
+      return result;
+    }
+
+    const { ref, usage } = rootCandidate;
+    const child = ref.path ? registry.get(ref.path) : undefined;
+    const childId = ref.path ? componentIds.get(ref.path) : undefined;
+    if (!child || !childId) {
+      const result = unknown(
+        component.filePath,
+        ref.rawImportPath ? 'unresolved-import' : 'runtime-composition',
+        usage.line,
+        usage.column,
+        `The root component '${ref.name}' does not have a supported, resolved local definition.`
+      );
+      semanticOutputs.set(component.filePath, result);
+      return result;
+    }
+    const childOutput = inferSemanticOutput(child, [...stack, component.filePath]);
+    if (childOutput.state === 'unknown') {
+      const result: SemanticUnknown = {
+        ...unknown(
+          component.filePath,
+          childOutput.reason,
+          usage.line,
+          usage.column,
+          `The root component '${ref.name}' has unknown semantic output: ${childOutput.message ?? childOutput.reason}.`
+        ),
+        relatedEntityIds: [componentId, childId],
+      };
+      semanticOutputs.set(component.filePath, result);
+      return result;
+    }
+    const result: SemanticComponentOutput = {
+      state: 'known',
+      tagName: childOutput.tagName,
+      namespace: childOutput.namespace,
+      confidence: 'inferred',
+      evidence: {
+        componentPath: [componentId, ...childOutput.evidence.componentPath],
+        renderNodeId: childOutput.evidence.renderNodeId,
+        provenance: childOutput.evidence.provenance,
+      },
+      provenance: {
+        ...sourceProvenance(
+          component.filePath,
+          usage.line,
+          usage.column,
+          `Inferred '${component.name}' as <${childOutput.tagName}> through root component '${ref.name}'.`
+        ),
+        kind: 'inferred',
+        confidence: 'inferred',
+      },
+    };
+    semanticOutputs.set(component.filePath, result);
+    return result;
+  };
+
+  for (const component of components) {
+    const output = inferSemanticOutput(component);
+    if (output.state === 'unknown') boundaryUnknowns.push(output);
+  }
+
+  if (entryComponents.length === 0 && components.length > 0) {
+    boundaryUnknowns.push({
+      state: 'unknown',
+      reason: 'missing-page-root',
+      message: 'No acyclic component entry point could be inferred.',
+      provenance: {
+        kind: 'analysis',
+        extractor: 'ComponentAnalyzer',
+        confidence: 'certain',
+      },
+    });
+  }
+
+  const pageRoots = entryComponents.map((component) => {
+    const routeUnknown = unknown(
+      component.filePath,
+      'missing-page-root',
+      0,
+      0,
+      'Entry-point inference does not prove a route identity.'
+    );
+    boundaryUnknowns.push(routeUnknown);
+    return {
+      kind: 'page-root' as const,
+      id: `page:${graphPathKey(root, component.filePath)}`,
+      route: routeUnknown,
+      rootComponent: {
+        state: 'resolved' as const,
+        id: componentIds.get(component.filePath)!,
+      },
+      renderRoots: [
+        { state: 'resolved' as const, id: fragmentIds.get(component.filePath)! },
+      ],
+      discovery: 'entry-point-heuristic' as const,
+      provenance: {
+        ...sourceProvenance(component.filePath),
+        kind: 'derived' as const,
+        confidence: 'inferred' as const,
+      },
+    };
+  });
+
+  const graph: SemanticGraph = {
+    schemaVersion: SEMANTIC_GRAPH_SCHEMA_VERSION,
+    boundary: {
+      rootDirectory: root,
+      maxDepth,
+      completeness: boundaryUnknowns.length
+        ? { state: 'incomplete', unknowns: boundaryUnknowns }
+        : { state: 'complete' },
+    },
+    files: components.map((component) => {
+      const ext = path.extname(component.filePath).toLowerCase();
+      return {
+        kind: 'file' as const,
+        id: fileIds.get(component.filePath)!,
+        path: component.filePath,
+        language: ext === '.vue' ? 'vue' as const : ext === '.tsx' ? 'typescript' as const : 'javascript' as const,
+        framework: frameworkFor(component.filePath),
+        componentIds: [componentIds.get(component.filePath)!],
+        provenance: sourceProvenance(component.filePath),
+      };
+    }),
+    components: components.map((component) => ({
+      kind: 'component' as const,
+      id: componentIds.get(component.filePath)!,
+      fileId: fileIds.get(component.filePath)!,
+      name: component.name,
+      renderRoots: [{ state: 'resolved' as const, id: fragmentIds.get(component.filePath)! }],
+      semanticOutput: semanticOutputs.get(component.filePath)!,
+      provenance: sourceProvenance(component.filePath),
+    })),
+    renderNodes,
+    imports,
+    composition,
+    pageRoots,
+  };
+  return graph;
+}
+
+function normalizeGraphPath(filePath: string): string {
+  return filePath.replace(/\\/g, '/');
+}
+
+function graphPathKey(root: string, filePath: string): string {
+  const relative = path.relative(root, filePath);
+  const value = relative && !relative.startsWith(`..${path.sep}`) && relative !== '..'
+    ? relative
+    : path.resolve(filePath);
+  return normalizeGraphPath(value);
+}
+
+function collectComponentDepths(
+  entries: ComponentDefinition[],
+  registry: Map<string, ComponentDefinition>
+): Map<string, number> {
+  const depths = new Map<string, number>();
+  const queue = entries.map((component) => ({ component, depth: 0 }));
+  while (queue.length) {
+    const current = queue.shift()!;
+    const knownDepth = depths.get(current.component.filePath);
+    if (knownDepth !== undefined && knownDepth <= current.depth) continue;
+    depths.set(current.component.filePath, current.depth);
+    for (const ref of current.component.usesComponents) {
+      if (!ref.path) continue;
+      const child = registry.get(ref.path);
+      if (child) queue.push({ component: child, depth: current.depth + 1 });
+    }
+  }
+  return depths;
+}
+
+function findComponentPath(
+  startFile: string,
+  targetFile: string,
+  registry: Map<string, ComponentDefinition>,
+  visited = new Set<string>()
+): string[] | null {
+  if (startFile === targetFile) return [startFile];
+  if (visited.has(startFile)) return null;
+  visited.add(startFile);
+  const component = registry.get(startFile);
+  if (!component) return null;
+  for (const ref of component.usesComponents) {
+    if (!ref.path || !registry.has(ref.path)) continue;
+    const suffix = findComponentPath(ref.path, targetFile, registry, new Set(visited));
+    if (suffix) return [startFile, ...suffix];
+  }
+  return null;
+}
+
+function conditionForRenderGroup(
+  renderGroup: string | undefined,
+  filePath: string,
+  line: number,
+  column: number,
+  makeUnknown: (
+    filePath: string,
+    reason: SemanticUnknown['reason'],
+    line: number,
+    column: number,
+    message: string
+  ) => SemanticUnknown
+): SemanticRenderCondition {
+  if (!renderGroup || !renderGroup.includes('|cond:')) {
+    return { kind: 'always' };
+  }
+  const segment = renderGroup
+    .split('|')
+    .filter((part) => part.startsWith('cond:'))
+    .pop()!;
+  const parts = segment.split(':');
+  const branchId = parts.pop() ?? 'unknown';
+  return {
+    kind: 'branch',
+    groupId: parts.join(':'),
+    branchId,
+    mutuallyExclusive: true,
+    expression: makeUnknown(
+      filePath,
+      'dynamic-value',
+      line,
+      column,
+      'The current analyzer preserves branch identity but not the source expression.'
+    ),
+  };
+}
+
+function nativeElementKey(tagName: string, line: number, column: number): string {
+  return `${line}:${column}:${tagName}`;
+}
+
+function collectNativeElements(
+  component: ComponentDefinition,
+  fileId: SemanticFileId,
+  graphKey: string,
+  provenance: (
+    filePath: string,
+    line?: number,
+    column?: number,
+    description?: string
+  ) => SemanticSourceProvenance
+): SemanticNativeElementNode[] {
+  type Accumulator = {
+    tagName: string;
+    line: number;
+    column: number;
+    attributes: SemanticNativeElementNode['attributes'][number][];
+    semantics: SemanticNativeElementNode['semantics'][number][];
+  };
+  const elements = new Map<string, Accumulator>();
+  const ensure = (tagName: string, line: number, column: number): Accumulator => {
+    const key = nativeElementKey(tagName, line, column);
+    let value = elements.get(key);
+    if (!value) {
+      value = { tagName, line, column, attributes: [], semantics: [] };
+      elements.set(key, value);
+    }
+    return value;
+  };
+
+  component.nativeElements.forEach((element) => {
+    ensure(element.tagName, element.line, element.column);
+  });
+  component.headings.forEach((heading) => {
+    const element = ensure(`h${heading.level}`, heading.line, heading.column);
+    element.semantics.push({
+      kind: 'heading',
+      level: { state: 'known', value: heading.level },
+      provenance: provenance(component.filePath, heading.line, heading.column),
+    });
+  });
+  component.navs.forEach((nav) => {
+    const element = ensure('nav', nav.line, nav.column);
+    element.semantics.push(
+      {
+        kind: 'role',
+        value: { state: 'known', value: 'navigation' },
+        origin: 'implicit',
+        provenance: provenance(component.filePath, nav.line, nav.column),
+      },
+      {
+        kind: 'landmark',
+        value: { state: 'known', value: 'navigation' },
+        provenance: provenance(component.filePath, nav.line, nav.column),
+      }
+    );
+  });
+  component.sections.forEach((section) => {
+    ensure('section', section.line, section.column);
+  });
+  component.listItems.forEach((item) => {
+    const element = ensure('li', item.line, item.column);
+    element.semantics.push({
+      kind: 'role',
+      value: { state: 'known', value: 'listitem' },
+      origin: 'implicit',
+      provenance: provenance(component.filePath, item.line, item.column),
+    });
+  });
+  component.ids.forEach((id) => {
+    const element = ensure(id.tagName, id.line, id.column);
+    element.attributes.push({
+      name: 'id',
+      value: { state: 'known', value: id.id },
+      provenance: provenance(component.filePath, id.line, id.column),
+    });
+    element.semantics.push({
+      kind: 'document-id',
+      value: { state: 'known', value: id.id },
+      provenance: provenance(component.filePath, id.line, id.column),
+    });
+  });
+
+  return Array.from(elements.values())
+    .sort((left, right) =>
+      left.line - right.line ||
+      left.column - right.column ||
+      left.tagName.localeCompare(right.tagName)
+    )
+    .map((element, index) => ({
+      kind: 'native-element',
+      id: `render:${graphKey}#${element.line}:${element.column}:${element.tagName}:${index}`,
+      fileId,
+      tagName: element.tagName,
+      namespace: 'html',
+      attributes: element.attributes,
+      semantics: element.semantics,
+      provenance: provenance(component.filePath, element.line, element.column),
+    }));
 }
 
 const NON_COMPONENT_TAGS = new Set([
