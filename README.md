@@ -216,6 +216,30 @@ Use `--cross` to enable cross-component analysis.
 Use `--perf` to emit a JSON timing report to stdout, and `--perf-slowest` to
 also print the slowest file and phase.
 
+### Output formats and exit codes
+
+`zemdomu check` accepts the same file patterns as the existing command and can
+write one of three equivalent views of the canonical diagnostic contract:
+
+```bash
+zemdomu check "src/**/*.{html,jsx,tsx,vue}" --format pretty
+zemdomu check "src/**/*.{html,jsx,tsx,vue}" --format json
+zemdomu check "src/**/*.{html,jsx,tsx,vue}" --format sarif
+```
+
+`pretty` is the default and writes readable diagnostics to stderr. `json` and
+`sarif` write only their machine-readable JSON document to stdout; operational
+and invocation errors always go to stderr. JSON contains a deterministic,
+source-sorted array of schema `1.0` `ZemDomuDiagnostic` objects. SARIF uses
+version `2.1.0`, maps canonical related locations to SARIF
+`relatedLocations`, and stores page/component-path context in structured SARIF
+properties rather than adding presentation text to the diagnostic message.
+
+The CLI exits with `0` when no diagnostics are emitted, `1` when it emits one
+or more diagnostics, and `2` for invalid CLI usage. `--perf` and
+`--perf-slowest` are only available with `--format pretty` so machine output is
+never mixed with timing output.
+
 ## Cross-Component Analysis
 
 When analyzing JSX or Vue projects you can track semantic issues across

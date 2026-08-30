@@ -26,8 +26,13 @@ export {
 export type { JsxValueState } from "./rules/utils";
 export type { HtmlVisitor } from "./html-visitor";
 export { visitHtml } from "./html-visitor";
-export { resultsToSarif, RULE_DOCS_BASE } from "./sarif";
-export type { SarifLog } from "./sarif";
+export {
+  diagnosticsToSarif,
+  resultsToSarif,
+  RULE_DOCS_BASE,
+  SARIF_SCHEMA_URI,
+} from "./sarif";
+export type { SarifLocation, SarifLog } from "./sarif";
 export { getRuleCode, RULE_CODES, RULE_CLASSIFICATIONS } from "./rule-codes";
 export type { RuleClassification } from "./rule-codes";
 export {
