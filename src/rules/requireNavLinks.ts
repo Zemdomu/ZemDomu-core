@@ -5,7 +5,7 @@ import { LintResult, Rule } from '../linter';
 import { getTag, hasHtmlLinkAttribute, hasJsxLinkAttribute } from './utils';
 
 export default function requireNavLinks(): Rule {
-  const stack: Array<{hasLink:boolean}> = [];
+  const stack: Array<{hasLink:boolean; hasUnknownContent?: boolean}> = [];
   return {
     name: 'requireNavLinks',
     enterHtml(node: Node): LintResult[] {
@@ -28,7 +28,14 @@ export default function requireNavLinks(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
-      if (tag === 'nav') stack.push({hasLink:false});
+      if (tag === 'nav') {
+        stack.push({
+          hasLink: false,
+          hasUnknownContent: path.node.openingElement.attributes.some((attr) =>
+            t.isJSXSpreadAttribute(attr)
+          ),
+        });
+      }
       if (stack.length) {
         if (tag === 'a') {
           stack[stack.length-1].hasLink = true;
@@ -44,7 +51,7 @@ export default function requireNavLinks(): Rule {
       const tag = getTag(path);
       if (tag === 'nav') {
         const entry = stack.pop();
-        if (entry && !entry.hasLink) {
+        if (entry && !entry.hasLink && !entry.hasUnknownContent) {
           const line = (path.node.loc?.start.line ?? 1) - 1;
           const column = path.node.loc?.start.column ?? 0;
           return [{ line, column, message: '<nav> contains no links', rule: 'requireNavLinks' }];

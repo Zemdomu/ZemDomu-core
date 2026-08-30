@@ -124,7 +124,7 @@ function isHtmlInputExempt(node: ElementNode): boolean {
 }
 
 function isJsxInputExempt(opening: t.JSXOpeningElement): boolean {
-  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
   if (tag !== 'input') return false;
   if (isJsxHidden(opening)) return true;
   const type = (getStaticJsxString(opening, 'type') ?? 'text')
@@ -168,7 +168,7 @@ function jsxChildTextState(child: JsxChild, hidden: boolean): JsxValueState {
 
 function jsxElementTextState(node: t.JSXElement, parentHidden: boolean): JsxValueState {
   const opening = node.openingElement;
-  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
   const hidden = parentHidden || isJsxHidden(opening);
   if (hidden) return 'empty';
   if (tag === 'img') {
@@ -232,7 +232,7 @@ export default function requireLabelForFormControls(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (tag === 'label') {
         const htmlFor = getJsxAttr(opening, 'htmlFor') ?? getJsxAttr(opening, 'for');
         if (htmlFor && htmlFor.trim()) jsxLabels.add(htmlFor.trim());
@@ -250,7 +250,7 @@ export default function requireLabelForFormControls(): Rule {
           (parent) =>
             parent.isJSXElement() &&
             t.isJSXIdentifier(parent.node.openingElement.name) &&
-            parent.node.openingElement.name.name.toLowerCase() === 'label'
+            parent.node.openingElement.name.name === 'label'
         );
         jsxControls.push({
           node: path.node,
@@ -273,8 +273,18 @@ export default function requireLabelForFormControls(): Rule {
           (implicitLabel && hasHtmlAccessibleText(implicitLabel, false)) ||
           isHtmlInputExempt(node)
         ) continue;
-        const aria = node.attrs['aria-label'];
+        if (
+          Object.prototype.hasOwnProperty.call(node.attrs, 'v-bind') &&
+          node.attrs['v-bind'].trim()
+        ) continue;
+        const aria =
+          node.attrs['aria-label'] ??
+          node.attrs[':aria-label'] ??
+          node.attrs['v-bind:aria-label'];
         if (aria && aria.trim()) continue;
+        const dynamicLabelledBy =
+          node.attrs[':aria-labelledby'] ?? node.attrs['v-bind:aria-labelledby'];
+        if (dynamicLabelledBy && dynamicLabelledBy.trim()) continue;
         if (hasHtmlAriaLabelledByText(node, htmlIds)) continue;
 
         const id = node.attrs.id;
@@ -301,6 +311,7 @@ export default function requireLabelForFormControls(): Rule {
 
       for (const entry of jsxControls) {
         const opening = entry.node.openingElement;
+        if (opening.attributes.some((attr) => t.isJSXSpreadAttribute(attr))) continue;
         if (
           (entry.implicitLabel &&
             jsxElementTextState(entry.implicitLabel, false) === 'present') ||

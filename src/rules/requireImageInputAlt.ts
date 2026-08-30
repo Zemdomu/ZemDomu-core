@@ -18,7 +18,7 @@ export default function requireImageInputAlt(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (tag === 'input') {
         const type = getJsxAttr(opening, 'type');
         if (type && type.toLowerCase() === 'image') {

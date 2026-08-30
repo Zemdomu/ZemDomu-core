@@ -30,6 +30,11 @@ interface Token {
   index: number;
 }
 
+const VOID_ELEMENTS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
 function parseAttributes(str: string): Record<string, string> {
   const attrs: Record<string, string> = {};
   str.replace(/([\w-:]+)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g, (_, name: string, value: string) => {
@@ -94,9 +99,16 @@ export function parse(html: string): ElementNode {
     if (token.type === 'open') {
       const node: ElementNode = { type: 'element', tagName: token.tag!, attrs: token.attrs || {}, children: [], startIndex: token.index, selfClosing: token.selfClosing };
       parent.children.push(node);
-      if (!token.selfClosing) stack.push(node);
+      if (!token.selfClosing && !VOID_ELEMENTS.has(node.tagName)) stack.push(node);
     } else if (token.type === 'close') {
-      if (stack.length > 1) stack.pop();
+      let matchingIndex = -1;
+      for (let index = stack.length - 1; index > 0; index -= 1) {
+        if (stack[index].tagName === token.tag) {
+          matchingIndex = index;
+          break;
+        }
+      }
+      if (matchingIndex > 0) stack.length = matchingIndex;
     } else if (token.type === 'text') {
       parent.children.push({ type: 'text', text: token.text || '', startIndex: token.index });
     } else if (token.type === 'comment') {

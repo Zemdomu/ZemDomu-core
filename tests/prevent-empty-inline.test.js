@@ -15,4 +15,13 @@ assert.ok(!results.some(r => r.rule === 'preventEmptyInlineTags'), 'Did not expe
 html = '<div><strong><span>text</span></strong><em><img alt="Status"></em></div>';
 results = lint(html);
 assert.ok(!results.some(r => r.rule === 'preventEmptyInlineTags'), 'Did not expect nested inline content warning');
+
+// CSS icon elements intentionally use classes or ARIA metadata instead of text.
+html = '<button><i class="fas fa-search"></i></button><i aria-hidden="true"></i>';
+results = lint(html);
+assert.ok(!results.some(r => r.rule === 'preventEmptyInlineTags'), 'Did not expect intentional icon warning');
+
+const jsx = 'export default () => <button><i className="fas fa-search" /></button>;';
+results = lint(jsx);
+assert.ok(!results.some(r => r.rule === 'preventEmptyInlineTags'), 'Did not expect JSX icon warning');
 console.log('prevent-empty-inline tests passed');

@@ -21,7 +21,7 @@ export default function requireIframeTitle(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (tag === 'iframe') {
         const titleState = getJsxAttributeState(opening, 'title', true);
         if (titleState === 'missing') {

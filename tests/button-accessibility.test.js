@@ -25,6 +25,8 @@ const passes = [
   '<button><span>Save</span></button>',
   '<button><img alt="Close" /></button>',
   '<button><span class="sr-only">Hidden label</span></button>',
+  '<button title="Close"></button>',
+  '<button :title="closeLabel"></button>',
 ];
 
 passes.forEach((html, idx) => {

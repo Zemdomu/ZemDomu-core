@@ -93,7 +93,7 @@ export function summarizeAccuracyCorpus(
 ): AccuracyCorpusSummary {
   const blockers: string[] = [];
   const finalFindings = finalizedFindings(study.findings);
-  const repositoryIds = new Set(finalFindings.map((finding) => finding.repositoryId));
+  const repositoryIds = new Set(study.repositoryIds);
   const syntaxCounts = { html: 0, jsx: 0, tsx: 0, vue: 0 };
   for (const finding of finalFindings) syntaxCounts[finding.syntax] += 1;
 

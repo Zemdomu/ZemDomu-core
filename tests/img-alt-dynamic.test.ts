@@ -49,4 +49,16 @@ describe("img alt text with dynamic values", () => {
       "Expected only the empty bound alt to warn"
     );
   });
+
+  it("allows images hidden from assistive technology without alt", () => {
+    const htmlResults = lint(`<img src="/star.svg" aria-hidden="true">`, { forceHtml: true });
+    const jsxResults = lint(`export default () => <img src="/star.svg" aria-hidden />;`);
+    assert.ok(!htmlResults.some((r) => r.rule === "requireAltText"));
+    assert.ok(!jsxResults.some((r) => r.rule === "requireAltText"));
+  });
+
+  it("does not treat a custom Image component as a native img", () => {
+    const results = lint(`export default () => <Image src="/star.svg" />;`);
+    assert.ok(!results.some((r) => r.rule === "requireAltText"));
+  });
 });

@@ -111,7 +111,7 @@ function jsxChildTextState(child: JsxChild, hidden: boolean): JsxValueState {
 
 function jsxElementTextState(node: t.JSXElement, parentHidden: boolean): JsxValueState {
   const opening = node.openingElement;
-  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
   const hidden = parentHidden || isJsxHidden(opening);
   if (hidden) return 'empty';
   if (tag === 'img') {

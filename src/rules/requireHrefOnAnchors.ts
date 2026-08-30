@@ -26,9 +26,15 @@ export default function requireHrefOnAnchors(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (tag === 'a') {
         const hrefState = getJsxAttributeState(opening, 'href', true);
+        if (
+          hrefState === 'missing' &&
+          opening.attributes.some((attr) => t.isJSXSpreadAttribute(attr))
+        ) {
+          return [];
+        }
         if (hrefState === 'missing' || hrefState === 'empty' || hrefState === 'possiblyEmpty') {
           const line = (opening.loc?.start.line ?? 1) - 1;
           const column = opening.loc?.start.column ?? 0;

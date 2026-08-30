@@ -15,6 +15,9 @@ describe("requireButtonText (JSX accessible name)", () => {
       `export default () => <button><span>Save</span></button>;`,
       `export default () => <button><img alt="Close" /></button>;`,
       `export default () => <button><span className="sr-only">Hidden label</span></button>;`,
+      `export default () => <button title="Close"></button>;`,
+      `export default ({ props }) => <button {...props}></button>;`,
+      `export default () => <Button></Button>;`,
       `export default () => (
         <div>
           <span id="first">Save</span>

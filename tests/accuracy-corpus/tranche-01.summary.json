@@ -1,0 +1,154 @@
+{
+  "repositoryCount": 10,
+  "syntaxCounts": {
+    "html": 386,
+    "jsx": 0,
+    "tsx": 7,
+    "vue": 14
+  },
+  "adjudicatedFindingCount": 407,
+  "excludedFindingCount": 3,
+  "unresolvedFindingCount": 0,
+  "precision": {
+    "numerator": 407,
+    "denominator": 407,
+    "rate": 1
+  },
+  "precisionByRule": {
+    "requireSectionHeading": {
+      "numerator": 22,
+      "denominator": 22,
+      "rate": 1
+    },
+    "enforceHeadingOrder": {
+      "numerator": 18,
+      "denominator": 18,
+      "rate": 1
+    },
+    "singleH1": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "requireAltText": {
+      "numerator": 37,
+      "denominator": 37,
+      "rate": 1
+    },
+    "requireLabelForFormControls": {
+      "numerator": 47,
+      "denominator": 47,
+      "rate": 1
+    },
+    "enforceListNesting": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "requireLinkText": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "requireTableCaption": {
+      "numerator": 10,
+      "denominator": 10,
+      "rate": 1
+    },
+    "preventEmptyInlineTags": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "requireHrefOnAnchors": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "requireButtonText": {
+      "numerator": 22,
+      "denominator": 22,
+      "rate": 1
+    },
+    "requireIframeTitle": {
+      "numerator": 12,
+      "denominator": 12,
+      "rate": 1
+    },
+    "requireHtmlLang": {
+      "numerator": 12,
+      "denominator": 12,
+      "rate": 1
+    },
+    "requireImageInputAlt": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "requireNavLinks": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "uniqueIds": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "noTabindexGreaterThanZero": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "preventZemdomuPlaceholders": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "requireDocumentTitle": {
+      "numerator": 5,
+      "denominator": 5,
+      "rate": 1
+    },
+    "requireSingleMain": {
+      "numerator": 200,
+      "denominator": 200,
+      "rate": 1
+    },
+    "ariaValidAttrValue": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    }
+  },
+  "recall": {
+    "numerator": 37,
+    "denominator": 37,
+    "rate": 1
+  },
+  "recallByCategory": {
+    "accessible-name": {
+      "numerator": 10,
+      "denominator": 10,
+      "rate": 1
+    },
+    "language": {
+      "numerator": 10,
+      "denominator": 10,
+      "rate": 1
+    },
+    "image-alt": {
+      "numerator": 10,
+      "denominator": 10,
+      "rate": 1
+    },
+    "other": {
+      "numerator": 7,
+      "denominator": 7,
+      "rate": 1
+    }
+  },
+  "pendingAxeDisagreementCount": 0,
+  "blockers": [],
+  "passes": true
+}

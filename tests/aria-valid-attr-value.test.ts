@@ -58,4 +58,12 @@ describe("ariaValidAttrValue", () => {
       "Did not expect warning for dynamic numeric expression"
     );
   });
+
+  it("accepts JSX shorthand for boolean-like ARIA attributes", () => {
+    const results = lint(`export default () => <span aria-hidden />;`);
+    assert.ok(
+      !results.some((r) => r.rule === "ariaValidAttrValue"),
+      "Did not expect a warning for aria-hidden={true} shorthand"
+    );
+  });
 });

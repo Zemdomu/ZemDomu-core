@@ -95,4 +95,48 @@ describe("html file classification", () => {
       "Expected main landmark warning for a normal HTML page"
     );
   });
+
+  it("recognizes Next.js root-layout metadata and deferred page landmarks", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zd-next-layout-"));
+    const appDir = path.join(tmp, "app");
+    fs.mkdirSync(appDir);
+    const file = path.join(appDir, "layout.tsx");
+    fs.writeFileSync(
+      file,
+      `export const metadata = { title: "Store" };
+       export default function Layout({ children }) {
+         return <html lang="en"><body>{children}</body></html>;
+       }`,
+      "utf8"
+    );
+
+    const linter = new ProjectLinter({
+      rules: {
+        requireDocumentTitle: "error",
+        requireSingleMain: "error",
+      },
+    });
+    const map = await linter.lintFile(file);
+    const results = map.get(file) ?? [];
+
+    assert.ok(!results.some((r) => r.rule === "requireDocumentTitle"));
+    assert.ok(!results.some((r) => r.rule === "requireSingleMain"));
+  });
+
+  it("still reports duplicate main landmarks in a Next.js root layout", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zd-next-layout-main-"));
+    const appDir = path.join(tmp, "app");
+    fs.mkdirSync(appDir);
+    const file = path.join(appDir, "layout.tsx");
+    fs.writeFileSync(
+      file,
+      `export const metadata = { title: "Store" };
+       export default function Layout() {
+         return <html lang="en"><body><main>One</main><main>Two</main></body></html>;
+       }`,
+      "utf8"
+    );
+    const results = (await new ProjectLinter().lintFile(file)).get(file) ?? [];
+    assert.ok(results.some((r) => r.rule === "requireSingleMain"));
+  });
 });

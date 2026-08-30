@@ -167,7 +167,9 @@ function hasHtmlExplicitAccessibleName(
 }
 
 function getJsxTagName(opening: t.JSXOpeningElement): string {
-  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  if (!t.isJSXIdentifier(opening.name)) return '';
+  const name = opening.name.name;
+  return name === name.toLowerCase() ? name : '';
 }
 
 function getStaticJsxAttrText(
@@ -369,6 +371,7 @@ export default function requireAltText(): Rule {
           htmlIds.get(trimmedId)!.push(node);
         }
         if (node.tagName === 'img') {
+          if (isHtmlHidden(node)) return [];
           const hasStaticAlt = Object.prototype.hasOwnProperty.call(node.attrs, 'alt');
           const boundAlt = node.attrs[':alt'] ?? node.attrs['v-bind:alt'];
           if (!hasStaticAlt && (boundAlt === undefined || !String(boundAlt).trim())) {
@@ -399,6 +402,7 @@ export default function requireAltText(): Rule {
       const opening = path.node.openingElement;
       const name = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (name !== 'img') return [];
+      if (isJsxHiddenFromAT(opening)) return [];
       const altAttr = getJsxAttribute(opening, 'alt');
       if (!altAttr) {
         const loc = opening.loc!.start;

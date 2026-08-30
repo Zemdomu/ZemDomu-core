@@ -1,0 +1,5950 @@
+{
+  "schemaVersion": 1,
+  "repositoryIds": [
+    "50projects50days",
+    "mdn-dom-examples",
+    "googlechrome-samples",
+    "nextjs-postgres-auth-starter",
+    "shadcn-taxonomy",
+    "vercel-commerce",
+    "bulletproof-react",
+    "vuejs-docs",
+    "antfu-vitesse",
+    "nuxt-movies"
+  ],
+  "evidence": {
+    "candidateBundleSha256": "d16f8ac59aa075987ee8b9dfd2f8764a4747d11d063a2f9bee3e6554c2737046",
+    "seedEvidenceSha256": "a2f53c97921ab8512e8b892a62f6ec01121f44ff2fcd497da4d49ec130de8084",
+    "axeEvidenceSha256": "c2595dec2a6e84fcac6db3fe2f16e7ac5981c3df3ad760ab6a21d379594de8ad"
+  },
+  "findings": [
+    {
+      "id": "zd20-ae13581f0f50256049e34cea",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "_project_starter_/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8ff0ec3242214320d5c7fe47",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "3d-boxes-background/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f91e8a026653c598974535b2",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "animated-countdown/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-69d0d25cebc926d71707016a",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "animated-navigation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-efec59688757e40b9937db73",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "animated-navigation/index.html",
+        "line": 16,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-70599d1095ec660997fa992b",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "auto-text-effect/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0cc6de458f962430e945bd03",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "background-slider/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c4c5a95273c26a2ffbb0cef2",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "background-slider/index.html",
+        "line": 50,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-d43ecf7eb8eb3e17503ce61a",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "background-slider/index.html",
+        "line": 54,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-8042b46e570eae59c78d5884",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "blurry-loading/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-eac6f7d58427553d0b48f08d",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "blurry-loading/index.html",
+        "line": 9,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-7eb290e294d688f45449b975",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "button-ripple-effect/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-43788f8b25071925c19b9661",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "content-placeholder/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-5645b09789a708c9c7cf57e8",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "custom-range-slider/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4985b27dbcc73b4febe83ac8",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "dad-jokes/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-482e310e2aae7d6836abd722",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "double-click-heart/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-01d4ab3905d3406708c7575e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1e329ea48baf19edea6e68a4",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 17,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-e3a484ecd1e808fa0bad49fd",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 21,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-d241174652bcdc549cafb4ee",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 25,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-ce8e245a958ac14ef8939fcb",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 36,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-ca08c58ecfd98aa480163e3a",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "double-vertical-slider/index.html",
+        "line": 39,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-8f79bbac9caf2a0a62c9ce9e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "drag-n-drop/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0bc66ed7515c16cf04e950ff",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "drawing-app/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-ac8bfb394ad48d25e16fe17d",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "drawing-app/index.html",
+        "line": 14,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-04261576c4c5f5bc506b7227",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "drink-water/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0c36a776d275b2f615544a58",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "drink-water/index.html",
+        "line": 10,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-b240ac6f8462012c523cfa7a",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "event-keycodes/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f4f3caaad957d7cde3d6b162",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "expanding-cards/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-ddf2a4a2e362b54b8aabad6b",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-36294f927b2a60b616a0ba2e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 13,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-2a21d05dc747f22fdfd46ea2",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 21,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-caf1788b9de9c4785cf477f8",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 34,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-0d5221f035fc4e18cc1ba6ba",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 47,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-012ba70793420269fd7113fa",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 60,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-3115c93c6c60a164810b2682",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "faq-collapse/index.html",
+        "line": 73,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-e2d147c9ada0192c291e09cf",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "feedback-ui-design/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-7841947337d4244bb9448bdc",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "form-input-wave/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-aba9fa20e1316541559e8360",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "form-input-wave/index.html",
+        "line": 13,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-b12d3af314681284a902fca7",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "form-input-wave/index.html",
+        "line": 25,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-2fe97f997d64167fd122ac3d",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "github-profiles/index.html",
+        "line": 10,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-8621b93601fd606d923714d0",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "good-cheap-fast/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8758cfe4e32afdd5cf86dfab",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "hidden-search/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1fa73ca712236fe725c1e3a6",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "hidden-search/index.html",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-eeaf48aa6c0a784056018a31",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "hidden-search/index.html",
+        "line": 12,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-b8f0fef268a1197e3e4417ad",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "hoverboard/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-617e1feb330ca2d3a7ac7132",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "image-carousel/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1c9a77f8b55661a2b7fee2e7",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "incrementing-counter/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-6266e7e27827478fa268ad50",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "insect-catch-game/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b13f2a3c8eec887e38ad706e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "insect-catch-game/index.html",
+        "line": 15,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-ba55640dbe7790850cb79d34",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "insect-catch-game/index.html",
+        "line": 54,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-8a993e89544c1adf53ba37c5",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "insect-catch-game/index.html",
+        "line": 56,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-7aa58404057bbc83d339fea6",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "kinetic-loader/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-fba7d7fffa6da79a23a9da36",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "live-user-filter/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c5ab89b98ea5792f187cfdc9",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "live-user-filter/index.html",
+        "line": 13,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-2e0d8b7125a7968b3ab3d99f",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "mobile-tab-navigation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d28ea31236e104251266ced2",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireNavLinks",
+      "source": {
+        "file": "mobile-tab-navigation/index.html",
+        "line": 15,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Navigation landmark contains no link semantics."
+    },
+    {
+      "id": "zd20-5b9a6b0df7d5fe4df7147fcd",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "movie-app/index.html",
+        "line": 11,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-04aa4a0dc72bdab9a33d64b5",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "netflix-mobile-navigation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bdacd911fb42e1703c6e2c0e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "netflix-mobile-navigation/index.html",
+        "line": 14,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-18900c905960ffaeaace8743",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "netflix-mobile-navigation/index.html",
+        "line": 27,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-5a2d780ba45e4c5c6760ed03",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "notes-app/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-50971e231ab77eae4bc6526d",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f7540c8d5a4b0e6a8f8dc8b9",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 14,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-72f3086af5a0cd18e12c2bed",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 21,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-7ab5ab4d40b84bbe69d353ba",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 25,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-034875ebc819d569b98c7421",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 29,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-e342420a4e5be907f18cdaed",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 33,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-34e1c80b9453c0a2016dbf67",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-generator/index.html",
+        "line": 37,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-34d0d4b32ecd8096ba3adbf9",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "password-strength-background/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-7390c6bd457463e751cf433e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "password-strength-background/index.html",
+        "line": 31,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-b42624935267107caa1ca09c",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "pokedex/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f51d1b98fd9b75c1b44b8a08",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "progress-steps/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1e9f6b70d52ca5de931a67eb",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "quiz-app/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8990ad23628b4b49f04c4fb2",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "random-choice-picker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f0809019c2a189791d04ede6",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "random-choice-picker/index.html",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-9370302a0689a3106ed96493",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "random-image-generator/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-18d1316759d8f49f0ef41f6e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "rotating-nav-animation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a5a45e64c6f0f363074bf982",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "rotating-nav-animation/index.html",
+        "line": 13,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-cd401098ec9d914235ae8efe",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "rotating-nav-animation/index.html",
+        "line": 16,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-211e8de326ec30a581a0626e",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "rotating-nav-animation/index.html",
+        "line": 27,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-b5ff095a258ca181af3dc515",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "scroll-animation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-5681bbaa59fe53ea6b64aeb6",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "simple-timer/index.html",
+        "line": 0,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-87714755f0cc64d3fa0c7b62",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "simple-timer/index.html",
+        "line": 0,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b5d540a04bebe263440f9f08",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "simple-timer/index.html",
+        "line": 41,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-cf45e30c903ce36eceed305f",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "simple-timer/index.html",
+        "line": 48,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-2899af95e1ffdef5482b30d4",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "sound-board/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-912ed5989561e92c38ccb1ad",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "split-landing-page/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8b5629bf2cef840f9c3cfcf9",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "split-landing-page/index.html",
+        "line": 16,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-d803112b72c2787ea06ba534",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "sticky-navigation/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-befcf37ca33646435f076f06",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "singleH1",
+      "source": {
+        "file": "sticky-navigation/index.html",
+        "line": 23,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document contains more than one h1 under the configured rule."
+    },
+    {
+      "id": "zd20-0eee34aefde40f70afa6c081",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "testimonial-box-switcher/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-407dd282342b0574f314aa0a",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "theme-clock/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-586137d5c9e08a2183068f25",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "toast-notification/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d9b9772ba3eb47535e7f8a0e",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "abort-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-9894afaa093dfcde86bcc1eb",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "audiocontext-setsinkid/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bd6835a1473aea83bfd3d143",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "auxclick/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-52ffa4a52ecf0847b3e01ed6",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireDocumentTitle",
+      "source": {
+        "file": "canvas/chroma-keying/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no non-empty title source recognized by the platform."
+    },
+    {
+      "id": "zd20-869981bcc95808936340334f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "canvas/chroma-keying/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2b6a9825ea5846c5d0cc24a9",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "channel-messaging-basic/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1d091fa16bca0e382b974e85",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "channel-messaging-basic/index.html",
+        "line": 16,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-137db0777e26cab5b539010c",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "channel-messaging-multimessage/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-fc85b84c1fa5bf2bae3862dd",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "channel-messaging-multimessage/index.html",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-d85546ffee491082671e338c",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "contact-picker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-5bfccbddaec3f89aa64b41ba",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "contact-picker/index.html",
+        "line": 55,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-22485362503db642c9ccf695",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-carousels/scroll-button-scroll-marker-with-columns/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8b84e0b16dc39ca435d67db1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-carousels/scroll-button-scroll-marker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-34efac93449d518b3d6519e9",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-functions/color-adjust-functions/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c5e22268059d6a50cf9f819d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-functions/gradient-function/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c60593bc5a05a73ca2a1faf3",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "css-custom-functions/gradient-function/index.html",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-458ef765c4c50df0e2c38572",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "css-custom-functions/gradient-function/index.html",
+        "line": 25,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-5702878e410ba44d8857e4af",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-functions/responsive-narrow-wide/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-698351d40cfa6c52ce63ec1d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/custom-properties/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c2e02fdca3946eed788cb4b5",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/fancy-header-highlight/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2df340a22be916e68e00e383",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "css-painting/fancy-header-highlight/index.html",
+        "line": 15,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-2e80b40fa3472a5b03a1ad03",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "css-painting/fancy-header-highlight/index.html",
+        "line": 16,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-0d4e85ca1ee6e3486cfd1443",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/half-highlight-fixed-size/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-9377b4b33b0e89dae1705487",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/half-highlight-paintsize/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1e5d304a0e379de4f69f24d4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "css-painting/half-highlight-paintsize/index.html",
+        "line": 15,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-5adb511831e88a55d593bbe7",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/hollow-highlight/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bc3fd5d2f9edac70c56b9a3b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-painting/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-750cf79acea30ff276488eee",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-progress/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-e14e05db021a70dfec3e560d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "css-progress/index.html",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-e0611af832f9dc06498328b5",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-typed-arithmetic/animated-story-circle/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-51dc9cb79fd09f7e8849e871",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-typed-arithmetic/different-type-variations/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-417dfa6be82e3e87dfb6dfd7",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-typed-arithmetic/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-88a9e3e7df2a1361e96fb962",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-typed-arithmetic/responsive-background-opacity/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4861abd4fd70e341e5fc9956",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "device-posture-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1b1934558b371c404076642a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "device-posture-api/index.html",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-a293b689676006a2a4267f33",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "document-picture-in-picture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d7e4bd9ba8672fb17702f147",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "dynamic-range-limit/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-cb994c4e038e9e193419326d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "edit-context/html-editor/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-30e53b021b605fd5f70cbb73",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "execcommand/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-fdc984b34b6eecba120e5504",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/basic-fetch/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-909c088b36721381a63165e0",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/basic-fetch/index.html",
+        "line": 15,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-e8078a7dd83f48b107689151",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-array-buffer/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-abf9f94dbcb9093c222d49a7",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-json/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-213fbafa0c55d5f8698f0e92",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-request-with-init/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d876443cb55b08546ec381e4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/fetch-request-with-init/index.html",
+        "line": 14,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-5ff3574d64c19f456c5bed9f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-request/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-156615070ecde323a10e934d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/fetch-request/index.html",
+        "line": 12,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-1335b8cd5966aa040cc77937",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-response-clone/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-7dbfddac58a468af0306f93b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/fetch-response-clone/index.html",
+        "line": 21,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-09265f816f9eafc90bae0aa3",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/fetch-response-clone/index.html",
+        "line": 22,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-7271c7811a3b6bf06411ce0b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-response/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1f7314a340b6d56deb6775ce",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/fetch-response/index.html",
+        "line": 14,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-52e083bbd914239e1c75e57c",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/fetch-text/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1ab5b25a066683ee68532d28",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": "fetch/fetch-text/index.html",
+        "line": 15,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-7c1b7e27d7b5e04044382c3f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": "fetch/fetch-text/index.html",
+        "line": 16,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-861725f9be78b745931ece44",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": "fetch/fetch-text/index.html",
+        "line": 17,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-c93c1a208b5a0ae4c02b73ec",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2153c878b7c4709fbdb318c4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 14,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-526c939e7d218894b8512923",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 15,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-f5e206625cd1698151679985",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 16,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-63db2a5e842139cbc3eef19a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 17,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-002b1f9bcbdb348785f50942",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 20,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-496684d4d55bde8886836ac3",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 21,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-de16060d34614c7648cd6a24",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 22,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-bf8fd6606e773855606b4624",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 23,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-6fab70080787780e885ca1a3",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 26,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-001bab7318f02d77f5574d24",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 27,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-181b3934b6aa0c5f986713f4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 28,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-aeb26431d400c9fe532b2da5",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 29,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-20ca97ca2b2831a557cdf4bd",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 32,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-254fd833249cb700eeb5aa7c",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 33,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-9aa3ce1997cdb84a824ab469",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 34,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-4faab2b9abbca6b221acd274",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 35,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-6fe9830f2b185cc73d836c47",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "fetch/object-fit-gallery-fetch/index.html",
+        "line": 37,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-7dcc6bfa3ba909f41d5d69c1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-system-api/createsyncaccesshandle-mode/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-abebd768d0eee70a36b28166",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-system-api/createwritable-mode/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-99e60fd73990ca6a441310ec",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-system-api/filesystemhandle-remove/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a650fc9fa42eecce7261a290",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-system-api/filesystemobserver/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0fad7ee6c8e7b71c01bef28b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fullscreen-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-485c950fc9e87a798f4a9c59",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "geolocation-element/basic-example/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-499f36853cdd72e8ac32a597",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "geolocation-element/basic-watch-example/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-da945bce71116b68602ee5a2",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "geolocation-element/embedded-map/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f58de4299249b011811e04ae",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "geolocation-element/exploring-invalid-reasons/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4f7fdc91ed3e842cab83e3af",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "geolocation-element/initial-permission-status/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d0aabc04a5c00a54b91b22f8",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "history-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-71c167055273b52a1ffb0acc",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "htmldialogelement-basic/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c49eda275c7f5783c394f607",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "indexeddb-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d6d5880f552a44eea499c563",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "indexeddb-api/index.html",
+        "line": 22,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-edb91402845d292e08e26968",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "indexeddb-api/index.html",
+        "line": 86,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-61f57ddd1417e5828016bce1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "indexeddb-examples/idbcursor/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-674be3c472975c8935622fb8",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "indexeddb-examples/idbindex/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b67425182d09e3225e6ec836",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "indexeddb-examples/idbindex/index.html",
+        "line": 14,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-c427ce3f8bf649d266cdba62",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "indexeddb-examples/idbkeyrange/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-cea6e839f15deb4c6280dfbf",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "interest-invokers/popover-examples/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-388b60bf472c6404389d592b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "interest-invokers/popover-examples/index.html",
+        "line": 21,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-70a99a01c8ce6c8dd3cdd5f5",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "interest-invokers/stock-moving/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-409852e6aaf46b0d1571c8ec",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "interest-invokers/style-preview/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-5603df628290afbbc469d2ea",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "launch-handler/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8f6fdfd082df3a68b4e15885",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "local-font-access/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-3f370b7b258887cf3a3cd761",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "local-font-access/index.html",
+        "line": 11,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-5c7aaab6a55883a3efad849a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "matchmedia/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d29b447352db6a592463387f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media-session/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-11fc5fe639a9de99cfc0b7dd",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "media-session/index.html",
+        "line": 40,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-01e689b78c8acbf04f3f3b82",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media-source-extensions/managed-media-source/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-efc654b1a060fc7af1114e1d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media/getstartdate/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bd3cf74ae787332e58aa1192",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media/mediaerror/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1385ff4b9ed86b02711d7685",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media/web-dictaphone/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-6098dadfe19dfcb8a7810a51",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "media/web-dictaphone/index.html",
+        "line": 16,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-ff0329ec6b790357f47ff971",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "media/web-dictaphone/index.html",
+        "line": 24,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-416b9a15aeaf26fc554f796b",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "mediaquerylist/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-cfa755654ce6ce36996595f1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "notifications/non-persistent/index.html",
+        "line": 2,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a52d4f61246c3bf08a9f08e8",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "notifications/persistent/index.html",
+        "line": 2,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a5d56fe716faa452362fb92a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "picture-in-picture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c179227b17328f1789e8f611",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "pointer-lock/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-78f114830155358563a26474",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/basic-declarative/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-19fadb11397b7182f807e3c0",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/blur-background/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-77b24d5d7a3d2337e09c326f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/multiple-auto/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-30d7240f8b44db6d388ddbb0",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/multiple-manual/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b250f0d32399f67f2e4d45fb",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/nested-popovers/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-58936e574513e1f6422e8b72",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/popover-hint/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a623ab0d19a8745b21f7a05c",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "popover-api/popover-hint/index.html",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-0307d57291f198747950460d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/popover-positioning/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d3e16c57ae56b233063ed004",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/toast-popovers/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-713c3875c89cdeda2d7b6fad",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "popover-api/toggle-help-ui/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-232e378705ea4bfb7c465f01",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "prompt-api-web-storage/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-920fc136dbc1436332c68d3f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "resize-event/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-16301932094dfdec3a3676cd",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "responsive-iframe-sizing/basic/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b20ec17fe40c409cdaa5503f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "responsive-iframe-sizing/basic/index.html",
+        "line": 28,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-553e9ba3d6d247505121aa03",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "responsive-iframe-sizing/js-request-resize/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c4a3597b01bfd5ec7f6b837d",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "responsive-iframe-sizing/js-request-resize/index.html",
+        "line": 28,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-c5a2d4f1dcea5a1365257caf",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "screen-capture-api/basic-screen-capture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0f5656544befbdfe8c897d38",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "screen-capture-api/element-capture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1e91f5292da2e4344bd67bf7",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "screen-capture-api/region-capture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-5cbead1b2faf55edc452502a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "screen-wake-lock-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-247c8363e173a9408916306f",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "screen-wake-lock-api/index.html",
+        "line": 43,
+        "column": 98
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-2ed57e894d20decfca0d1785",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "screenleft-screentop/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c6dbf5ce8b8c6b3d3d7e4c59",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "scroll-promises/element-methods/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0fe7df67c9c3303d3ccf03df",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "scroll-promises/element-methods/index.html",
+        "line": 16,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-7a37a5e7af435bb3678f19a2",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "scroll-promises/window-methods/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-668371a1de2a330d332f05fd",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "scrolltooptions/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2dbdf3b4ab0d5f8730c25892",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "scrolltooptions/index.html",
+        "line": 53,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-710c9772378c504d8931933e",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "server-sent-events/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2f81d260218ce4a20fa30095",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "service-worker/simple-service-worker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c3fc271a5647d018e0a07359",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "service-worker/simple-service-worker/index.html",
+        "line": 15,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-f6091ed64da3b2ab84a76a5a",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "sourcebuffer/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-a78be8e15dd9a29750529d76",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "sourcebuffer/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-eadb6f8bbd1cdcbbea59f007",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/grayscale-png/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-81266652a41a42a8351bff93",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "streams/grayscale-png/index.html",
+        "line": 12,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-b10ad6624d3f1cbec6637268",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "streams/grayscale-png/index.html",
+        "line": 13,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-c638aa2611d22cdbea0bbd19",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/png-transform-stream/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-cabec41d0df2365e54ae2b24",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "streams/png-transform-stream/index.html",
+        "line": 19,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-abe7b547ab782c3adbf442df",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "streams/png-transform-stream/index.html",
+        "line": 20,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-5118c6f5d80fd0d9beacaab0",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/simple-pump/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-6ed20b0bef97038d6567b1ee",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/simple-random-stream/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4d7d5db0e9fc99618587fcd3",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/simple-tee-example/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2327da62353f82b031dbf6be",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "streams/simple-writer/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bb9b1f59a647b3b3110a7b82",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "allow-popups-to-escape-sandbox/index.html",
+        "line": 19,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-63fa490caf50bd3725c48ead",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "allow-popups-to-escape-sandbox/index.html",
+        "line": 23,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-f019ada190d3ef959c97302a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "allow-popups-to-escape-sandbox/index.html",
+        "line": 27,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-c132ff174e0ca9891b151f24",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/basic-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-eeb76af86c6c5867a4b5d93b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/basic-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d4b6e7577315365ddcda0623",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/cancelable-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-6867155354dc2b2b42a59d80",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/cancelable-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d4675916732958bfa3418b45",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/deferred-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-86850004e5ad71ba0aa18e6d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/deferred-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-af784617d4de10cf0c8febde",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-61f252b2fd76ca2387efb18d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-af0e0c4ecd5a42e7b6e18453",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/related-applications/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-efa35c6e01dda268b120488e",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/related-applications/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f523409e935a594ead19a732",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "app-install-banner/useraction-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-dcff1065c05b5b8d607519cd",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "app-install-banner/useraction-banner/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-8321a86050e7c6163cf7832a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "append-vs-textcontent/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1f8a31c7ba219c37e04e4a81",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-dee5c515547efcbd3eafbf98",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-de2604ac6be706b8980f23a7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 13,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-c30c203a181bf302ddcddee1",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 23,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-b05a7640731fda04867e93c4",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-3dfe069f762a720c7ab74f3b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 32,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-48f1adbdcb9b0c96e37a8d46",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 35,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-5b0e29c3730700e9739782f1",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "async-clipboard-image/index.html",
+        "line": 40,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-8f8db58fdd9b523c5e346d10",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "async-clipboard-text/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-37170816a6590d5610b49698",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "async-clipboard-text/index.html",
+        "line": 11,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-687042353e86d89547c07612",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "async-clipboard-text/index.html",
+        "line": 19,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-303e02b0dc2769e05dfe5e3e",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "async-clipboard-text/index.html",
+        "line": 20,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-bddef22809354e6b1fa6fb21",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "async-clipboard-text/index.html",
+        "line": 21,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-01306c7e58aded564594d71a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "async-clipboard/index.html",
+        "line": 12,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-2e05508dfe6fbd4bb490180d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "audio-splitter/index.html",
+        "line": 14,
+        "column": 1
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-e2c27fcff946b681db8d7e75",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "autocapitalize/index.html",
+        "line": 44,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-36707bd653a847162be02787",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "autocapitalize/index.html",
+        "line": 51,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-3a5ca259f287dcf90e294dbf",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "autocapitalize/index.html",
+        "line": 58,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-42ff17ce0f63acefe6f20d6d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "badging-api/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d387a2bc734bb240571ba182",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "badging-api/index.html",
+        "line": 42,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-ed1133188844811210f36f5f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "block-modal-dialogs-sandboxed-iframe/index.html",
+        "line": 17,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-24dd13659ee5f33e214eca47",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "block-modal-dialogs-sandboxed-iframe/index.html",
+        "line": 20,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-adc81f8b0c2248591b97276d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "block-modal-dialogs-sandboxed-iframe/index.html",
+        "line": 23,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-f8980dc3750777b3edf55823",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "built-in-ai-rocks/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b885fba8e83982ee6675c345",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "compressionstream-demo/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-3129c9c1a873db35ead72fb4",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "compressionstream-demo/index.html",
+        "line": 15,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-078996d92badd90e7d010fc6",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "compute-pressure/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-36ff89062b3bd16d6cba51e4",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "compute-pressure/index.html",
+        "line": 55,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-ad25ab8d6a6b2482d0f126c2",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "computed-properties-es6/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b1275b43702196c308c4fbdf",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "contact-picker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0522651f8166f720895f46a7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": "contact-picker/index.html",
+        "line": 16,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-e7461da3a0df5db23ca4e6c7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "cos-demo/index.html",
+        "line": 5,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-19cf15c562a47f8993dd49e7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "csp-upgrade-insecure-requests/index.html",
+        "line": 36,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-5b269b3acf38e0c31d4a062b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 23,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-07d44b2959a9942daa227ef5",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 27,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-5e8c54fbb00a6436d9b20107",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 31,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-ad0574990c2855295565ebb6",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 59,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-cc9914a871e74813ae45f5d2",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 77,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-90d3e0974e3e95a3fa6b8e3f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 94,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4f4e5a6625e1912492ae99be",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 111,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a4c192bee4443ef16912ae69",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-custom-properties/index.html",
+        "line": 128,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-4f1c8090a634036d8285b62d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "css-opacity-force-flattening/index.html",
+        "line": 50,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-cd1d8686fcae5f48f23174e5",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "css-opacity-force-flattening/index.html",
+        "line": 55,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-e281cdcfd1c0aef8a7b701a5",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "css-shapes/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0e9362830a26f72527af1d4b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "custom-drag-and-drop/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-e3ce4cc1426fd4fa73b691f8",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "cut-and-copy/index.html",
+        "line": 7,
+        "column": 3
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-e65cb7eb7a13f1d7ef696639",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "dark-mode-class-toggle/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-63e2cbd8c09f7e63885ec8ef",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "decorators-es7/read-write/src/index.html",
+        "line": 18,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-a4818c04603aac7a3a6bc870",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "downloading-built-in-models/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-6be78e352fe24a4d330bfec7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "examplescript-to-wasm/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-63664366e86ece64e571ff87",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "examplescript-to-wasm/index.html",
+        "line": 19,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-a46e28b5358d2211aeafc814",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "examplescript-to-wasm/index.html",
+        "line": 27,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-09d7cefef3c2b7dda5b25dba",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "extended-unicode-escapes/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-9e17d7d7692b4d459a38957b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "factorial-wasm-ad-hoc-worker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-dd5ebd076076534323350de0",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "factorial-wasm-permanent-worker/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-e5e37c4c3accc42416560531",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-constructor/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-675b9f4aaa83461827e603ea",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "file-system-observer/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-e2687d06f9305762f4f9434c",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "focus-navigation-start-point/index.html",
+        "line": 55,
+        "column": 14
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-8f24fb29a1c720d51cabe5de",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "focus-navigation-start-point/index.html",
+        "line": 127,
+        "column": 16
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-7441ddf12275ba12e88f78fb",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "focus-navigation-start-point/index.html",
+        "line": 156,
+        "column": 16
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-4d66cecabb70092735cb8878",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "focus-navigation-start-point/index.html",
+        "line": 185,
+        "column": 16
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-10c811058b6c168ae4a59e86",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "focus-navigation-start-point/index.html",
+        "line": 213,
+        "column": 12
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-ec3b962327461344f313a423",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "formdata-methods/index.html",
+        "line": 16,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-4db874e4299bdaa529422f45",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "formdata-methods/index.html",
+        "line": 17,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-9e03937e90b95771f89a20bb",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "formdata-methods/index.html",
+        "line": 23,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-ed5ccb8b16b98b59e125c9d6",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "fullscreen-keyboard-lock/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-e33ab29bb64b3fc40bb2b5ff",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "gamepad-demo/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-1e0dcd99c8efc9e9bb80400c",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "generators/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-2ac6ce03af25a534768ace12",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "generators/index.html",
+        "line": 66,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-b19962c29d1e65210063b8db",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-554090734bb05e64b6507cf7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireDocumentTitle",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no non-empty title source recognized by the platform."
+    },
+    {
+      "id": "zd20-845e9f5edf2b24ed2f7546fa",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b3ff565232c5f10bfc630743",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 17,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-4fe7d2171b38fa1cceeb545b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 21,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-a68303c8f2d689e2e738d57c",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 25,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-dda2c4dac6c1a09924c1497b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/canvas2d/demo/index.html",
+        "line": 29,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-1e8e87423d83a40e87213733",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/custom-formats-clipboard/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-7cd1a0eebcd905ddd9ba621a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireDocumentTitle",
+      "source": {
+        "file": "glitch-migration/custom-formats-clipboard/index.html",
+        "line": 8,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no non-empty title source recognized by the platform."
+    },
+    {
+      "id": "zd20-510fa4e3384b365ac8ab767f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "glitch-migration/custom-formats-clipboard/index.html",
+        "line": 18,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-cc80ded1f6812095040ef2bc",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/darkmode/baseline/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f84db5667d6387f49a3ff11a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/darkmode/baseline/index.html",
+        "line": 47,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-b22e3afe4ae22a3411f8a252",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/darkmode/currentcolor/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-68e3545cbb0045675ec31fc6",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/darkmode/picture/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-f6a491e6003cbbc79c1182fd",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "glitch-migration/darkmode/picture/index.html",
+        "line": 44,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-da75c424b37634cdcc0ee895",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/svg-copy-paste/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bf573a7a5c722e451e610f6f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireDocumentTitle",
+      "source": {
+        "file": "glitch-migration/svg-copy-paste/index.html",
+        "line": 8,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no non-empty title source recognized by the platform."
+    },
+    {
+      "id": "zd20-cc775ac62c754d8069e74d75",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "glitch-migration/unsanitized-clipboard/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-c6e9d6603a2f405eeca2063a",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/unsanitized-clipboard/index.html",
+        "line": 16,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-8a890d8971b03f5889933134",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/unsanitized-clipboard/index.html",
+        "line": 21,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-478948508e5a269fa0ab3749",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "glitch-migration/unsanitized-clipboard/index.html",
+        "line": 25,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-01791b8c28960a68f4bdd418",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "google-drive-embeddings/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-9d510094eb5ae4f8cd63b8cc",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "google-drive-embeddings/index.html",
+        "line": 93,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-540febdc18ab4750d0151a76",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "google-drive-embeddings/index.html",
+        "line": 112,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-053e00eb3dba26604a292781",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "google-drive-embeddings/index.html",
+        "line": 154,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-b9e2aac418f199e3f5fe489c",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireTableCaption",
+      "source": {
+        "file": "google-drive-embeddings/index.html",
+        "line": 165,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Data table has no caption."
+    },
+    {
+      "id": "zd20-f961b7e433b7ee4fff7667b6",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireDocumentTitle",
+      "source": {
+        "file": "handwriting-recognition/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no non-empty title source recognized by the platform."
+    },
+    {
+      "id": "zd20-5ef4097babbd4c466f1de4b7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "handwriting-recognition/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-bbb9ef99f84ee549a9362709",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "handwriting-recognition/index.html",
+        "line": 22,
+        "column": 12
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-aae684a4f9dc5f698bb54d0d",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "hdcp-detection/index.html",
+        "line": 18,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-8bda11545852257a744bf523",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "highlighttext-systemcolor/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-b32e4fc18bf8924594d7c63f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "idle-detection/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-a48d1b33770a3f6c7c1205c3",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "image-rendering-pixelated/index.html",
+        "line": 6,
+        "column": 72
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-e9f5d091e3b1afb215ff1f04",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "image-rendering-pixelated/index.html",
+        "line": 13,
+        "column": 3
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-fc6c00e8d086623b42e44fc4",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "image-rendering-pixelated/index.html",
+        "line": 22,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered image is exposed to assistive technology without an alt attribute."
+    },
+    {
+      "id": "zd20-0e88ea7453e6154033c976d1",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireHtmlLang",
+      "source": {
+        "file": "index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete HTML document has no lang attribute on its html element."
+    },
+    {
+      "id": "zd20-d3ee9f767ac1b098e4ff77d7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d48982cc54d829c054fe03c5",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "input-type-file/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-7d2d77745d9ede3f661451ac",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "input-type-file/index.html",
+        "line": 10,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-7148394431746ff6ddcafc31",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "intrinsic-size/index.html",
+        "line": 40,
+        "column": 4
+      },
+      "verdict": "out-of-scope",
+      "rationale": "Liquid highlight block displays this tag as source code; it is not part of the rendered page DOM."
+    },
+    {
+      "id": "zd20-43557199654b7e8f0b32b6bf",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "intrinsic-size/index.html",
+        "line": 51,
+        "column": 6
+      },
+      "verdict": "out-of-scope",
+      "rationale": "Liquid highlight block displays this tag as source code; it is not part of the rendered page DOM."
+    },
+    {
+      "id": "zd20-870b984c64f1789ad1631abd",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireAltText",
+      "source": {
+        "file": "intrinsic-size/index.html",
+        "line": 62,
+        "column": 4
+      },
+      "verdict": "out-of-scope",
+      "rationale": "Liquid highlight block displays this tag as source code; it is not part of the rendered page DOM."
+    },
+    {
+      "id": "zd20-15cf09b141c9dcbb8f9e731b",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "io2026-chrome-built-in-ai-demos/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-45d574a1a80b19c61e29ef10",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "json-schema-tester/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-292f80c6d052e898ec645bf5",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "kotlin-wasm-hello-world/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-d6851bdc220de9c7eaa6de59",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "lexical-declarations-es6/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-328833c893ce6746176561e7",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "local-font-access/index.html",
+        "line": 1,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-0b9725dee7ccab0593451e5f",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "rule": "requireSingleMain",
+      "source": {
+        "file": "media-hover-pointer/index.html",
+        "line": 16,
+        "column": 0
+      },
+      "verdict": "true-positive",
+      "rationale": "Complete document has no main landmark."
+    },
+    {
+      "id": "zd20-791a8c382fa1490386a23a7d",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "app/search/[collection]/page.tsx",
+        "line": 41,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-5c8d4a3d3a19048d2f2482cd",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": "components/grid/three-items.tsx",
+        "line": 60,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-3309a82555e28a77649664f1",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "components/layout/navbar/search.tsx",
+        "line": 14,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-1d823669dc7719bef4181762",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "components/layout/navbar/search.tsx",
+        "line": 33,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-6766850527882980d8fa7ef7",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "apps/nextjs-app/src/app/app/_components/dashboard-info.tsx",
+        "line": 12,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-58fdf8e50ae1a3aa4e3c8688",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "rule": "enforceHeadingOrder",
+      "source": {
+        "file": "apps/react-vite/src/app/routes/app/dashboard.tsx",
+        "line": 11,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Rendered heading sequence skips a level at the reported heading."
+    },
+    {
+      "id": "zd20-39eb69aece42a83e67e58fc8",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireLinkText",
+      "source": {
+        "file": ".vitepress/theme/components/Banner.vue",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Link has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-96f18d04273a8807cd30acee",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": ".vitepress/theme/components/Banner.vue",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-07d55a161a4a8238549cc4f1",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireButtonText",
+      "source": {
+        "file": ".vitepress/theme/components/Banner.vue",
+        "line": 25,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-726bad79463ef33fe664c879",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": ".vitepress/theme/components/Home.vue",
+        "line": 55,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-6b06a2e28ef94fc46d8f3948",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireSectionHeading",
+      "source": {
+        "file": ".vitepress/theme/components/Home.vue",
+        "line": 77,
+        "column": 2
+      },
+      "verdict": "true-positive",
+      "rationale": "Section has no heading or programmatic label."
+    },
+    {
+      "id": "zd20-7bf94bb1f84d0fe322808ab8",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": ".vitepress/theme/components/NewsLetter.vue",
+        "line": 19,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-2ace55f6a4bf1ae82549ebec",
+      "repositoryId": "antfu-vitesse",
+      "syntax": "vue",
+      "rule": "requireHrefOnAnchors",
+      "source": {
+        "file": "src/components/TheFooter.vue",
+        "line": 24,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Anchor has no non-empty href and is being used as a non-link control."
+    },
+    {
+      "id": "zd20-bfe65986199f5c135bbcfacd",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireIframeTitle",
+      "source": {
+        "file": "components/IframeModal.vue",
+        "line": 31,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Iframe has no title or other source-level accessible name."
+    },
+    {
+      "id": "zd20-e1ed01113f724428a2452f5a",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "components/LanguageSwitcher.vue",
+        "line": 21,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "zd20-4d945774d3c061b888bf7bd7",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "components/photo/Modal.vue",
+        "line": 39,
+        "column": 4
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-afdf62ba275513dd5258d00b",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "components/photo/Modal.vue",
+        "line": 51,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-b56607313f10a0af7a7a762e",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireButtonText",
+      "source": {
+        "file": "components/photo/Modal.vue",
+        "line": 56,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Button has no visible or programmatic accessible name."
+    },
+    {
+      "id": "zd20-be6f7d317c72721604b085da",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "rule": "requireLabelForFormControls",
+      "source": {
+        "file": "pages/search.vue",
+        "line": 59,
+        "column": 6
+      },
+      "verdict": "true-positive",
+      "rationale": "Native form control has no associated label or programmatic name."
+    },
+    {
+      "id": "targeted-seed-image-alt-image-input",
+      "repositoryId": "antfu-vitesse",
+      "syntax": "vue",
+      "rule": "requireImageInputAlt",
+      "source": {
+        "file": "seeds/image-alt-image-input.vue",
+        "line": 0,
+        "column": 10
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed mutation removes the required text alternative. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-aria-value",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "ariaValidAttrValue",
+      "source": {
+        "file": "seeds/other-aria-value.html",
+        "line": 0,
+        "column": 5
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates ariaValidAttrValue. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-list-nesting",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "enforceListNesting",
+      "source": {
+        "file": "seeds/other-list-nesting.html",
+        "line": 0,
+        "column": 9
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates enforceListNesting. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-empty-inline",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "preventEmptyInlineTags",
+      "source": {
+        "file": "seeds/other-empty-inline.html",
+        "line": 0,
+        "column": 3
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates preventEmptyInlineTags. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-image-input",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "tsx",
+      "rule": "requireImageInputAlt",
+      "source": {
+        "file": "seeds/other-image-input.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates requireImageInputAlt. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-positive-tabindex",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "noTabindexGreaterThanZero",
+      "source": {
+        "file": "seeds/other-positive-tabindex.html",
+        "line": 0,
+        "column": 8
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates noTabindexGreaterThanZero. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-placeholder",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "preventZemdomuPlaceholders",
+      "source": {
+        "file": "seeds/other-placeholder.html",
+        "line": 0,
+        "column": 17
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates preventZemdomuPlaceholders. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    },
+    {
+      "id": "targeted-seed-other-duplicate-id",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "rule": "uniqueIds",
+      "source": {
+        "file": "seeds/other-duplicate-id.html",
+        "line": 0,
+        "column": 32
+      },
+      "verdict": "true-positive",
+      "rationale": "Reviewed targeted mutation violates uniqueIds. Targeted public fixture supplements a rule with no natural candidate in the pinned tranche."
+    }
+  ],
+  "seeds": [
+    {
+      "id": "seed-accessible-name-button-html",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "source": {
+        "file": "seeds/accessible-name-button-html.html",
+        "line": 0,
+        "column": 0
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-link-html",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "source": {
+        "file": "seeds/accessible-name-link-html.html",
+        "line": 0,
+        "column": 0
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-iframe-html",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireIframeTitle",
+      "source": {
+        "file": "seeds/accessible-name-iframe-html.html",
+        "line": 0,
+        "column": 0
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-label-html",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireLabelForFormControls",
+      "source": {
+        "file": "seeds/accessible-name-label-html.html",
+        "line": 0,
+        "column": 0
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-button-tsx",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "source": {
+        "file": "seeds/accessible-name-button-tsx.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-link-tsx",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "source": {
+        "file": "seeds/accessible-name-link-tsx.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-iframe-tsx",
+      "repositoryId": "nextjs-postgres-auth-starter",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireIframeTitle",
+      "source": {
+        "file": "seeds/accessible-name-iframe-tsx.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-label-tsx",
+      "repositoryId": "shadcn-taxonomy",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireLabelForFormControls",
+      "source": {
+        "file": "seeds/accessible-name-label-tsx.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-button-vue",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "source": {
+        "file": "seeds/accessible-name-button-vue.vue",
+        "line": 0,
+        "column": 10
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-accessible-name-link-vue",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "source": {
+        "file": "seeds/accessible-name-link-vue.vue",
+        "line": 0,
+        "column": 10
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name."
+    },
+    {
+      "id": "seed-language-01",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-01.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-02",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-02.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-03",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-03.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-04",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-04.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-05",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-05.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-06",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-06.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-07",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-07.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-08",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-08.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-09",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-09.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-language-10",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "source": {
+        "file": "seeds/language-10.html",
+        "line": 0,
+        "column": 15
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document."
+    },
+    {
+      "id": "seed-image-alt-html-img-1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-html-img-1.html",
+        "line": 0,
+        "column": 0
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-html-img-2",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-html-img-2.html",
+        "line": 0,
+        "column": 9
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-html-img-3",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-html-img-3.html",
+        "line": 0,
+        "column": 8
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-html-img-4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-html-img-4.html",
+        "line": 0,
+        "column": 12
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-tsx-img-1",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-tsx-img-1.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-tsx-img-2",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-tsx-img-2.tsx",
+        "line": 0,
+        "column": 30
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-tsx-img-3",
+      "repositoryId": "shadcn-taxonomy",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-tsx-img-3.tsx",
+        "line": 0,
+        "column": 33
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-vue-img-1",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-vue-img-1.vue",
+        "line": 0,
+        "column": 10
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-vue-img-2",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "source": {
+        "file": "seeds/image-alt-vue-img-2.vue",
+        "line": 0,
+        "column": 19
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-image-alt-image-input",
+      "repositoryId": "antfu-vitesse",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireImageInputAlt",
+      "source": {
+        "file": "seeds/image-alt-image-input.vue",
+        "line": 0,
+        "column": 10
+      },
+      "detected": true,
+      "rationale": "Reviewed mutation removes the required text alternative."
+    },
+    {
+      "id": "seed-other-aria-value",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "ariaValidAttrValue",
+      "source": {
+        "file": "seeds/other-aria-value.html",
+        "line": 0,
+        "column": 5
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates ariaValidAttrValue."
+    },
+    {
+      "id": "seed-other-list-nesting",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "enforceListNesting",
+      "source": {
+        "file": "seeds/other-list-nesting.html",
+        "line": 0,
+        "column": 9
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates enforceListNesting."
+    },
+    {
+      "id": "seed-other-empty-inline",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "preventEmptyInlineTags",
+      "source": {
+        "file": "seeds/other-empty-inline.html",
+        "line": 0,
+        "column": 3
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates preventEmptyInlineTags."
+    },
+    {
+      "id": "seed-other-image-input",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "tsx",
+      "category": "other",
+      "expectedRule": "requireImageInputAlt",
+      "source": {
+        "file": "seeds/other-image-input.tsx",
+        "line": 0,
+        "column": 21
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates requireImageInputAlt."
+    },
+    {
+      "id": "seed-other-positive-tabindex",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "noTabindexGreaterThanZero",
+      "source": {
+        "file": "seeds/other-positive-tabindex.html",
+        "line": 0,
+        "column": 8
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates noTabindexGreaterThanZero."
+    },
+    {
+      "id": "seed-other-placeholder",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "preventZemdomuPlaceholders",
+      "source": {
+        "file": "seeds/other-placeholder.html",
+        "line": 0,
+        "column": 17
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates preventZemdomuPlaceholders."
+    },
+    {
+      "id": "seed-other-duplicate-id",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "uniqueIds",
+      "source": {
+        "file": "seeds/other-duplicate-id.html",
+        "line": 0,
+        "column": 32
+      },
+      "detected": true,
+      "rationale": "Reviewed targeted mutation violates uniqueIds."
+    }
+  ],
+  "axeComparisons": [
+    {
+      "id": "axe-agreement-button-name",
+      "repositoryId": "50projects50days",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-main-50projects",
+      "repositoryId": "50projects50days",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-frame-title",
+      "repositoryId": "mdn-dom-examples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-main-mdn",
+      "repositoryId": "mdn-dom-examples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-heading-order",
+      "repositoryId": "googlechrome-samples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-html-lang",
+      "repositoryId": "googlechrome-samples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-image-alt",
+      "repositoryId": "googlechrome-samples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-agreement-main-chrome",
+      "repositoryId": "googlechrome-samples",
+      "status": "agreement",
+      "inScope": true
+    },
+    {
+      "id": "axe-zemdomu-only-section-heading",
+      "repositoryId": "googlechrome-samples",
+      "status": "zemdomu-only",
+      "inScope": true,
+      "disposition": "Expected scope difference: requireSectionHeading enforces source-level section naming; axe-core has no equivalent violation on this rendered page."
+    },
+    {
+      "id": "axe-only-missing-h1",
+      "repositoryId": "50projects50days",
+      "status": "axe-only",
+      "inScope": true,
+      "disposition": "Expected scope difference: ZemDomu singleH1 prevents duplicates but does not currently require an h1."
+    },
+    {
+      "id": "axe-only-region-mdn",
+      "repositoryId": "mdn-dom-examples",
+      "status": "axe-only",
+      "inScope": true,
+      "disposition": "Expected scope difference: ZemDomu has no default rule requiring every rendered content node to be contained by a landmark."
+    },
+    {
+      "id": "axe-only-region-chrome",
+      "repositoryId": "googlechrome-samples",
+      "status": "axe-only",
+      "inScope": true,
+      "disposition": "Expected scope difference: ZemDomu has no default rule requiring every rendered content node to be contained by a landmark."
+    }
+  ]
+}

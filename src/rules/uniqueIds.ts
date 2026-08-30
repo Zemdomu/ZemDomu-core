@@ -6,16 +6,47 @@ import { getJsxAttr } from './utils';
 
 export default function uniqueIds(): Rule {
   const ids = new Set<string>();
+  const htmlIdOwners = new Map<
+    string,
+    { node: Extract<Node, { type: 'element' }>; parent: Extract<Node, { type: 'element' }> | null }
+  >();
+  const htmlStack: Array<Extract<Node, { type: 'element' }>> = [];
   return {
     name: 'uniqueIds',
     enterHtml(node: Node): LintResult[] {
-      if (node.type === 'element' && node.attrs.id) {
+      if (node.type !== 'element') return [];
+      const parent = htmlStack[htmlStack.length - 1] ?? null;
+      htmlStack.push(node);
+      if (node.attrs.id) {
         const id = String(node.attrs.id);
         if (ids.has(id)) {
+          const first = htmlIdOwners.get(id);
+          const firstStartsBranch = first && (
+            Object.prototype.hasOwnProperty.call(first.node.attrs, 'v-if') ||
+            Object.prototype.hasOwnProperty.call(first.node.attrs, 'v-else-if')
+          );
+          const currentContinuesBranch =
+            Object.prototype.hasOwnProperty.call(node.attrs, 'v-else-if') ||
+            Object.prototype.hasOwnProperty.call(node.attrs, 'v-else');
+          const branchAdjacent = first?.parent && first.parent === parent && (() => {
+            const firstIndex = first.parent.children.indexOf(first.node);
+            const currentIndex = first.parent.children.indexOf(node);
+            return firstIndex >= 0 && currentIndex > firstIndex && first.parent.children
+              .slice(firstIndex + 1, currentIndex)
+              .every((child) => child.type === 'comment' || (child.type === 'text' && !child.text.trim()));
+          })();
+          if (branchAdjacent && firstStartsBranch && currentContinuesBranch) {
+            return [];
+          }
           return [{ line: 0, column: 0, message: `Duplicate id "${id}"`, rule: 'uniqueIds' }];
         }
         ids.add(id);
+        htmlIdOwners.set(id, { node, parent });
       }
+      return [];
+    },
+    exitHtml(node: Node): LintResult[] {
+      if (node.type === 'element') htmlStack.pop();
       return [];
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {

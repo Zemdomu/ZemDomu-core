@@ -2,6 +2,7 @@
 
 ### Bugfix
 
+- Bugfix: reduce real-world false positives by preserving HTML ancestry across void and mismatched elements; distinguishing native JSX tags from custom components; accepting valid ARIA shorthand, title-based names, prop and Vue attribute forwarding, composed root list items, conditional Vue IDs, hidden decorative images, and intentional icon markup; and recognizing Next.js metadata and deferred page landmarks.
 - Bugfix: accept explicitly named icon-only links and buttons without requiring a redundant accessible name on their child SVG.
 - Bugfix: report exact HTML element and attribute locations, expose absolute diagnostic offsets, and rebase Vue template findings to full-document positions so repeated violations and quick fixes target the correct source.
 - Bugfix: support valid implicit form labels and avoid label false positives for hidden inputs, named image inputs, and named submit, reset, and button inputs.
@@ -21,6 +22,7 @@
 
 ### Docs
 
+- Docs: publish the completed ZD-20 diagnostic-accuracy study with a pinned 10-repository HTML, React, and Vue corpus, 407 adjudicated findings, seeded-recall evidence, and rendered axe-core comparisons.
 - Docs: approve canonical ZemDomu positioning, public product names, fair comparison principles, and separate Core capability and VS Code Extension 1.0 milestones.
 - Docs: define the supported `zemdomu` package-root API for file and project analysis, including subpath deprecation and integration ownership boundaries.
 

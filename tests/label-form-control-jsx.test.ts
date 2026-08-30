@@ -12,6 +12,8 @@ describe("requireLabelForFormControls (JSX)", () => {
       `export default () => (<input type={"hidden"} />);`,
       `export default () => (<input type="image" alt="Search" />);`,
       `export default () => (<div><input type="submit" /><input type="reset" /><input type="button" value="Save" /></div>);`,
+      `export default () => (<div><Input /><Select /><Textarea /></div>);`,
+      `export default ({ props }) => (<input {...props} />);`,
     ];
 
     goodCases.forEach((code, idx) => {

@@ -28,6 +28,7 @@ export default function requireTableCaption(): Rule {
   const stack: Array<{
     found: boolean;
     hasText: boolean;
+    hasUnknownContent?: boolean;
     table?: ElementNode;
     caption?: ElementNode;
     captionLoc?: { line: number; column: number; offset?: number };
@@ -69,7 +70,15 @@ export default function requireTableCaption(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const tag = getTag(path);
-      if (tag === 'table') stack.push({found:false, hasText:false});
+      if (tag === 'table') {
+        stack.push({
+          found: false,
+          hasText: false,
+          hasUnknownContent: path.node.openingElement.attributes.some((attr) =>
+            t.isJSXSpreadAttribute(attr)
+          ),
+        });
+      }
       if (tag === 'caption' && stack.length) {
         stack[stack.length-1].found = true;
         stack[stack.length-1].captionLoc = {
@@ -85,7 +94,7 @@ export default function requireTableCaption(): Rule {
       const tag = getTag(path);
       if (tag === 'table') {
         const entry = stack.pop();
-        if (entry && !entry.found) {
+        if (entry && !entry.found && !entry.hasUnknownContent) {
           const line = (path.node.loc?.start.line ?? 1) - 1;
           const column = path.node.loc?.start.column ?? 0;
           return [{ line, column, message: '<table> missing <caption>', rule: 'requireTableCaption' }];

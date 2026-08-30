@@ -22,11 +22,12 @@ describe("link href and text with dynamic values", () => {
   });
 
   it("flags explicitly empty JSX href values", () => {
-    const jsx = `export default () => <a href={""}>Text</a>;`;
+    const jsx = `export default ({ props }) => <><a href={""}>Text</a><a href="" {...props}>Other</a></>;`;
     const results = lint(jsx);
-    assert.ok(
-      results.some((r) => r.rule === "requireHrefOnAnchors"),
-      "Expected href warning for empty JSX href"
+    assert.equal(
+      results.filter((r) => r.rule === "requireHrefOnAnchors").length,
+      2,
+      "Expected explicit empty hrefs to remain warnings even when props are spread"
     );
   });
 
@@ -116,5 +117,22 @@ describe("link href and text with dynamic values", () => {
       !results.some((r) => r.rule === "requireLinkText"),
       "Did not expect link name warning when aria-label or img alt is present"
     );
+  });
+
+  it("accepts title-based names and forwarded JSX anchor props", () => {
+    const htmlResults = lint(`<a href="/github" title="GitHub"></a><a href="/docs" :title="docsLabel"></a>`, {
+      forceHtml: true,
+    });
+    assert.ok(!htmlResults.some((r) => r.rule === "requireLinkText"));
+
+    const jsxResults = lint(`export default ({ props }) => (
+      <><a href="/github" title="GitHub"></a><a {...props}></a></>
+    );`);
+    assert.ok(!jsxResults.some((r) => r.rule === "requireLinkText"));
+    assert.ok(!jsxResults.some((r) => r.rule === "requireHrefOnAnchors"));
+
+    const componentResults = lint(`export default () => <Anchor></Anchor>;`);
+    assert.ok(!componentResults.some((r) => r.rule === "requireLinkText"));
+    assert.ok(!componentResults.some((r) => r.rule === "requireHrefOnAnchors"));
   });
 });

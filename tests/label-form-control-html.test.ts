@@ -16,6 +16,11 @@ describe("requireLabelForFormControls (HTML regressions)", () => {
     );
   });
 
+  it("accepts Vue-bound names and forwarded attributes", () => {
+    assert.deepStrictEqual(lintLabels(`<input :aria-label="label">`), []);
+    assert.deepStrictEqual(lintLabels(`<input v-bind="$attrs">`), []);
+  });
+
   it("ignores hidden inputs", () => {
     assert.deepStrictEqual(
       lintLabels(`<input type="hidden"><input hidden><input style="display:none">`),

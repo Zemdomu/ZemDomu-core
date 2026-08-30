@@ -1,16 +1,36 @@
 {
   "schemaVersion": 1,
   "tranche": "01-public-pilot",
-  "status": "candidate",
+  "status": "final",
   "repositories": [
     {
       "id": "50projects50days",
       "repository": "https://github.com/bradtraversy/50projects50days.git",
       "commit": "c92b0bc3a87fc95d44b89552b7b6a2eeb36ca481",
       "syntax": "html",
-      "include": ["**/*.html"],
+      "include": ["**/index.html"],
       "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**"],
-      "maxFiles": 10,
+      "maxFiles": 50,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "mdn-dom-examples",
+      "repository": "https://github.com/mdn/dom-examples.git",
+      "commit": "72c9e5c6fc6141fadccfc2b3eacc4b7e3aa92407",
+      "syntax": "html",
+      "include": ["**/index.html"],
+      "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**"],
+      "maxFiles": 100,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "googlechrome-samples",
+      "repository": "https://github.com/GoogleChrome/samples.git",
+      "commit": "1eef1eeb6048684020d1160499e552b79843d000",
+      "syntax": "html",
+      "include": ["**/index.html"],
+      "exclude": ["**/_includes/**", "**/node_modules/**", "**/dist/**", "**/build/**"],
+      "maxFiles": 100,
       "selection": "lexicographic-path"
     },
     {
@@ -18,9 +38,39 @@
       "repository": "https://github.com/vercel/nextjs-postgres-auth-starter.git",
       "commit": "fde8ecf1da9337223081f70cf88b420060039d6e",
       "syntax": "tsx",
-      "include": ["**/*.tsx"],
+      "include": ["app/**/*.tsx"],
       "exclude": ["**/node_modules/**", "**/.next/**", "**/dist/**"],
-      "maxFiles": 7,
+      "maxFiles": 20,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "shadcn-taxonomy",
+      "repository": "https://github.com/shadcn-ui/taxonomy.git",
+      "commit": "298a8857c7128a0d121e7f699dfd729f23b3966d",
+      "syntax": "tsx",
+      "include": ["app/**/*.tsx", "components/**/*.tsx"],
+      "exclude": ["**/*.test.tsx", "**/*.stories.tsx", "**/node_modules/**", "**/.next/**", "**/dist/**"],
+      "maxFiles": 75,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "vercel-commerce",
+      "repository": "https://github.com/vercel/commerce.git",
+      "commit": "3761e52e60df9c6a316e067dbfd7032e494d3634",
+      "syntax": "tsx",
+      "include": ["app/**/*.tsx", "components/**/*.tsx"],
+      "exclude": ["**/*.test.tsx", "**/*.stories.tsx", "**/node_modules/**", "**/.next/**", "**/dist/**"],
+      "maxFiles": 45,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "bulletproof-react",
+      "repository": "https://github.com/alan2207/bulletproof-react.git",
+      "commit": "9506629ed003a561c6627735480cce4994244bb4",
+      "syntax": "tsx",
+      "include": ["apps/nextjs-app/src/**/*.tsx", "apps/react-vite/src/**/*.tsx"],
+      "exclude": ["**/__tests__/**", "**/*.test.tsx", "**/*.stories.tsx", "**/node_modules/**", "**/.next/**", "**/dist/**"],
+      "maxFiles": 100,
       "selection": "lexicographic-path"
     },
     {
@@ -31,6 +81,26 @@
       "include": ["**/*.vue"],
       "exclude": ["**/node_modules/**", "**/.vitepress/cache/**", "**/dist/**"],
       "maxFiles": 10,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "antfu-vitesse",
+      "repository": "https://github.com/antfu/vitesse.git",
+      "commit": "8a01bc9283fedcd63e750af55a75496361789a81",
+      "syntax": "vue",
+      "include": ["src/**/*.vue"],
+      "exclude": ["**/node_modules/**", "**/.vitepress/cache/**", "**/dist/**"],
+      "maxFiles": 10,
+      "selection": "lexicographic-path"
+    },
+    {
+      "id": "nuxt-movies",
+      "repository": "https://github.com/nuxt/movies.git",
+      "commit": "c1abf704762c922990429e5ed2e0ed3c5becffe2",
+      "syntax": "vue",
+      "include": ["app.vue", "components/**/*.vue", "pages/**/*.vue"],
+      "exclude": ["**/node_modules/**", "**/.nuxt/**", "**/dist/**"],
+      "maxFiles": 42,
       "selection": "lexicographic-path"
     }
   ]

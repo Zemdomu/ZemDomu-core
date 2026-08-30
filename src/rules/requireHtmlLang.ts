@@ -139,7 +139,7 @@ export default function requireHtmlLang(): Rule {
     },
     enterJsx(path: NodePath<t.JSXElement>): LintResult[] {
       const opening = path.node.openingElement;
-      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+      const tag = t.isJSXIdentifier(opening.name) ? opening.name.name : '';
       if (!seen && tag === 'html') {
         seen = true;
         const langState = getJsxAttributeState(opening, 'lang', true);

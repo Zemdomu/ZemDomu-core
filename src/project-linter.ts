@@ -109,6 +109,20 @@ function isFrameworkHostHtml(filePath: string, content: string): boolean {
   return hasFrameworkModuleEntry(content);
 }
 
+function isNextRootLayout(filePath: string, content: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  return (
+    /(?:^|\/)(?:src\/)?app\/layout\.[cm]?[jt]sx$/i.test(normalized) &&
+    /<html\b/i.test(content)
+  );
+}
+
+function hasNextMetadataExport(content: string): boolean {
+  return /export\s+(?:const\s+metadata\b|(?:async\s+)?function\s+generateMetadata\b)/.test(
+    content
+  );
+}
+
 function suppressRules(
   options: ProjectLinterOptions,
   ruleNames: string[]
@@ -161,14 +175,27 @@ export class ProjectLinter {
       vueTemplateStart = isHtmlVueTemplate(template) ? template.start : undefined;
     }
 
-    const lintOptions = isHtml && isFrameworkHostHtml(filePath, content)
+    let lintOptions = isHtml && isFrameworkHostHtml(filePath, content)
       ? suppressRules(this.opts, FRAMEWORK_HOST_DOCUMENT_RULES)
       : this.opts;
-    const results = lint(lintContent, {
+    const nextRootLayout = isNextRootLayout(filePath, content);
+    if (nextRootLayout) {
+      if (hasNextMetadataExport(content)) {
+        lintOptions = suppressRules(lintOptions, ["requireDocumentTitle"]);
+      }
+    }
+    const rawResults = lint(lintContent, {
       ...lintOptions,
       filePath,
       forceHtml: isHtml || isVue || this.opts.forceHtml,
     });
+    const results = nextRootLayout
+      ? rawResults.filter(
+          (result) =>
+            result.rule !== "requireSingleMain" ||
+            !result.message.startsWith("Document missing <main>")
+        )
+      : rawResults;
     const resolvedResults = results.map((result) => {
       const rebased = isVue && vueTemplateStart !== undefined
         ? rebaseVueResult(result, lintContent, vueTemplateStart, content)

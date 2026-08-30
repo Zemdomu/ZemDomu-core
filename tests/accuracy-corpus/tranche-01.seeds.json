@@ -1,0 +1,615 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "seed-accessible-name-button-html",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "virtualFile": "seeds/accessible-name-button-html.html",
+      "sourceText": "<button><svg></svg></button>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "id": "seed-accessible-name-link-html",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "virtualFile": "seeds/accessible-name-link-html.html",
+      "sourceText": "<a href=\"/docs\"><svg></svg></a>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "id": "seed-accessible-name-iframe-html",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireIframeTitle",
+      "virtualFile": "seeds/accessible-name-iframe-html.html",
+      "sourceText": "<iframe src=\"frame.html\"></iframe>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "id": "seed-accessible-name-label-html",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "accessible-name",
+      "expectedRule": "requireLabelForFormControls",
+      "virtualFile": "seeds/accessible-name-label-html.html",
+      "sourceText": "<input type=\"text\">",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "id": "seed-accessible-name-button-tsx",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "virtualFile": "seeds/accessible-name-button-tsx.tsx",
+      "sourceText": "export default () => <button><svg /></button>;",
+      "forceHtml": false,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-accessible-name-link-tsx",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "virtualFile": "seeds/accessible-name-link-tsx.tsx",
+      "sourceText": "export default () => <a href=\"/docs\"><svg /></a>;",
+      "forceHtml": false,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-accessible-name-iframe-tsx",
+      "repositoryId": "nextjs-postgres-auth-starter",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireIframeTitle",
+      "virtualFile": "seeds/accessible-name-iframe-tsx.tsx",
+      "sourceText": "export default () => <iframe src=\"/frame\" />;",
+      "forceHtml": false,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-accessible-name-label-tsx",
+      "repositoryId": "shadcn-taxonomy",
+      "syntax": "tsx",
+      "category": "accessible-name",
+      "expectedRule": "requireLabelForFormControls",
+      "virtualFile": "seeds/accessible-name-label-tsx.tsx",
+      "sourceText": "export default () => <input type=\"text\" />;",
+      "forceHtml": false,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-accessible-name-button-vue",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "category": "accessible-name",
+      "expectedRule": "requireButtonText",
+      "virtualFile": "seeds/accessible-name-button-vue.vue",
+      "sourceText": "<template><button><svg></svg></button></template>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 10
+      }
+    },
+    {
+      "id": "seed-accessible-name-link-vue",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "category": "accessible-name",
+      "expectedRule": "requireLinkText",
+      "virtualFile": "seeds/accessible-name-link-vue.vue",
+      "sourceText": "<template><a href=\"/docs\"><svg></svg></a></template>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the control or link's accessible name.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 10
+      }
+    },
+    {
+      "id": "seed-language-01",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-01.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 1</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-02",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-02.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 2</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-03",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-03.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 3</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-04",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-04.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 4</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-05",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-05.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 5</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-06",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-06.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 6</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-07",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-07.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 7</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-08",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-08.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 8</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-09",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-09.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 9</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-language-10",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "language",
+      "expectedRule": "requireHtmlLang",
+      "virtualFile": "seeds/language-10.html",
+      "sourceText": "<!doctype html><html><head><title>Language seed 10</title></head><body><main>Content</main></body></html>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the document language from a complete HTML document.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 15
+      }
+    },
+    {
+      "id": "seed-image-alt-html-img-1",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-html-img-1.html",
+      "sourceText": "<img src=\"one.png\">",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "id": "seed-image-alt-html-img-2",
+      "repositoryId": "googlechrome-samples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-html-img-2.html",
+      "sourceText": "<picture><img src=\"two.png\"></picture>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 9
+      }
+    },
+    {
+      "id": "seed-image-alt-html-img-3",
+      "repositoryId": "50projects50days",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-html-img-3.html",
+      "sourceText": "<figure><img src=\"three.png\"></figure>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 8
+      }
+    },
+    {
+      "id": "seed-image-alt-html-img-4",
+      "repositoryId": "mdn-dom-examples",
+      "syntax": "html",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-html-img-4.html",
+      "sourceText": "<a href=\"/\"><img src=\"four.png\"></a>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 12
+      }
+    },
+    {
+      "id": "seed-image-alt-tsx-img-1",
+      "repositoryId": "vercel-commerce",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-tsx-img-1.tsx",
+      "sourceText": "export default () => <img src=\"one.png\" />;",
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-image-alt-tsx-img-2",
+      "repositoryId": "bulletproof-react",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-tsx-img-2.tsx",
+      "sourceText": "export default () => <picture><img src=\"two.png\" /></picture>;",
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 30
+      }
+    },
+    {
+      "id": "seed-image-alt-tsx-img-3",
+      "repositoryId": "shadcn-taxonomy",
+      "syntax": "tsx",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-tsx-img-3.tsx",
+      "sourceText": "export default () => <a href=\"/\"><img src=\"three.png\" /></a>;",
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 33
+      }
+    },
+    {
+      "id": "seed-image-alt-vue-img-1",
+      "repositoryId": "vuejs-docs",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-vue-img-1.vue",
+      "sourceText": "<template><img src=\"one.png\"></template>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 10
+      }
+    },
+    {
+      "id": "seed-image-alt-vue-img-2",
+      "repositoryId": "nuxt-movies",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireAltText",
+      "virtualFile": "seeds/image-alt-vue-img-2.vue",
+      "sourceText": "<template><picture><img src=\"two.png\"></picture></template>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 19
+      }
+    },
+    {
+      "id": "seed-image-alt-image-input",
+      "repositoryId": "antfu-vitesse",
+      "syntax": "vue",
+      "category": "image-alt",
+      "expectedRule": "requireImageInputAlt",
+      "virtualFile": "seeds/image-alt-image-input.vue",
+      "sourceText": "<template><input type=\"image\" src=\"submit.png\"></template>",
+      "forceHtml": true,
+      "rationale": "Reviewed mutation removes the required text alternative.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 10
+      }
+    },
+    {
+      "id": "seed-other-aria-value",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "ariaValidAttrValue",
+      "virtualFile": "seeds/other-aria-value.html",
+      "sourceText": "<div aria-hidden=\"maybe\"></div>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates ariaValidAttrValue.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 5
+      }
+    },
+    {
+      "id": "seed-other-list-nesting",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "enforceListNesting",
+      "virtualFile": "seeds/other-list-nesting.html",
+      "sourceText": "<ul><div><li>Item</li></div></ul>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates enforceListNesting.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 9
+      }
+    },
+    {
+      "id": "seed-other-empty-inline",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "preventEmptyInlineTags",
+      "virtualFile": "seeds/other-empty-inline.html",
+      "sourceText": "<p><em></em></p>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates preventEmptyInlineTags.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 3
+      }
+    },
+    {
+      "id": "seed-other-image-input",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "tsx",
+      "category": "other",
+      "expectedRule": "requireImageInputAlt",
+      "virtualFile": "seeds/other-image-input.tsx",
+      "sourceText": "export default () => <input type=\"image\" />;",
+      "rationale": "Reviewed targeted mutation violates requireImageInputAlt.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 21
+      }
+    },
+    {
+      "id": "seed-other-positive-tabindex",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "noTabindexGreaterThanZero",
+      "virtualFile": "seeds/other-positive-tabindex.html",
+      "sourceText": "<button tabindex=\"2\">Save</button>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates noTabindexGreaterThanZero.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 8
+      }
+    },
+    {
+      "id": "seed-other-placeholder",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "preventZemdomuPlaceholders",
+      "virtualFile": "seeds/other-placeholder.html",
+      "sourceText": "<div aria-label=\"TODO-ZMD\"></div>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates preventZemdomuPlaceholders.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 17
+      }
+    },
+    {
+      "id": "seed-other-duplicate-id",
+      "repositoryId": "zemdomu-targeted-fixtures",
+      "syntax": "html",
+      "category": "other",
+      "expectedRule": "uniqueIds",
+      "virtualFile": "seeds/other-duplicate-id.html",
+      "sourceText": "<div id=\"duplicate\"></div><span id=\"duplicate\"></span>",
+      "forceHtml": true,
+      "rationale": "Reviewed targeted mutation violates uniqueIds.",
+      "detected": true,
+      "detectedAt": {
+        "line": 0,
+        "column": 32
+      }
+    }
+  ],
+  "summary": {
+    "total": 37,
+    "detected": 37,
+    "byCategory": {
+      "accessible-name": {
+        "total": 10,
+        "detected": 10
+      },
+      "language": {
+        "total": 10,
+        "detected": 10
+      },
+      "image-alt": {
+        "total": 10,
+        "detected": 10
+      },
+      "other": {
+        "total": 7,
+        "detected": 7
+      }
+    }
+  }
+}

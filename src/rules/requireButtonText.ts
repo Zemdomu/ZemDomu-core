@@ -9,6 +9,7 @@ type JsxButtonEntry = { node: t.JSXElement; line: number; column: number };
 
 const HTML_ARIA_LABEL_ATTRS = ['aria-label'];
 const HTML_ARIA_LABELLEDBY_ATTRS = ['aria-labelledby'];
+const HTML_TITLE_ATTRS = ['title', ':title', 'v-bind:title'];
 const HTML_ARIA_HIDDEN_ATTRS = ['aria-hidden'];
 const HTML_HIDDEN_ATTRS = ['hidden'];
 
@@ -61,6 +62,15 @@ function hasHtmlNonEmptyAriaLabel(node: ElementNode): boolean {
   return aria.trim().length > 0;
 }
 
+function hasHtmlNonEmptyTitle(node: ElementNode): boolean {
+  const title = getHtmlAttrValue(node.attrs, HTML_TITLE_ATTRS);
+  return typeof title === 'string' && title.trim().length > 0;
+}
+
+function hasJsxSpreadAttribute(opening: t.JSXOpeningElement): boolean {
+  return opening.attributes.some((attr) => t.isJSXSpreadAttribute(attr));
+}
+
 function htmlImgAltPresent(node: ElementNode): boolean {
   const alt = node.attrs.alt;
   return typeof alt === 'string' && alt.trim().length > 0;
@@ -101,7 +111,9 @@ function hasHtmlAriaLabelledByText(
 }
 
 function getJsxTagName(opening: t.JSXOpeningElement): string {
-  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  if (!t.isJSXIdentifier(opening.name)) return '';
+  const name = opening.name.name;
+  return name === name.toLowerCase() ? name : '';
 }
 
 function getStaticJsxAttrText(
@@ -275,8 +287,9 @@ export default function requireButtonText(): Rule {
         if (isHtmlHidden(node)) continue;
         const hasLabel = hasHtmlNonEmptyAriaLabel(node);
         const hasLabelledBy = hasHtmlAriaLabelledByText(node, htmlIds);
+        const hasTitle = hasHtmlNonEmptyTitle(node);
         const hasContent = hasHtmlAccessibleText(node, false);
-        if (!hasLabel && !hasLabelledBy && !hasContent) {
+        if (!hasLabel && !hasLabelledBy && !hasTitle && !hasContent) {
           results.push({
             line: 0,
             column: 0,
@@ -290,12 +303,14 @@ export default function requireButtonText(): Rule {
       for (const { node, line, column } of jsxButtons) {
         const opening = node.openingElement;
         if (isJsxHiddenFromAT(opening)) continue;
+        if (hasJsxSpreadAttribute(opening)) continue;
         const ariaState = getJsxAttributeState(opening, 'aria-label', true);
         const hasLabel = ariaState === 'present';
         const hasLabelledBy = hasJsxAriaLabelledByText(opening, jsxIds);
+        const hasTitle = getJsxAttributeState(opening, 'title', true) === 'present';
         const contentState = jsxElementTextState(node, false);
         const hasContent = contentState === 'present';
-        if (!hasLabel && !hasLabelledBy && !hasContent) {
+        if (!hasLabel && !hasLabelledBy && !hasTitle && !hasContent) {
           results.push({
             line,
             column,

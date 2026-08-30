@@ -16,6 +16,7 @@ const HTML_ARIA_LABELLEDBY_ATTRS = [
 const HTML_ARIA_HIDDEN_ATTRS = ["aria-hidden"];
 const HTML_HIDDEN_ATTRS = ["hidden"];
 const HTML_IMG_ALT_ATTRS = ["alt", ":alt", "v-bind:alt"];
+const HTML_TITLE_ATTRS = ["title", ":title", "v-bind:title"];
 
 function getHtmlAttrValue(
   attrs: Record<string, string>,
@@ -65,6 +66,15 @@ function hasHtmlNonEmptyAriaLabel(node: ElementNode): boolean {
   return aria.trim().length > 0;
 }
 
+function hasHtmlNonEmptyTitle(node: ElementNode): boolean {
+  const title = getHtmlAttrValue(node.attrs, HTML_TITLE_ATTRS);
+  return typeof title === "string" && title.trim().length > 0;
+}
+
+function hasJsxSpreadAttribute(opening: t.JSXOpeningElement): boolean {
+  return opening.attributes.some((attr) => t.isJSXSpreadAttribute(attr));
+}
+
 function htmlImgAltPresent(node: ElementNode): boolean {
   const alt = getHtmlAttrValue(node.attrs, HTML_IMG_ALT_ATTRS);
   return typeof alt === "string" && alt.trim().length > 0;
@@ -112,7 +122,9 @@ function hasHtmlDynamicAriaLabelledBy(node: ElementNode): boolean {
 }
 
 function getJsxTagName(opening: t.JSXOpeningElement): string {
-  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : "";
+  if (!t.isJSXIdentifier(opening.name)) return "";
+  const name = opening.name.name;
+  return name === name.toLowerCase() ? name : "";
 }
 
 function getStaticJsxAttrText(
@@ -303,8 +315,9 @@ export default function requireLinkText(): Rule {
         const hasLabelledBy =
           hasHtmlAriaLabelledByText(node, htmlIds) ||
           hasHtmlDynamicAriaLabelledBy(node);
+        const hasTitle = hasHtmlNonEmptyTitle(node);
         const hasContent = hasHtmlAccessibleText(node, false);
-        if (!hasLabel && !hasLabelledBy && !hasContent) {
+        if (!hasLabel && !hasLabelledBy && !hasTitle && !hasContent) {
           results.push({
             line: 0,
             column: 0,
@@ -318,10 +331,12 @@ export default function requireLinkText(): Rule {
       for (const { node, line, column } of jsxLinks) {
         const opening = node.openingElement;
         if (isJsxHiddenFromAT(opening)) continue;
+        if (hasJsxSpreadAttribute(opening)) continue;
         const ariaState = getJsxAttributeState(opening, "aria-label", true);
         const labelledByState = getJsxLabelledByState(opening, jsxIds);
+        const titleState = getJsxAttributeState(opening, "title", true);
         const contentState = jsxElementTextState(node, false);
-        const nameState = mergeStates([ariaState, labelledByState, contentState]);
+        const nameState = mergeStates([ariaState, labelledByState, titleState, contentState]);
         if (nameState !== "present") {
           const message =
             nameState === "possiblyEmpty"

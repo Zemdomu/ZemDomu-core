@@ -141,7 +141,9 @@ function isValidAriaValue(attr: string, rawValue: string): boolean {
 function jsxStaticAriaValue(
   attr: t.JSXAttribute
 ): { value: string; dynamic: boolean } {
-  if (!attr.value) return { value: "", dynamic: false };
+  // JSX shorthand attributes evaluate to boolean true. React serializes valid
+  // boolean-like ARIA values such as `aria-hidden` as "true".
+  if (!attr.value) return { value: "true", dynamic: false };
   if (t.isStringLiteral(attr.value)) return { value: attr.value.value, dynamic: false };
   if (!t.isJSXExpressionContainer(attr.value)) return { value: "", dynamic: true };
 
@@ -215,4 +217,3 @@ export default function ariaValidAttrValue(): Rule {
     },
   };
 }
-

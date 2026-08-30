@@ -32,6 +32,9 @@ export default function enforceListNesting(): Rule {
         const parentElement = path.findParent((p) => p.isJSXElement()) as
           | NodePath<t.JSXElement>
           | null;
+        // A root <li> can be a component whose consumer supplies the list.
+        // Report only when a non-list JSX parent is present and therefore certain.
+        if (!parentElement) return [];
         const parentTag = parentElement ? getTag(parentElement) : '';
         const inList = parentTag === 'ul' || parentTag === 'ol';
         if (!inList) {

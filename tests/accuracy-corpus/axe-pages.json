@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "pages": [
+    {
+      "id": "50projects-background-slider",
+      "repositoryId": "50projects50days",
+      "sourceFile": "background-slider/index.html"
+    },
+    {
+      "id": "mdn-channel-messaging",
+      "repositoryId": "mdn-dom-examples",
+      "sourceFile": "channel-messaging-basic/index.html"
+    },
+    {
+      "id": "chrome-async-clipboard-image",
+      "repositoryId": "googlechrome-samples",
+      "sourceFile": "async-clipboard-image/index.html"
+    }
+  ]
+}

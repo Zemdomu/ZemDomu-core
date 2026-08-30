@@ -170,7 +170,9 @@ export function hasJsxLinkAttribute(opening: t.JSXOpeningElement): boolean {
 
 export function getTag(path: NodePath<t.JSXElement>): string {
   const opening = path.node.openingElement;
-  return t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+  if (!t.isJSXIdentifier(opening.name)) return '';
+  const name = opening.name.name;
+  return name === name.toLowerCase() ? name : '';
 }
 
 function locKey(loc?: t.SourceLocation['start']): string {
