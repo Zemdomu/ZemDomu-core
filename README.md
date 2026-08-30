@@ -90,6 +90,7 @@ const project = new ProjectLinter({ crossComponentAnalysis: true });
 const projectResults = await project.lintFiles(["src/Card.tsx"]);
 const semanticGraph = await project.buildSemanticGraph(["src/Card.tsx"]);
 const pageModel = await project.buildPageModel(["src/AppLayout.tsx"]);
+const pageDiagnostics = await project.lintPageDiagnostics(["src/AppLayout.tsx"]);
 ```
 
 `buildSemanticGraph()` follows supported local React/JSX/TSX and Vue imports
@@ -111,6 +112,14 @@ ordered heading, landmark, section, navigation, and document-ID facts. Supply
 filesystem conventions. Custom adapters implement `SemanticRouteAdapter`, so
 the graph and page model do not hard-code a router. With no applicable adapter,
 entry roots and route identity remain explicit unknowns.
+
+`lintPageDiagnostics()` returns canonical diagnostics and adds the affected
+page, readable component path, composition-related source locations, and a
+preferred edit location only when one page/path is statically resolved.
+Conservative suggestion text is limited to structural rules with a supported
+edit direction. Ambiguous reuse across pages remains a normal diagnostic with
+no page, edit-location, or fix claim. Use `formatZemDomuDiagnosticPretty()` to
+render this optional context for terminal output.
 
 ### Parameters
 
@@ -177,7 +186,8 @@ console.log(serializeZemDomuDiagnostics(diagnostics, 2));
 Every `ZemDomuDiagnostic` has `schemaVersion`, `rule`, `code`, `severity`,
 `message`, and a source file/line/column. Lines and columns are zero-based, as
 they are in `LintResult`. Page identity, component path, related locations,
-suggestions, provenance, and confidence are optional. Schema `1.0` uses the
+preferred edit location, suggestions, provenance, and confidence are optional.
+Schema `1.0` uses the
 rule name as the code fallback for parse errors or custom rules that do not
 provide a registered or explicit code. Missing legacy severity defaults to
 `error`; pass `defaultSeverity` when another canonical severity is appropriate.

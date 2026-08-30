@@ -31,10 +31,12 @@ export type { SarifLog } from "./sarif";
 export { getRuleCode, RULE_CODES, RULE_CLASSIFICATIONS } from "./rule-codes";
 export type { RuleClassification } from "./rule-codes";
 export {
+  formatZemDomuDiagnosticPretty,
   serializeZemDomuDiagnostics,
   toZemDomuDiagnostic,
   ZEMDOMU_DIAGNOSTIC_SCHEMA_VERSION,
 } from "./diagnostics";
+export { createPageAwareDiagnostics } from "./contextual-diagnostics";
 export type {
   ZemDomuDiagnostic,
   ZemDomuDiagnosticConfidence,

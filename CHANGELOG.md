@@ -12,6 +12,7 @@
 
 ### Feature
 
+- Feature: add page-aware canonical diagnostics with uniquely resolved page and component paths, composition-related locations, conservative suggestions and preferred edit locations, plus reusable readable terminal formatting.
 - Feature: add a versioned page/document model with configured and opt-in React/Vue filesystem route adapters, nested component trees, and ordered heading, landmark, section, navigation, and document-ID facts with source/component provenance.
 - Feature: infer single, unconditional React and Vue component outputs such as `<header>`, `<nav>`, `<main>`, and `<button>` with source-backed evidence paths and explicit inferred or unknown confidence states.
 - Feature: expose a versioned, framework-neutral semantic graph contract for files, components, native rendered elements, imports, composition, semantic facts, page roots, provenance, and explicit unknown analysis boundaries.

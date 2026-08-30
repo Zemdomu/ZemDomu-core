@@ -57,6 +57,8 @@ export interface ZemDomuDiagnostic {
   page?: string;
   componentPath?: string[];
   relatedLocations?: ZemDomuRelatedLocation[];
+  /** Preferred source location for an edit, only when analysis resolves it deterministically. */
+  preferredEditLocation?: ZemDomuSourceLocation;
   suggestion?: ZemDomuDiagnosticSuggestion;
   provenance?: ZemDomuDiagnosticProvenance;
   confidence?: ZemDomuDiagnosticConfidence;
@@ -69,6 +71,8 @@ export interface ZemDomuDiagnosticContext {
   defaultSeverity?: ZemDomuDiagnosticSeverity;
   page?: string;
   componentPath?: string[];
+  relatedLocations?: ZemDomuRelatedLocation[];
+  preferredEditLocation?: ZemDomuSourceLocation;
   suggestion?: ZemDomuDiagnosticSuggestion;
   provenance?: ZemDomuDiagnosticProvenance;
   confidence?: ZemDomuDiagnosticConfidence;
@@ -111,10 +115,11 @@ export function toZemDomuDiagnostic(
     ...(context.componentPath === undefined
       ? {}
       : { componentPath: [...context.componentPath] }),
-    ...(result.related === undefined
+    ...(result.related === undefined && context.relatedLocations === undefined
       ? {}
       : {
-          relatedLocations: result.related.map((related) => ({
+          relatedLocations: [
+            ...(result.related ?? []).map((related) => ({
             source: {
               file: related.filePath,
               line: related.line,
@@ -123,8 +128,18 @@ export function toZemDomuDiagnostic(
             ...(related.message === undefined
               ? {}
               : { message: related.message }),
-          })),
+            })),
+            ...(context.relatedLocations ?? []).map((related) => ({
+              source: { ...related.source },
+              ...(related.message === undefined
+                ? {}
+                : { message: related.message }),
+            })),
+          ],
         }),
+    ...(context.preferredEditLocation === undefined
+      ? {}
+      : { preferredEditLocation: { ...context.preferredEditLocation } }),
     ...(context.suggestion === undefined
       ? {}
       : { suggestion: { ...context.suggestion } }),
@@ -143,4 +158,33 @@ export function serializeZemDomuDiagnostics(
   space?: number
 ): string {
   return JSON.stringify(diagnostics, null, space);
+}
+
+/** Render one canonical diagnostic for developer-facing terminal output. */
+export function formatZemDomuDiagnosticPretty(
+  diagnostic: ZemDomuDiagnostic
+): string {
+  const lines = [
+    `${diagnostic.source.file}:${diagnostic.source.line + 1}:${diagnostic.source.column + 1} ${diagnostic.code}: ${diagnostic.message}`,
+  ];
+  if (diagnostic.page) lines.push(`Page: ${diagnostic.page}`);
+  if (diagnostic.componentPath?.length) {
+    lines.push(`Component path: ${diagnostic.componentPath.join(" → ")}`);
+  }
+  if (diagnostic.relatedLocations?.length) {
+    lines.push("Related locations:");
+    for (const related of diagnostic.relatedLocations) {
+      lines.push(
+        `  ${related.source.file}:${related.source.line + 1}:${related.source.column + 1}${related.message ? ` — ${related.message}` : ""}`
+      );
+    }
+  }
+  if (diagnostic.preferredEditLocation) {
+    const edit = diagnostic.preferredEditLocation;
+    lines.push(`Suggested location: ${edit.file}:${edit.line + 1}:${edit.column + 1}`);
+  }
+  if (diagnostic.suggestion) {
+    lines.push(`Suggestion: ${diagnostic.suggestion.message}`);
+  }
+  return lines.join("\n");
 }

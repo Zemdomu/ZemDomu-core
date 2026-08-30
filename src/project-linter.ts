@@ -13,6 +13,8 @@ import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
 import { applyRuleCode } from "./rule-codes";
 import type { SemanticGraph } from "./semantic-graph";
+import type { ZemDomuDiagnostic } from "./diagnostics";
+import { createPageAwareDiagnostics } from "./contextual-diagnostics";
 import {
   composeSemanticPageModel,
   createConfiguredRouteAdapter,
@@ -261,13 +263,32 @@ export class ProjectLinter {
   /** Compose configured or adapter-discovered pages from the public graph. */
   async buildPageModel(filePaths: string[]): Promise<SemanticPageModel> {
     const graph = await this.buildSemanticGraph(filePaths);
+    return composeSemanticPageModel(graph, this.pageModelAdapters());
+  }
+
+  /**
+   * Lint a composed page and return canonical diagnostics enriched with page,
+   * component-path, related-location, and conservative suggestion context.
+   * Existing lintFile/lintFiles return values remain unchanged.
+   */
+  async lintPageDiagnostics(filePaths: string[]): Promise<ZemDomuDiagnostic[]> {
+    const results = await this.lintFiles(filePaths);
+    const graph = await this.buildSemanticGraph(filePaths);
+    const model = await composeSemanticPageModel(
+      graph,
+      this.pageModelAdapters()
+    );
+    return createPageAwareDiagnostics(results, graph, model);
+  }
+
+  private pageModelAdapters(): SemanticRouteAdapter[] {
     const adapters = [
       ...(this.opts.pages?.length
         ? [createConfiguredRouteAdapter(this.opts.pages)]
         : []),
       ...(this.opts.routeAdapters ?? []),
     ];
-    return composeSemanticPageModel(graph, adapters);
+    return adapters;
   }
 
   private resolveTargets(

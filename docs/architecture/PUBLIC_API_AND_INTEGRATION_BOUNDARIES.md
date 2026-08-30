@@ -29,7 +29,11 @@ scopes without introducing a second issue model:
 - `ProjectLinter.buildSemanticGraph(filePaths)` and
   `ProjectLinter.buildPageModel(filePaths)` expose the shared graph and
   page/document contracts without moving semantic analysis into adapters.
-- All three return the compatibility `LintResult` model. Consumers that need a
+- `ProjectLinter.lintPageDiagnostics(filePaths)` is the additive page-aware
+  canonical path. It emits page/component-path context and conservative edit
+  guidance only for uniquely resolved composition; ambiguous reuse omits it.
+- The legacy lint operations return the compatibility `LintResult` model.
+  Consumers that need a
   stable interchange shape adapt those results to `ZemDomuDiagnostic` at their
   presentation boundary.
 
