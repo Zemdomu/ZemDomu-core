@@ -191,6 +191,8 @@ export interface SemanticNativeElementNode {
   namespace: "html" | "svg" | "mathml" | "unknown";
   attributes: readonly SemanticAttribute[];
   semantics: readonly SemanticRenderedFact[];
+  /** Source-proven native section ancestors within the owning component. */
+  sectionAncestorIds?: readonly SemanticRenderNodeId[];
   provenance: SemanticSourceProvenance;
 }
 
@@ -297,6 +299,8 @@ export interface SemanticCompositionEdge {
   order: SemanticValue<number>;
   cardinality: "one" | "optional" | "many" | "unknown";
   condition: SemanticRenderCondition;
+  /** Native section ancestors that contain this component usage. */
+  sectionAncestorIds?: readonly SemanticRenderNodeId[];
   traversal: SemanticTraversalState;
   provenance: SemanticSourceProvenance;
 }

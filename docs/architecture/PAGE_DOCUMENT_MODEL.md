@@ -48,8 +48,34 @@ remains unknown until a future adapter can prove its placement.
 Explicit configuration establishes page identity, not rendered semantics.
 Rendered facts still come from source-backed graph nodes. Filesystem discovery
 is labeled `inferred`, and conditional facts retain `SemanticRenderCondition`
-instead of becoming unconditional page facts. The composer stops at cycles and
-depth boundaries and collects the corresponding unknown evidence.
+instead of becoming unconditional page facts. Parent component-use conditions
+propagate to every child fact, and composition-edge paths distinguish repeated
+instances of the same component. Source-proven section ownership identifies the
+nearest containing section across component boundaries, while ordered gap
+evidence prevents rules from reasoning across unresolved runtime output. The
+composer stops at cycles and depth boundaries and collects the corresponding
+unknown evidence.
+
+## Page-aware rules
+
+`ProjectLinter.lintPageDiagnostics()` invokes `Rule.analyzePage` on the existing
+registered rules. It does not introduce a second registry. The first page-aware
+tranche covers `singleH1`, `requireSingleMain`, `enforceHeadingOrder`,
+`requireSectionHeading`, and `uniqueIds`. Missing facts are reported only for a
+known, resolved, complete page; conditional and unresolved composition remains
+silent when a claim would be path-dependent.
+
+`requirePageH1` (ZMD022) is a separate advisory, page-only rule and is disabled
+by default. `singleH1` continues to mean “at most one H1,” while
+`enforceHeadingOrder` continues to accept any first heading level and only
+reports later upward skips.
+
+Landmark integrity in this tranche is deliberately limited to a page's main
+landmark through `requireSingleMain`. Correctly classifying contextual
+`header`/`footer` landmarks requires native DOM ancestry that schema 1.0 does
+not yet expose. Section-heading composition refines source-rule candidates with
+resolved descendant components; slots, runtime projection, and unresolved
+children remain unknown rather than producing a missing-heading claim.
 
 ## Compatibility
 

@@ -8,6 +8,7 @@ describe("advisory and house-style rule classification", () => {
       requireTableCaption: "advisory",
       requireSectionHeading: "advisory",
       requireNavLinks: "house-style",
+      requirePageH1: "advisory",
     });
   });
 

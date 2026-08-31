@@ -24,7 +24,14 @@ import preventZemdomuPlaceholders from "./rules/preventZemdomuPlaceholders";
 import requireDocumentTitle from "./rules/requireDocumentTitle";
 import requireSingleMain from "./rules/requireSingleMain";
 import ariaValidAttrValue from "./rules/ariaValidAttrValue";
+import requirePageH1 from "./rules/requirePageH1";
 import { applyRuleCode } from "./rule-codes";
+import type {
+  SemanticComponentId,
+  SemanticCompositionId,
+  SemanticGraph,
+} from "./semantic-graph";
+import type { SemanticPageDocument } from "./page-model";
 
 const builtInRules: Record<string, () => Rule> = {
   requireSectionHeading,
@@ -48,6 +55,7 @@ const builtInRules: Record<string, () => Rule> = {
   requireDocumentTitle,
   requireSingleMain,
   ariaValidAttrValue,
+  requirePageH1,
 };
 export type RuleSeverity = "error" | "warning" | "off";
 
@@ -72,6 +80,15 @@ export interface LintResult {
   code?: string;
   severity?: RuleSeverity;
   filePath?: string;
+  /** Internal page identity used by composed-page analysis. */
+  pageId?: string;
+  /** Internal resolved component instance used by composed-page analysis. */
+  pageComponentPath?: SemanticComponentId[];
+  pageCompositionPath?: SemanticCompositionId[];
+  /** Internal marker: page analysis proved the matching file finding invalid. */
+  pageSuppression?: boolean;
+  /** False when editing the shared source cannot fix an instance-level conflict. */
+  pageEditSafe?: boolean;
   related?: Array<{
     filePath: string;
     line: number;
@@ -91,9 +108,18 @@ export interface Rule {
   exitJsx?: (path: NodePath<t.JSXElement>) => LintResult[];
   /** Called after traversal finishes */
   end?: () => LintResult[];
+  /** Analyze one resolved composed page using the same registered rule. */
+  analyzePage?: (context: PageRuleContext) => LintResult[];
   // Support simple custom rules
   test?: (node: Node | t.Node) => boolean;
   message?: string;
+}
+
+export interface PageRuleContext {
+  page: SemanticPageDocument;
+  graph: SemanticGraph;
+  /** File-level results are available for conservative candidate refinement. */
+  fileResults: ReadonlyMap<string, readonly LintResult[]>;
 }
 
 const defaultOptions: LinterOptions = {
@@ -119,9 +145,27 @@ const defaultOptions: LinterOptions = {
     requireDocumentTitle: "error",
     requireSingleMain: "error",
     ariaValidAttrValue: "error",
+    requirePageH1: "off",
   },
   customRules: [],
 };
+
+export function createActiveRules(
+  options: LinterOptions = defaultOptions
+): Array<{ rule: Rule; severity: RuleSeverity }> {
+  const rules = { ...defaultOptions.rules, ...(options.rules ?? {}) };
+  const active: Array<{ rule: Rule; severity: RuleSeverity }> = [];
+  for (const name in rules) {
+    const severity = rules[name];
+    if (severity !== "off" && builtInRules[name]) {
+      active.push({ rule: builtInRules[name](), severity });
+    }
+  }
+  for (const rule of options.customRules ?? defaultOptions.customRules ?? []) {
+    active.push({ rule, severity: "error" });
+  }
+  return active;
+}
 
 function buildLineIndex(content: string): number[] {
   const lines = [0];
@@ -404,18 +448,7 @@ export function lint(
   const totalStart = Date.now();
 
   // Pair each rule with its severity
-  const activeRules: { rule: Rule; severity: RuleSeverity }[] = [];
-  for (const name in opts.rules) {
-    const severity = opts.rules[name];
-    if (severity !== "off" && builtInRules[name]) {
-      activeRules.push({ rule: builtInRules[name](), severity });
-    }
-  }
-  if (opts.customRules) {
-    for (const rule of opts.customRules) {
-      activeRules.push({ rule, severity: "error" }); // default custom to error
-    }
-  }
+  const activeRules = createActiveRules(opts);
 
   activeRules.forEach(({ rule }) => rule.init && rule.init());
 

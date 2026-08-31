@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import fs from "fs";
 import path from "path";
-import { RULE_CODES } from "../../src/rule-codes";
+import { PAGE_ONLY_RULES, RULE_CODES } from "../../src/rule-codes";
 import { summarizeAccuracyCorpus } from "./metrics";
 import type {
   AccuracyCorpusCandidateBundle,
@@ -227,7 +227,9 @@ function main() {
   };
   const summary = summarizeAccuracyCorpus(
     study,
-    Object.keys(RULE_CODES) as RuleOracleName[]
+    Object.keys(RULE_CODES).filter(
+      (rule) => !(PAGE_ONLY_RULES as readonly string[]).includes(rule)
+    ) as RuleOracleName[]
   );
   fs.writeFileSync(studyPath, `${JSON.stringify(study, null, 2)}\n`, "utf8");
   fs.writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");

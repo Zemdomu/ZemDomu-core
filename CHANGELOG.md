@@ -12,6 +12,7 @@
 
 ### Feature
 
+- Feature: run duplicate-H1, main-landmark, heading-order, section-heading, and duplicate-ID rules across resolved React and Vue page composition; preserve component-instance provenance; suppress conditional or unresolved ambiguity; and add the opt-in advisory `requirePageH1` rule (ZMD022).
 - Feature: add canonical `zemdomu check --format pretty|json|sarif` output with deterministic JSON, documented exit codes, and SARIF 2.1.0 related-location and semantic-context mapping.
 - Feature: add page-aware canonical diagnostics with uniquely resolved page and component paths, composition-related locations, conservative suggestions and preferred edit locations, plus reusable readable terminal formatting.
 - Feature: add a versioned page/document model with configured and opt-in React/Vue filesystem route adapters, nested component trees, and ordered heading, landmark, section, navigation, and document-ID facts with source/component provenance.

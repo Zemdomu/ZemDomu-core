@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { RULE_CODES } from "../src/rule-codes";
+import { PAGE_ONLY_RULES, RULE_CODES } from "../src/rule-codes";
 import {
   ACCURACY_CORPUS_THRESHOLDS,
   summarizeAccuracyCorpus,
@@ -21,7 +21,10 @@ import {
   selectCorpusPaths,
 } from "./accuracy-corpus/runner";
 
-const defaultRules = Object.keys(RULE_CODES) as RuleOracleName[];
+const pageOnlyRules = new Set<string>(PAGE_ONLY_RULES);
+const defaultRules = Object.keys(RULE_CODES).filter(
+  (rule) => !pageOnlyRules.has(rule)
+) as RuleOracleName[];
 const emptyEvidence = {
   candidateBundleSha256: "a".repeat(64),
   seedEvidenceSha256: "b".repeat(64),

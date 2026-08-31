@@ -3,6 +3,7 @@ import path from "path";
 import * as ts from "typescript";
 import {
   applyInlineDisableDirectives,
+  createActiveRules,
   lint,
   LintResult,
   LinterOptions,
@@ -278,7 +279,34 @@ export class ProjectLinter {
       graph,
       this.pageModelAdapters()
     );
-    return createPageAwareDiagnostics(results, graph, model);
+    const activeRules = createActiveRules(this.opts).filter(
+      ({ rule }) => rule.analyzePage
+    );
+    activeRules.forEach(({ rule }) => rule.init?.());
+    const combined = new Map<string, LintResult[]>();
+    for (const [filePath, entries] of results) {
+      combined.set(filePath, [...entries]);
+    }
+    for (const page of model.pages) {
+      for (const { rule, severity } of activeRules) {
+        const findings = rule.analyzePage?.({ page, graph, fileResults: results }) ?? [];
+        for (const finding of findings) {
+          if (!finding.filePath) continue;
+          if (!hasIncompletePageOccurrence(finding, page.id, graph, model)) {
+            removeMatchingFileResult(combined, finding);
+          }
+          if (finding.pageSuppression) continue;
+          const coded = applyRuleCode({ ...finding, pageId: page.id, severity });
+          if (!combined.has(finding.filePath)) combined.set(finding.filePath, []);
+          combined.get(finding.filePath)!.push(coded);
+        }
+      }
+    }
+    await this.applyInlineDisableDirectivesForFiles(combined);
+    for (const [filePath, entries] of combined) {
+      combined.set(filePath, deduplicateResults(entries));
+    }
+    return createPageAwareDiagnostics(combined, graph, model);
   }
 
   private pageModelAdapters(): SemanticRouteAdapter[] {
@@ -389,4 +417,93 @@ export class ProjectLinter {
       results.set(resultFilePath, applyInlineDisableDirectives(source, entries));
     }
   }
+
+  private async applyInlineDisableDirectivesForFiles(
+    results: Map<string, LintResult[]>
+  ): Promise<void> {
+    for (const [filePath, entries] of results) {
+      try {
+        const source = await fs.readFile(filePath, "utf8");
+        results.set(filePath, applyInlineDisableDirectives(source, entries));
+      } catch {
+        // Preserve diagnostics for virtual/in-memory paths that cannot be read.
+      }
+    }
+  }
+}
+
+function deduplicateResults(results: readonly LintResult[]): LintResult[] {
+  const unique = new Map<string, LintResult>();
+  for (const result of results) {
+    const key = [
+      result.rule,
+      result.filePath ?? "",
+      result.line,
+      result.column,
+      result.message,
+      result.pageId ?? "",
+      result.pageCompositionPath?.join("/") ?? "",
+    ].join("\u0000");
+    if (!unique.has(key)) unique.set(key, result);
+  }
+  return [...unique.values()];
+}
+
+function removeMatchingFileResult(
+  results: Map<string, LintResult[]>,
+  pageResult: LintResult
+): void {
+  if (!pageResult.filePath) return;
+  const target = path.resolve(pageResult.filePath);
+  for (const [filePath, entries] of results) {
+    if (path.resolve(filePath) !== target) continue;
+    results.set(
+      filePath,
+      entries.filter(
+        (entry) =>
+          entry.pageId ||
+          entry.rule !== pageResult.rule ||
+          entry.line !== pageResult.line ||
+          entry.column !== pageResult.column
+      )
+    );
+  }
+}
+
+function hasIncompletePageOccurrence(
+  result: LintResult,
+  decidedPageId: string,
+  graph: SemanticGraph,
+  model: SemanticPageModel
+): boolean {
+  if (!result.filePath) return false;
+  const target = comparableProjectFile(result.filePath);
+  const componentIds = new Set(
+    graph.components
+      .filter((component) => {
+        const file = graph.files.find((entry) => entry.id === component.fileId);
+        return file && comparableProjectFile(file.path) === target;
+      })
+      .map((component) => component.id)
+  );
+  if (!componentIds.size) return false;
+  const containsComponent = (tree: SemanticPageModel["pages"][number]["componentTree"]): boolean =>
+    Boolean(
+      tree &&
+        (componentIds.has(tree.componentId) || tree.children.some(containsComponent))
+    );
+  return model.pages.some(
+    (page) =>
+      page.id !== decidedPageId &&
+      containsComponent(page.componentTree) &&
+      (page.route.state === "unknown" ||
+        page.rootComponent.state === "unknown" ||
+        page.confidence === "unknown" ||
+        page.unknowns.length > 0)
+  );
+}
+
+function comparableProjectFile(filePath: string): string {
+  const resolved = path.resolve(filePath);
+  return process.platform === "win32" ? resolved.toLowerCase() : resolved;
 }

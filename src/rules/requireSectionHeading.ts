@@ -9,6 +9,13 @@ import {
   JsxValueState,
   getTag,
 } from './utils';
+import {
+  isCompletePage,
+  isResolvedPage,
+  isUnconditional,
+  matchingFileResult,
+  sourceForFact,
+} from './page-utils';
 
 type HtmlSection = { node: ElementNode; hasHeading: boolean };
 type JsxSection = { node: t.JSXElement; hasHeading: boolean; line: number; column: number };
@@ -230,6 +237,44 @@ export default function requireSectionHeading(): Rule {
         });
       }
       return results;
+    },
+    analyzePage(context): LintResult[] {
+      if (!isResolvedPage(context) || !isCompletePage(context)) return [];
+      const headings = context.page.facts.filter(
+        (fact) => fact.kind === 'heading' && isUnconditional(fact)
+      );
+      return context.page.facts
+        .filter((fact) => fact.kind === 'section' && isUnconditional(fact))
+        .flatMap((section) => {
+          // The file rule is the source of truth for local headings and
+          // accessible labels. Page analysis only refines its candidates with
+          // resolved descendant component output.
+          const localCandidate = matchingFileResult(
+            context,
+            'requireSectionHeading',
+            section
+          );
+          if (!localCandidate) return [];
+          const resolvedChildHeading = headings.some((heading) => {
+            const ancestors = heading.sectionAncestorIds ?? [];
+            const nearestSection = ancestors[ancestors.length - 1];
+            return nearestSection === section.renderNodeId;
+          });
+          const source = sourceForFact(section, context);
+          if (resolvedChildHeading) {
+            return source
+              ? [{
+                  ...localCandidate,
+                  ...source,
+                  filePath: source.filePath,
+                  pageSuppression: true,
+                }]
+              : [];
+          }
+          return source
+            ? [{ ...localCandidate, ...source, filePath: source.filePath }]
+            : [];
+        });
     },
   };
 }

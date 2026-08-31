@@ -3,6 +3,7 @@ import * as t from '@babel/types';
 import { Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
 import { getJsxAttr } from './utils';
+import { isResolvedPage, isUnconditional, relatedCompositionForFact, relatedForFact, sourceForFact } from './page-utils';
 
 export default function uniqueIds(): Rule {
   const ids = new Set<string>();
@@ -60,6 +61,36 @@ export default function uniqueIds(): Rule {
         ids.add(id);
       }
       return [];
+    },
+    analyzePage(context): LintResult[] {
+      if (!isResolvedPage(context)) return [];
+      const firstById = new Map<string, (typeof context.page.facts)[number]>();
+      const results: LintResult[] = [];
+      for (const fact of context.page.facts) {
+        if (fact.kind !== 'document-id' || typeof fact.value !== 'string' || !isUnconditional(fact)) {
+          continue;
+        }
+        const first = firstById.get(fact.value);
+        if (!first) {
+          firstById.set(fact.value, fact);
+          continue;
+        }
+        const source = sourceForFact(fact, context);
+        if (!source) continue;
+        const repeatedInstance = first.renderNodeId === fact.renderNodeId;
+        const related = [
+          ...(repeatedInstance ? [] : [relatedForFact(first, context, `First element with id "${fact.value}"`)]),
+          relatedCompositionForFact(first, context, 'First conflicting component usage'),
+        ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+        results.push({
+          ...source,
+          message: `Duplicate id "${fact.value}" in composed page`,
+          rule: 'uniqueIds',
+          ...(related.length ? { related } : {}),
+          pageEditSafe: !repeatedInstance,
+        });
+      }
+      return results;
     },
   };
 }

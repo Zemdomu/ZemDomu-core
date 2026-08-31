@@ -26,6 +26,17 @@ function htmlDocumentRule() {
   };
 }
 
+function composedPageRule() {
+  const rationale =
+    "This rule consumes a resolved SemanticPageDocument through ProjectLinter.lintPageDiagnostics, not an isolated source file.";
+  return {
+    html: notApplicable(rationale),
+    jsx: notApplicable(rationale),
+    tsx: notApplicable(rationale),
+    vue: notApplicable(rationale),
+  };
+}
+
 function componentFixtureSource(
   syntax: "jsx" | "tsx",
   markup: string,
@@ -663,4 +674,5 @@ export const RULE_ORACLE_MATRIX = defineRuleOracleMatrix({
   requireDocumentTitle: htmlDocumentRule(),
   requireSingleMain: htmlDocumentRule(),
   ariaValidAttrValue: allSyntaxes(),
+  requirePageH1: composedPageRule(),
 });

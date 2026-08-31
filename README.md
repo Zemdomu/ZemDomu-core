@@ -114,12 +114,16 @@ the graph and page model do not hard-code a router. With no applicable adapter,
 entry roots and route identity remain explicit unknowns.
 
 `lintPageDiagnostics()` returns canonical diagnostics and adds the affected
-page, readable component path, composition-related source locations, and a
-preferred edit location only when one page/path is statically resolved.
+page, readable component path, composition-instance source locations, and a
+preferred edit location when a page/path is statically resolved. The existing
+`singleH1` rule remains an at-most-one rule. The page-only advisory
+`requirePageH1` rule (ZMD022) checks for a missing page H1 only when explicitly
+enabled with `rules: { requirePageH1: "warning" }`.
 Conservative suggestion text is limited to structural rules with a supported
-edit direction. Ambiguous reuse across pages remains a normal diagnostic with
-no page, edit-location, or fix claim. Use `formatZemDomuDiagnosticPretty()` to
-render this optional context for terminal output.
+edit direction. Conditional output and unresolved imports, slots, runtime
+composition, cycles, and depth boundaries suppress absence and collision claims
+that are not statically certain. Use `formatZemDomuDiagnosticPretty()` to render
+this optional context for terminal output.
 
 ### Parameters
 

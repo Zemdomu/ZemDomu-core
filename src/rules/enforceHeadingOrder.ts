@@ -3,6 +3,12 @@ import * as t from "@babel/types";
 import { Node } from "../simpleHtmlParser";
 import { LintResult, Rule } from "../linter";
 import { getTag } from "./utils";
+import {
+  isResolvedPage,
+  isUnconditional,
+  matchingFileResult,
+  sourceForFact,
+} from "./page-utils";
 
 /**
  * Enforce heading order by detecting skipped levels when opening subsections.
@@ -65,6 +71,63 @@ export default function enforceHeadingOrder(): Rule {
           rule: "enforceHeadingOrder",
         },
       ];
+    },
+    analyzePage(context): LintResult[] {
+      if (!isResolvedPage(context)) return [];
+      const results: LintResult[] = [];
+      let previous = 0;
+      let uncertainSincePrevious = false;
+      const events = [
+        ...context.page.facts
+          .filter((entry) => entry.kind === "heading")
+          .map((fact) => ({
+            kind: "heading" as const,
+            sequence: fact.sequence ?? fact.order,
+            fact,
+          })),
+        ...(context.page.gaps ?? []).map((gap) => ({
+          kind: "gap" as const,
+          sequence: gap.sequence,
+          gap,
+        })),
+      ].sort((left, right) => left.sequence - right.sequence);
+      for (const event of events) {
+        if (event.kind === "gap") {
+          previous = 0;
+          uncertainSincePrevious = true;
+          continue;
+        }
+        const { fact } = event;
+        if (!isUnconditional(fact) || typeof fact.value !== "number") {
+          previous = 0;
+          uncertainSincePrevious = true;
+          continue;
+        }
+        const message = computeMessage(fact.value, previous, fact.tagName);
+        if (!message && previous === 0 && uncertainSincePrevious) {
+          const localCandidate = matchingFileResult(
+            context,
+            "enforceHeadingOrder",
+            fact
+          );
+          const source = localCandidate ? sourceForFact(fact, context) : undefined;
+          if (localCandidate && source) {
+            results.push({
+              ...localCandidate,
+              ...source,
+              filePath: source.filePath,
+              pageSuppression: true,
+            });
+          }
+        }
+        previous = fact.value;
+        uncertainSincePrevious = false;
+        const source = message ? sourceForFact(fact, context) : undefined;
+        if (message && source) {
+          results.push({ ...source, message, rule: "enforceHeadingOrder" });
+        }
+      }
+      return results;
     },
   };
 }

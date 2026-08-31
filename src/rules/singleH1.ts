@@ -3,6 +3,7 @@ import * as t from '@babel/types';
 import { Node } from '../simpleHtmlParser';
 import { LintResult, Rule } from '../linter';
 import { getJsxRenderGroup, getTag } from './utils';
+import { isResolvedPage, isUnconditional, relatedCompositionForFact, relatedForFact, sourceForFact } from './page-utils';
 
 export default function singleH1(): Rule {
   const groupCounts = new Map<string, number>();
@@ -112,6 +113,30 @@ export default function singleH1(): Rule {
         }
       }
       return [];
+    },
+    analyzePage(context): LintResult[] {
+      if (!isResolvedPage(context)) return [];
+      const headings = context.page.facts.filter(
+        (fact) => fact.kind === 'heading' && fact.value === 1 && isUnconditional(fact)
+      );
+      const first = headings[0];
+      if (!first) return [];
+      return headings.slice(1).flatMap((fact) => {
+        const source = sourceForFact(fact, context);
+        if (!source) return [];
+        const repeatedInstance = first.renderNodeId === fact.renderNodeId;
+        const related = [
+          ...(repeatedInstance ? [] : [relatedForFact(first, context, 'First unconditional <h1> on this composed page')]),
+          relatedCompositionForFact(first, context, 'First conflicting component usage'),
+        ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+        return [{
+          ...source,
+          message: 'Only one <h1> allowed per composed page',
+          rule: 'singleH1',
+          ...(related.length ? { related } : {}),
+          pageEditSafe: !repeatedInstance,
+        }];
+      });
     },
   };
 }

@@ -20,9 +20,13 @@ const RULE_CODES = {
   requireDocumentTitle: "ZMD019",
   requireSingleMain: "ZMD020",
   ariaValidAttrValue: "ZMD021",
+  requirePageH1: "ZMD022",
 } as const;
 
 export type RuleClassification = "conformance" | "advisory" | "house-style";
+
+/** Rules that require SemanticPageDocument input and are not file-corpus rules. */
+export const PAGE_ONLY_RULES = ["requirePageH1"] as const;
 
 export const RULE_CLASSIFICATIONS: Partial<
   Record<keyof typeof RULE_CODES, RuleClassification>
@@ -31,6 +35,7 @@ export const RULE_CLASSIFICATIONS: Partial<
   requireTableCaption: "advisory",
   requireSectionHeading: "advisory",
   requireNavLinks: "house-style",
+  requirePageH1: "advisory",
 };
 
 export function getRuleCode(rule: string): string | undefined {

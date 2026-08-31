@@ -62,6 +62,7 @@ interface ComponentReference {
     semanticRenderGroup?: string;
     /** True only when the usage is a statically observed component render root. */
     isRenderRoot?: boolean;
+    sectionAncestors?: Array<{ line: number; column: number }>;
   }>;
 }
 
@@ -71,6 +72,7 @@ interface NativeElementInfo {
   column: number;
   renderGroup?: string;
   isRenderRoot: boolean;
+  sectionAncestors: Array<{ line: number; column: number }>;
 }
 
 interface UnknownRenderRootInfo {
@@ -263,6 +265,10 @@ export class ComponentAnalyzer {
               column: loc ? loc.column : 0,
               renderGroup: getSemanticJsxRenderGroup(path),
               isRenderRoot: isReturnedJsxRoot(path, componentName),
+              sectionAncestors: sectionStack.map((section) => ({
+                line: section.line,
+                column: section.column,
+              })),
             });
           }
 
@@ -382,6 +388,10 @@ export class ComponentAnalyzer {
                     renderGroup,
                     semanticRenderGroup,
                     isRenderRoot: isReturnedJsxRoot(path, componentName),
+                    sectionAncestors: sectionStack.map((section) => ({
+                      line: section.line,
+                      column: section.column,
+                    })),
                   }
                 : {
                     line: 0,
@@ -391,6 +401,10 @@ export class ComponentAnalyzer {
                     renderGroup,
                     semanticRenderGroup,
                     isRenderRoot: isReturnedJsxRoot(path, componentName),
+                    sectionAncestors: sectionStack.map((section) => ({
+                      line: section.line,
+                      column: section.column,
+                    })),
                   };
 
             let ref: ComponentReference;
@@ -715,6 +729,10 @@ export class ComponentAnalyzer {
               column: loc.column,
               renderGroup: groupKey,
               isRenderRoot: parentTag === "root",
+              sectionAncestors: sectionStack.map((section) => ({
+                line: section.line,
+                column: section.column,
+              })),
             });
           }
         }
@@ -806,6 +824,10 @@ export class ComponentAnalyzer {
               renderGroup: groupKey,
               semanticRenderGroup: groupKey,
               isRenderRoot: parentTag === "root",
+              sectionAncestors: sectionStack.map((section) => ({
+                line: section.line,
+                column: section.column,
+              })),
             });
             ref = existingRef;
           } else {
@@ -830,6 +852,10 @@ export class ComponentAnalyzer {
                   renderGroup: groupKey,
                   semanticRenderGroup: groupKey,
                   isRenderRoot: parentTag === "root",
+                  sectionAncestors: sectionStack.map((section) => ({
+                    line: section.line,
+                    column: section.column,
+                  })),
                 },
               ],
             };
@@ -1990,6 +2016,14 @@ function createSemanticGraph(
         order: { state: 'known', value: order },
         cardinality: condition.kind === 'always' ? 'one' : 'optional',
         condition,
+        sectionAncestorIds: (
+          ref.usageLocations[item.usageIndex]?.sectionAncestors ?? []
+        ).flatMap((section) => {
+          const ancestor = nativeNodesByComponent
+            .get(component.filePath)
+            ?.get(nativeElementKey('section', section.line, section.column));
+          return ancestor ? [ancestor.id] : [];
+        }),
         traversal,
         provenance: sourceProvenance(component.filePath, item.line, item.column),
       });
@@ -2360,20 +2394,29 @@ function collectNativeElements(
     column: number;
     attributes: SemanticNativeElementNode['attributes'][number][];
     semantics: SemanticNativeElementNode['semantics'][number][];
+    sectionAncestors: Array<{ line: number; column: number }>;
   };
   const elements = new Map<string, Accumulator>();
   const ensure = (tagName: string, line: number, column: number): Accumulator => {
     const key = nativeElementKey(tagName, line, column);
     let value = elements.get(key);
     if (!value) {
-      value = { tagName, line, column, attributes: [], semantics: [] };
+      value = {
+        tagName,
+        line,
+        column,
+        attributes: [],
+        semantics: [],
+        sectionAncestors: [],
+      };
       elements.set(key, value);
     }
     return value;
   };
 
   component.nativeElements.forEach((element) => {
-    ensure(element.tagName, element.line, element.column);
+    ensure(element.tagName, element.line, element.column).sectionAncestors =
+      element.sectionAncestors;
   });
   component.headings.forEach((heading) => {
     const element = ensure(`h${heading.level}`, heading.line, heading.column);
@@ -2425,20 +2468,36 @@ function collectNativeElements(
     });
   });
 
-  return Array.from(elements.values())
+  const ordered = Array.from(elements.values())
     .sort((left, right) =>
       left.line - right.line ||
       left.column - right.column ||
       left.tagName.localeCompare(right.tagName)
     )
     .map((element, index) => ({
-      kind: 'native-element',
+      element,
       id: `render:${graphKey}#${element.line}:${element.column}:${element.tagName}:${index}`,
+    }));
+  const ids = new Map(
+    ordered.map(({ element, id }) => [
+      nativeElementKey(element.tagName, element.line, element.column),
+      id,
+    ])
+  );
+  return ordered.map(({ element, id }) => ({
+      kind: 'native-element',
+      id,
       fileId,
       tagName: element.tagName,
       namespace: 'html',
       attributes: element.attributes,
       semantics: element.semantics,
+      sectionAncestorIds: element.sectionAncestors.flatMap((section) => {
+        const ancestorId = ids.get(
+          nativeElementKey('section', section.line, section.column)
+        );
+        return ancestorId ? [ancestorId] : [];
+      }),
       provenance: provenance(component.filePath, element.line, element.column),
     }));
 }

@@ -14,6 +14,7 @@ import type {
 } from "./page-model";
 import type {
   SemanticComponentId,
+  SemanticCompositionId,
   SemanticGraph,
   SemanticSourceProvenance,
 } from "./semantic-graph";
@@ -21,6 +22,7 @@ import type {
 interface ResolvedPageContext {
   page: string;
   componentPath: readonly SemanticComponentId[];
+  compositionPath: readonly SemanticCompositionId[];
   confidence: "certain" | "inferred";
 }
 
@@ -62,7 +64,16 @@ function pathsForResult(
   result: LintResult,
   page: SemanticPageDocument,
   graph: SemanticGraph
-): SemanticComponentId[][] {
+): Array<{
+  componentPath: SemanticComponentId[];
+  compositionPath: SemanticCompositionId[];
+}> {
+  if (result.pageComponentPath) {
+    return [{
+      componentPath: [...result.pageComponentPath],
+      compositionPath: [...(result.pageCompositionPath ?? [])],
+    }];
+  }
   if (!result.filePath) return [];
   const targetFile = comparableFile(result.filePath);
   const fileIds = new Set(
@@ -80,7 +91,10 @@ function pathsForResult(
         fact.provenance.range?.start.line === result.line &&
         fact.provenance.range?.start.column === result.column
     )
-    .map((fact) => [...fact.componentPath]);
+    .map((fact) => ({
+      componentPath: [...fact.componentPath],
+      compositionPath: [...(fact.compositionPath ?? [])],
+    }));
   if (exactFactPaths.length) return exactFactPaths;
 
   const componentIds = new Set(
@@ -88,7 +102,9 @@ function pathsForResult(
       .filter((component) => fileIds.has(component.fileId))
       .map((component) => component.id)
   );
-  return collectComponentPaths(page.componentTree, componentIds);
+  return collectComponentPaths(page.componentTree, componentIds).map(
+    (componentPath) => ({ componentPath, compositionPath: [] })
+  );
 }
 
 function resolveUniqueContext(
@@ -97,17 +113,19 @@ function resolveUniqueContext(
   model: SemanticPageModel
 ): ResolvedPageContext | undefined {
   const candidates = model.pages.flatMap<ResolvedPageContext>((page) => {
+    if (result.pageId && page.id !== result.pageId) return [];
     if (page.route.state !== "known" || page.confidence === "unknown") return [];
     const confidence: ResolvedPageContext["confidence"] = page.confidence;
-    return pathsForResult(result, page, graph).map((componentPath) => ({
+    return pathsForResult(result, page, graph).map(({ componentPath, compositionPath }) => ({
       page: page.route.state === "known" ? page.route.value : "",
       componentPath,
+      compositionPath,
       confidence,
     }));
   });
   const unique = new Map(
     candidates.map((candidate) => [
-      `${candidate.page}\u0000${candidate.componentPath.join("\u0000")}`,
+      `${candidate.page}\u0000${candidate.componentPath.join("\u0000")}\u0000${candidate.compositionPath.join("\u0000")}`,
       candidate,
     ])
   );
@@ -131,13 +149,34 @@ function relatedCompositionLocations(
       return [{ source, message: `Rendered through '${component.name}'` }];
     }
   );
-  return [...new Map(related.map((entry) => [
+  const compositionRelated = context.compositionPath.flatMap<ZemDomuRelatedLocation>(
+    (edgeId) => {
+      const edge = graph.composition.find((entry) => entry.id === edgeId);
+      if (!edge) return [];
+      const source = sourceForProvenance(edge.provenance, graph);
+      if (!source) return [];
+      const sourceKey = `${comparableFile(source.file)}:${source.line}:${source.column}`;
+      if (sourceKey === primaryKey) return [];
+      return [{ source, message: "Composed through this component usage" }];
+    }
+  );
+  return [...new Map([...related, ...compositionRelated].map((entry) => [
     `${comparableFile(entry.source.file)}:${entry.source.line}:${entry.source.column}`,
     entry,
   ])).values()];
 }
 
 function suggestionFor(result: LintResult): ZemDomuDiagnosticSuggestion | undefined {
+  if (result.rule === "requireSingleMain") {
+    return {
+      message: result.message.includes("missing")
+        ? "Add one <main> landmark to the resolved composed page."
+        : "Keep one <main> landmark in the composed page and change or remove the extra landmark.",
+    };
+  }
+  if (result.rule === "requirePageH1") {
+    return { message: "Add one <h1> that identifies the resolved composed page." };
+  }
   const messages: Record<string, string> = {
     singleH1:
       "Keep one <h1> in the composed page; change this heading's level if it is not the page title.",
@@ -182,8 +221,12 @@ export function createPageAwareDiagnostics(
         page: context.page,
         componentPath: componentNames,
         relatedLocations: relatedCompositionLocations(context, graph, primary),
-        preferredEditLocation: primary,
-        suggestion: suggestionFor(result),
+        ...(result.pageEditSafe === false
+          ? {}
+          : {
+              preferredEditLocation: primary,
+              suggestion: suggestionFor(result),
+            }),
         provenance: {
           kind: "cross-component",
           analyzer: "SemanticPageComposer",

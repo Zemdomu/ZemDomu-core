@@ -1,7 +1,7 @@
 // Exposes the core lint function and types
 
 export { lint } from "./linter";
-export type { LinterOptions, LintResult, Rule } from "./linter";
+export type { LinterOptions, LintResult, PageRuleContext, Rule } from "./linter";
 export { ComponentAnalyzer } from "./component-analyzer";
 export { ComponentPathResolver } from "./component-path-resolver";
 export { ProjectLinter } from "./project-linter";
@@ -33,7 +33,12 @@ export {
   SARIF_SCHEMA_URI,
 } from "./sarif";
 export type { SarifLocation, SarifLog } from "./sarif";
-export { getRuleCode, RULE_CODES, RULE_CLASSIFICATIONS } from "./rule-codes";
+export {
+  getRuleCode,
+  PAGE_ONLY_RULES,
+  RULE_CODES,
+  RULE_CLASSIFICATIONS,
+} from "./rule-codes";
 export type { RuleClassification } from "./rule-codes";
 export {
   formatZemDomuDiagnosticPretty,
@@ -73,6 +78,7 @@ export type {
   SemanticPageDocument,
   SemanticPageFact,
   SemanticPageFactKind,
+  SemanticPageGap,
   SemanticPageModel,
   SemanticPageModelSchemaVersion,
   SemanticRouteAdapter,

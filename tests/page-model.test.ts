@@ -177,4 +177,28 @@ describe("semantic page model", () => {
       ["then", "else"]
     );
   });
+
+  it("does not compose facts beyond an explicit traversal boundary", async () => {
+    const root = fixtureRoot("zemdomu-page-depth-boundary-");
+    const pageFile = write(
+      root,
+      "Page.tsx",
+      "import Child from './Child'; export default function Page(){ return <main><Child /></main>; }"
+    );
+    const childFile = write(
+      root,
+      "Child.tsx",
+      "export default function Child(){ return <h1>Beyond boundary</h1>; }"
+    );
+    const page = (
+      await new ProjectLinter({
+        rootDir: root,
+        crossComponentDepth: 0,
+        pages: [{ route: "/depth", entryFile: "Page.tsx" }],
+      }).buildPageModel([pageFile, childFile])
+    ).pages[0];
+
+    assert.ok(page.unknowns.some((unknown) => unknown.reason === "depth-limit"));
+    assert.ok(!page.facts.some((fact) => fact.kind === "heading"));
+  });
 });

@@ -3,6 +3,15 @@ import * as t from "@babel/types";
 import { Node } from "../simpleHtmlParser";
 import { LintResult, Rule } from "../linter";
 import { getTag } from "./utils";
+import {
+  isCompletePage,
+  isResolvedPage,
+  isUnconditional,
+  pageRootSource,
+  relatedCompositionForFact,
+  relatedForFact,
+  sourceForFact,
+} from "./page-utils";
 
 type SourceLoc = { line: number; column: number; offset?: number };
 
@@ -75,6 +84,46 @@ export default function requireSingleMain(): Rule {
       }
 
       return [];
+    },
+
+    analyzePage(context): LintResult[] {
+      if (!isResolvedPage(context)) return [];
+      const allMain = context.page.facts.filter(
+        (fact) => fact.kind === "landmark" && fact.value === "main"
+      );
+      const certainMain = allMain.filter(isUnconditional);
+      const first = certainMain[0];
+      if (certainMain.length > 1 && first) {
+        return certainMain.slice(1).flatMap((fact) => {
+          const source = sourceForFact(fact, context);
+          if (!source) return [];
+          const repeatedInstance = first.renderNodeId === fact.renderNodeId;
+          const related = [
+            ...(repeatedInstance ? [] : [relatedForFact(
+              first,
+              context,
+              "First unconditional <main> landmark on this composed page"
+            )]),
+            relatedCompositionForFact(first, context, "First conflicting component usage"),
+          ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+          return [{
+            ...source,
+            message: "Only one <main> landmark allowed per composed page",
+            rule: "requireSingleMain",
+            ...(related.length ? { related } : {}),
+            pageEditSafe: !repeatedInstance,
+          }];
+        });
+      }
+      if (allMain.length > 0 || !isCompletePage(context)) return [];
+      const source = pageRootSource(context);
+      return source
+        ? [{
+            ...source,
+            message: "Composed page missing <main> landmark",
+            rule: "requireSingleMain",
+          }]
+        : [];
     },
   };
 }

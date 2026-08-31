@@ -2,6 +2,7 @@ import path from "path";
 import type {
   SemanticComponentId,
   SemanticComponentOutput,
+  SemanticCompositionId,
   SemanticFramework,
   SemanticGraph,
   SemanticPageRootId,
@@ -64,11 +65,24 @@ export type SemanticPageFactKind =
 export interface SemanticPageFact {
   kind: SemanticPageFactKind;
   order: number;
+  /** Position among facts and explicit composition gaps. */
+  sequence?: number;
   tagName: string;
   value?: string | number;
   renderNodeId: SemanticRenderNodeId;
   componentPath: readonly SemanticComponentId[];
+  /** Ordered component-usage edges, preserving repeated composition instances. */
+  compositionPath?: readonly SemanticCompositionId[];
+  sectionAncestorIds?: readonly SemanticRenderNodeId[];
   condition: SemanticRenderCondition;
+  provenance: SemanticSourceProvenance;
+}
+
+export interface SemanticPageGap {
+  sequence: number;
+  componentPath: readonly SemanticComponentId[];
+  compositionPath?: readonly SemanticCompositionId[];
+  unknown: SemanticUnknown;
   provenance: SemanticSourceProvenance;
 }
 
@@ -76,6 +90,7 @@ export interface SemanticPageComponentTree {
   componentId: SemanticComponentId;
   name: string;
   semanticOutput: SemanticComponentOutput;
+  compositionPath: readonly SemanticCompositionId[];
   provenance: SemanticSourceProvenance;
   children: readonly SemanticPageComponentTree[];
   unknowns: readonly SemanticUnknown[];
@@ -89,6 +104,7 @@ export interface SemanticPageDocument {
   rootComponent: SemanticReference<SemanticComponentId>;
   componentTree?: SemanticPageComponentTree;
   facts: readonly SemanticPageFact[];
+  gaps?: readonly SemanticPageGap[];
   unknowns: readonly SemanticUnknown[];
   provenance: SemanticSourceProvenance;
 }
@@ -246,6 +262,7 @@ function composeCandidate(
       confidence: candidate.confidence,
       rootComponent: unknown,
       facts: [],
+      gaps: [],
       unknowns: [unknown],
       provenance: candidate.provenance,
     };
@@ -283,10 +300,15 @@ function composeDocument(
 ): SemanticPageDocument {
   const unknowns: SemanticUnknown[] = [];
   const facts: SemanticPageFact[] = [];
+  const gaps: SemanticPageGap[] = [];
   let order = 0;
+  let sequence = 0;
   const buildTree = (
     componentId: SemanticComponentId,
     componentPath: readonly SemanticComponentId[],
+    compositionPath: readonly SemanticCompositionId[],
+    inheritedSectionAncestorIds: readonly SemanticRenderNodeId[],
+    inheritedCondition: SemanticRenderCondition,
     stack: readonly SemanticComponentId[]
   ): SemanticPageComponentTree | undefined => {
     const component = graph.components.find((entry) => entry.id === componentId);
@@ -298,6 +320,7 @@ function composeDocument(
         componentId,
         name: component.name,
         semanticOutput: cycle,
+        compositionPath,
         provenance: component.provenance,
         children: [],
         unknowns: [cycle],
@@ -329,29 +352,60 @@ function composeDocument(
       if (edge.to.state === "unknown") {
         localUnknowns.push(edge.to);
         unknowns.push(edge.to);
+        gaps.push({
+          sequence: sequence++,
+          componentPath: nextPath,
+          compositionPath: [...compositionPath, edge.id],
+          unknown: edge.to,
+          provenance: edge.provenance,
+        });
         continue;
       }
       const targetId = edge.to.id;
       const renderNode = graph.renderNodes.find((node) => node.id === targetId);
       if (renderNode?.kind === "native-element") {
-        facts.push(...factsForNode(renderNode, nextPath, edge.condition, order));
+        facts.push(...factsForNode(
+          renderNode,
+          nextPath,
+          compositionPath,
+          [...inheritedSectionAncestorIds, ...(renderNode.sectionAncestorIds ?? [])],
+          combineConditions(inheritedCondition, edge.condition),
+          order,
+          sequence
+        ));
         order = facts.length;
+        sequence += factsForNodeCount(renderNode);
         continue;
       }
       const child = graph.components.find((entry) => entry.id === targetId);
-      if (child) {
-        const childTree = buildTree(child.id, nextPath, [...stack, componentId]);
+      if (child && edge.traversal.state === "complete") {
+        const childTree = buildTree(
+          child.id,
+          nextPath,
+          [...compositionPath, edge.id],
+          [...inheritedSectionAncestorIds, ...(edge.sectionAncestorIds ?? [])],
+          combineConditions(inheritedCondition, edge.condition),
+          [...stack, componentId]
+        );
         if (childTree) children.push(childTree);
       }
       if (edge.traversal.state === "boundary") {
         localUnknowns.push(edge.traversal.unknown);
         unknowns.push(edge.traversal.unknown);
+        gaps.push({
+          sequence: sequence++,
+          componentPath: nextPath,
+          compositionPath: [...compositionPath, edge.id],
+          unknown: edge.traversal.unknown,
+          provenance: edge.provenance,
+        });
       }
     }
     return {
       componentId,
       name: component.name,
       semanticOutput: component.semanticOutput,
+      compositionPath,
       provenance: component.provenance,
       children,
       unknowns: localUnknowns,
@@ -359,11 +413,11 @@ function composeDocument(
   };
 
   const componentTree = identity.rootComponent.state === "resolved"
-    ? buildTree(identity.rootComponent.id, [], [])
+    ? buildTree(identity.rootComponent.id, [], [], [], { kind: "always" }, [])
     : undefined;
   if (identity.route.state === "unknown") unknowns.push(identity.route);
   if (identity.rootComponent.state === "unknown") unknowns.push(identity.rootComponent);
-  return { ...identity, componentTree, facts, unknowns };
+  return { ...identity, componentTree, facts, gaps, unknowns };
 }
 
 function knownOrder(value: SemanticValue<number>): number {
@@ -373,14 +427,19 @@ function knownOrder(value: SemanticValue<number>): number {
 function factsForNode(
   node: Extract<SemanticGraph["renderNodes"][number], { kind: "native-element" }>,
   componentPath: readonly SemanticComponentId[],
+  compositionPath: readonly SemanticCompositionId[],
+  sectionAncestorIds: readonly SemanticRenderNodeId[],
   condition: SemanticRenderCondition,
-  startOrder: number
+  startOrder: number,
+  startSequence: number
 ): SemanticPageFact[] {
-  const facts: Omit<SemanticPageFact, "order">[] = [];
+  const facts: Omit<SemanticPageFact, "order" | "sequence">[] = [];
   const base = {
     tagName: node.tagName,
     renderNodeId: node.id,
     componentPath,
+    compositionPath,
+    sectionAncestorIds,
     condition,
     provenance: node.provenance,
   };
@@ -397,7 +456,42 @@ function factsForNode(
       facts.push({ ...base, kind: "document-id", value: fact.value.value });
     }
   }
-  return facts.map((fact, index) => ({ ...fact, order: startOrder + index }));
+  return facts.map((fact, index) => ({
+    ...fact,
+    order: startOrder + index,
+    sequence: startSequence + index,
+  }));
+}
+
+function factsForNodeCount(
+  node: Extract<SemanticGraph["renderNodes"][number], { kind: "native-element" }>
+): number {
+  let count = 0;
+  if (node.semantics.some((fact) => fact.kind === "heading" && fact.level.state === "known")) count += 1;
+  if (landmarkForTag(node.tagName)) count += 1;
+  if (node.tagName === "section") count += 1;
+  if (node.tagName === "nav") count += 1;
+  count += node.semantics.filter(
+    (fact) => fact.kind === "document-id" && fact.value.state === "known"
+  ).length;
+  return count;
+}
+
+function combineConditions(
+  outer: SemanticRenderCondition,
+  inner: SemanticRenderCondition
+): SemanticRenderCondition {
+  if (outer.kind === "always") return inner;
+  if (inner.kind === "always") return outer;
+  const source = outer.kind === "unknown"
+    ? outer.unknown
+    : inner.kind === "unknown"
+      ? inner.unknown
+      : analysisUnknown(
+          "conditional-render",
+          "Nested conditional composition cannot be proven unconditional."
+        );
+  return { kind: "unknown", unknown: source };
 }
 
 function landmarkForTag(tagName: string): string | undefined {
