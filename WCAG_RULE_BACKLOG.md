@@ -54,8 +54,11 @@ These should be tracked in documentation or future browser verification rather t
 
 Before promoting a candidate into `RULE_CODES`, define:
 - Rule name and next `ZMD` code.
+- Reasoning, uncertainty, recommended capability, and execution ownership using
+  [`../../docs/TASK_ROUTING.md`](../../docs/TASK_ROUTING.md). Priority and
+  false-positive risk inform the work but do not determine its reasoning
+  complexity.
 - HTML, JSX/TSX, and Vue fixtures.
 - Good and bad examples for Hub docs.
 - Quick-fix policy: safe automatic edit, placeholder edit, or no quick fix.
 - Expected false-positive strategy: default severity, opt-out advice, and framework caveats.
-

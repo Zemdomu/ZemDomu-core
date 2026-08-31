@@ -5,6 +5,11 @@ Current implementation status is tracked in
 direction below describes the target architecture; follow-up work should extend
 the shipped baseline rather than assume a greenfield implementation.
 
+Cross-package category, audience, comparison, claim, commercial, and launch
+decisions are governed by
+[`POSITIONING_AND_GO_TO_MARKET.md`](../../../../POSITIONING_AND_GO_TO_MARKET.md).
+This document governs the technical direction.
+
 ## 1. Purpose
 
 The canonical product positioning is:
