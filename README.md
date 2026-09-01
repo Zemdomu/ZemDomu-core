@@ -1,18 +1,22 @@
 # ZemDomu Core
 
-> Static analysis for semantic HTML architecture across component-based applications.
+> Semantic accessibility static analysis with supported component context.
 
-ZemDomu is static analysis for semantic HTML architecture across component-based
-applications. ZemDomu Core is the shared engine that powers the ZemDomu
-ecosystem. It parses
-HTML, JSX, TSX, and Vue templates and returns semantic issues that affect
-structure, accessibility, and search visibility.
+ZemDomu is static analysis for semantic HTML and accessibility across supported
+HTML, React, and Vue component structures. Its differentiated definition is
+static analysis for semantic HTML architecture across component-based
+applications. ZemDomu Core is the shared engine behind the ZemDomu CLI,
+ZemDomu VS Code Extension, and ZemDomu GitHub Action.
 
-Most linters check syntax. ZemDomu checks meaning.
+Core analyzes supported HTML, JSX, TSX, and Vue source patterns. Project-aware
+analysis can find named structural problems across statically resolvable React
+and Vue imports. It does not model every runtime state or establish
+accessibility or WCAG conformance.
 
 ## What It Is
 
-ZemDomu Core is a semantic-first linting engine for modern frontend codebases.
+ZemDomu Core is the semantic accessibility static-analysis engine for modern
+frontend codebases.
 It helps developers catch issues like missing landmarks, confusing heading
 structure, unlabeled controls, weak semantic relationships, and cross-component
 composition problems before those issues become late-stage audit findings.
@@ -25,10 +29,11 @@ This package provides the shared logic used by:
 
 ## Why ZemDomu
 
-Compared with generic linters and scanner-only workflows, ZemDomu is designed
-to keep semantic analysis practical in real component codebases.
+ZemDomu complements file-oriented source linters and rendered-DOM testing with
+one focused source model across supported frontend syntax.
 
-- Cross-component analysis catches issues that only appear when components are composed.
+- Cross-component analysis finds supported structural issues that only appear
+  when statically resolvable components are composed.
 - One shared rules engine powers editor, CLI, and CI behavior consistently.
 - Diagnostics focus on semantic HTML, accessible naming, and document structure.
 - Custom-rule support lets teams extend checks without rebuilding a lint stack.

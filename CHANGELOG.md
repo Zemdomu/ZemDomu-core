@@ -25,6 +25,9 @@
 
 ### Docs
 
+- Docs: align the Core README and npm description with the approved semantic
+  accessibility static-analysis positioning, public product names, supported
+  cross-component scope, and layered-testing limits.
 - Docs: publish the completed ZD-20 diagnostic-accuracy study with a pinned 10-repository HTML, React, and Vue corpus, 407 adjudicated findings, seeded-recall evidence, and rendered axe-core comparisons.
 - Docs: approve canonical ZemDomu positioning, public product names, fair comparison principles, and separate Core capability and VS Code Extension 1.0 milestones.
 - Docs: define the supported `zemdomu` package-root API for file and project analysis, including subpath deprecation and integration ownership boundaries.
