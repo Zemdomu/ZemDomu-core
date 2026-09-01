@@ -4,6 +4,7 @@
 
 ### Bugfix
 
+- Bugfix: include TypeScript as a runtime dependency so clean package installs can load project and dependency analysis without a missing-module error.
 - Bugfix: reduce real-world false positives by preserving HTML ancestry across void and mismatched elements; distinguishing native JSX tags from custom components; accepting valid ARIA shorthand, title-based names, prop and Vue attribute forwarding, composed root list items, conditional Vue IDs, hidden decorative images, and intentional icon markup; and recognizing Next.js metadata and deferred page landmarks.
 - Bugfix: accept explicitly named icon-only links and buttons without requiring a redundant accessible name on their child SVG.
 - Bugfix: report exact HTML element and attribute locations, expose absolute diagnostic offsets, and rebase Vue template findings to full-document positions so repeated violations and quick fixes target the correct source.

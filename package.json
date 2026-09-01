@@ -60,8 +60,7 @@
     "axe-core": "4.13.0",
     "esbuild": "^0.28.1",
     "minimatch": "^10.2.4",
-    "mocha": "^11.7.4",
-    "typescript": "^5.9.3"
+    "mocha": "^11.7.4"
   },
   "dependencies": {
     "@babel/parser": "^7.28.4",
@@ -69,7 +68,8 @@
     "@babel/types": "^7.28.4",
     "glob": "^11.1.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "@isaacs/brace-expansion": "5.0.9",
