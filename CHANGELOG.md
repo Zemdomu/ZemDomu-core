@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 1.3.21
+
 ### Bugfix
 
 - Bugfix: reduce real-world false positives by preserving HTML ancestry across void and mismatched elements; distinguishing native JSX tags from custom components; accepting valid ARIA shorthand, title-based names, prop and Vue attribute forwarding, composed root list items, conditional Vue IDs, hidden decorative images, and intentional icon markup; and recognizing Next.js metadata and deferred page landmarks.
