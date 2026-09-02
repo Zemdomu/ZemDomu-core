@@ -870,20 +870,21 @@ This creates useful AI integration without requiring any AI-specific runtime fun
 
 ---
 
-# 22. Future Semantic Inspection
+# 22. Semantic Inspection
 
-Once the semantic graph is sufficiently mature, the CLI could expose additional inspection capabilities.
+Core exposes deterministic human-readable inspection capabilities over the
+public semantic graph and page/document model.
 
 Examples:
 
 ```bash
-zemdomu graph
+zemdomu graph "src/AppLayout.tsx"
 ```
 
 or:
 
 ```bash
-zemdomu inspect /products/[id]
+zemdomu inspect "/products/[id]" --entry "src/AppLayout.tsx"
 ```
 
 Possible output:
@@ -900,7 +901,13 @@ AppLayout
         └── aside
 ```
 
-This would be useful for:
+The explicit route-to-entry mapping keeps router conventions outside Core.
+Output groups source files, components, semantic nodes or facts, and explicit
+unknown boundaries. Machine consumers should use
+`ProjectLinter.buildSemanticGraph()` or `buildPageModel()` directly rather than
+parsing the human-readable tree.
+
+This is useful for:
 
 - Developers
 - Debugging rules
@@ -908,7 +915,8 @@ This would be useful for:
 - Coding agents
 - Future IDE tooling
 
-It is not required for the initial semantic architecture direction.
+It remains an additive debugging interface rather than a prerequisite for the
+semantic architecture.
 
 ---
 

@@ -249,6 +249,34 @@ or more diagnostics, and `2` for invalid CLI usage. `--perf` and
 `--perf-slowest` are only available with `--format pretty` so machine output is
 never mixed with timing output.
 
+### Semantic graph and page inspection
+
+Use `graph` to inspect the deterministic semantic graph for one or more entry
+files. The command follows supported local React, JSX, TSX, and Vue imports and
+groups source files, components, rendered semantic nodes, and explicit unknown
+analysis boundaries in readable sections.
+
+```bash
+zemdomu graph "src/AppLayout.tsx"
+zemdomu graph "src/pages/**/*.{tsx,vue}" --cross-depth 4
+```
+
+Use `inspect` to compose one route from an explicit entry file. Requiring the
+route-to-entry mapping keeps router conventions outside Core and makes the
+result reproducible:
+
+```bash
+zemdomu inspect "/products/[id]" --entry "src/AppLayout.tsx"
+```
+
+Page inspection prints the nested component path, ordered semantic facts,
+source locations, and any unresolved or traversal-boundary unknowns. Both
+inspection commands write human-readable output to stdout and exit with `2`
+for invalid invocations or unmatched entry files. Machine-readable inspection
+output is not part of this command contract; use the public
+`ProjectLinter.buildSemanticGraph()` and `buildPageModel()` APIs when structured
+data is required.
+
 ## Cross-Component Analysis
 
 When analyzing JSX or Vue projects you can track semantic issues across

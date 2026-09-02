@@ -9,8 +9,17 @@ import {
   type ZemDomuDiagnostic,
 } from './diagnostics';
 import { diagnosticsToSarif } from './sarif';
+import {
+  formatSemanticGraphInspection,
+  formatSemanticPageInspection,
+} from './inspection';
+import {
+  composeSemanticPageModel,
+  createConfiguredRouteAdapter,
+} from './page-model';
 
 type OutputFormat = 'pretty' | 'json' | 'sarif';
+type Command = 'check' | 'graph' | 'inspect';
 
 const EXIT_CODES = {
   success: 0,
@@ -34,6 +43,11 @@ function parsePatterns(inputs: string[]): string[] {
 
 async function run(): Promise<void> {
   const args = process.argv.slice(2);
+  const command: Command =
+    args[0] === 'graph' || args[0] === 'inspect' || args[0] === 'check'
+      ? (args.shift() as Command)
+      : 'check';
+  const inspectRoute = command === 'inspect' ? args.shift() : undefined;
   const rawPatterns: string[] = [];
   const customRules: any[] = [];
   let cross = false;
@@ -41,8 +55,11 @@ async function run(): Promise<void> {
   let perfEnabled = false;
   let perfSlowest = false;
   let format: OutputFormat = 'pretty';
+  let entryFile: string | undefined;
 
-  if (args[0] === 'check') args.shift();
+  if (command === 'inspect' && (!inspectRoute || inspectRoute.startsWith('-'))) {
+    throw new CliUsageError('Usage: zemdomu inspect <page> --entry <file>');
+  }
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -68,6 +85,9 @@ async function run(): Promise<void> {
       else customRules.push(rules);
     } else if (arg === '--cross') {
       cross = true;
+    } else if (arg === '--entry') {
+      entryFile = args[++i];
+      if (!entryFile) throw new CliUsageError('Missing file for --entry');
     } else if (arg === '--perf') {
       perfEnabled = true;
     } else if (arg === '--perf-slowest') {
@@ -86,11 +106,23 @@ async function run(): Promise<void> {
 
   const patterns = parsePatterns(rawPatterns);
 
+  if (command !== 'check' && format !== 'pretty') {
+    throw new CliUsageError('--format is currently only supported by zemdomu check');
+  }
+  if (command !== 'inspect' && entryFile) {
+    throw new CliUsageError('--entry is only supported by zemdomu inspect');
+  }
   if (format !== 'pretty' && perfEnabled) {
     throw new CliUsageError('--perf and --perf-slowest require --format pretty');
   }
 
-  if (patterns.length === 0) {
+  if (command === 'inspect') {
+    if (!entryFile) {
+      throw new CliUsageError('zemdomu inspect requires --entry <file>');
+    }
+    if (patterns.length === 0) patterns.push(entryFile);
+    else if (!patterns.includes(entryFile)) patterns.push(entryFile);
+  } else if (patterns.length === 0) {
     patterns.push('**/*.{html,jsx,tsx,vue}');
   }
 
@@ -100,13 +132,36 @@ async function run(): Promise<void> {
     for (const m of matches) files.add(m);
   }
 
+  if (files.size === 0 && command !== 'check') {
+    throw new CliUsageError(`No files matched: ${patterns.join(', ')}`);
+  }
+
   const perf = perfEnabled ? new PerformanceDiagnostics() : undefined;
   const linter = new ProjectLinter({
     customRules,
     crossComponentAnalysis: cross,
     crossComponentDepth: depth,
     perf,
+    rootDir: process.cwd(),
   });
+
+  if (command === 'graph') {
+    const graph = await linter.buildSemanticGraph(Array.from(files));
+    process.stdout.write(formatSemanticGraphInspection(graph) + '\n');
+    process.exitCode = EXIT_CODES.success;
+    return;
+  }
+  if (command === 'inspect' && inspectRoute) {
+    const graph = await linter.buildSemanticGraph(Array.from(files));
+    const model = await composeSemanticPageModel(graph, [
+      createConfiguredRouteAdapter([{ route: inspectRoute, entryFile: entryFile! }]),
+    ]);
+    process.stdout.write(
+      formatSemanticPageInspection(model, graph, inspectRoute) + '\n'
+    );
+    process.exitCode = EXIT_CODES.success;
+    return;
+  }
   const diagnostics = sortDiagnostics(
     await linter.lintPageDiagnostics(Array.from(files))
   );
