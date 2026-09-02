@@ -4,6 +4,10 @@
 
 - Feature: add deterministic `zemdomu graph` and `zemdomu inspect <page> --entry <file>` views for component trees, semantic facts, source paths, and explicit unknown analysis boundaries.
 
+### Chore
+
+- Chore: publish the exact verified npm tarball with matching changelog notes, public tag, and non-draft GitHub release through fail-closed release automation.
+
 ## 1.3.21
 
 ### Bugfix
