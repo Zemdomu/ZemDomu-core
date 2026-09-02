@@ -159,3 +159,8 @@ budgets, cancellation, schema validation, and representative performance/token
 evidence. Completion should end in a second explicit ship/no-ship decision;
 shipping, registry publication, remote transport, and additional tools remain
 out of scope.
+
+Follow-up outcome (2026-09-02): ZD-34 completed the private two-tool proof and
+ended in a no-ship decision. See `MCP_LOCAL_POC_DECISION.md` for implementation,
+cross-framework measurements, remaining filesystem risks, and the smallest
+possible hardening follow-up.
