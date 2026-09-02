@@ -924,14 +924,19 @@ semantic architecture.
 
 An MCP server could eventually expose ZemDomu's semantic model directly to coding agents.
 
-Potential capabilities:
+ZD-14 completed a bounded feasibility and threat-model spike. The accepted
+result is a conditional go for a separate local, direct-stdio, read-only proof
+of concept with only `get_page_semantics` and `find_semantic_issues`; it is a
+no-go for a published or remote service. See
+[`MCP_FEASIBILITY_AND_THREAT_MODEL.md`](./MCP_FEASIBILITY_AND_THREAT_MODEL.md)
+for the workspace, untrusted-content, resource-budget, freshness, schema, and
+transport boundaries.
+
+The first proof-of-concept surface is limited to:
 
 ```text
 get_page_semantics
 find_semantic_issues
-get_component_semantics
-get_component_path
-explain_semantic_issue
 ```
 
 Example:
