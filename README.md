@@ -208,7 +208,10 @@ neither is available. It does not mutate the legacy result.
 
 Run the linter from the command line by installing the package globally or by
 using `npx`. Provide one or more glob patterns to specify the files to lint.
-Patterns may be separated by spaces, commas, or newlines.
+Patterns may be separated by spaces, commas, or newlines; commas inside brace
+expressions remain part of the pattern. Discovery accepts either path separator,
+deduplicates and sorts matches, and excludes hidden files, `node_modules`,
+directories, and symlink traversal.
 
 ```bash
 npx zemdomu "src/**/*.{html,jsx,tsx,vue}" --custom my-rule.js

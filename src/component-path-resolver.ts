@@ -166,9 +166,12 @@ export class ComponentPathResolver {
           const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js,vue}`;
           const files = await glob(pattern, {
             cwd: this.rootDir,
+            dot: false,
+            follow: false,
             ignore: '**/node_modules/**',
             nodir: true,
           });
+          files.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
           alias = new Map();
           for (const relPath of files.slice(0, this.aliasFileLimit)) {
             const rel = path.resolve(this.rootDir, relPath).replace(/\\/g, '/');
@@ -202,9 +205,12 @@ export class ComponentPathResolver {
               }
               const matches = await glob(ptn, {
                 cwd: this.rootDir,
+                dot: false,
+                follow: false,
                 ignore: '**/node_modules/**',
                 nodir: true,
               });
+              matches.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
               if (matches.length) {
                 result = path.resolve(this.rootDir, matches[0]);
                 this.resolveCache.set(pKey, result);

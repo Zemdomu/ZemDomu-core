@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { globSync } from 'glob';
 import path from 'path';
+import { discoverFilesSync, parseGlobPatterns } from './file-discovery';
 import { ProjectLinter } from './project-linter';
 import { PerformanceDiagnostics } from './performance-diagnostics';
 import {
@@ -28,18 +28,6 @@ const EXIT_CODES = {
 } as const;
 
 class CliUsageError extends Error {}
-
-function parsePatterns(inputs: string[]): string[] {
-  const result: string[] = [];
-  for (const input of inputs) {
-    const splits = input
-      .split(/\r?\n/)
-      .flatMap((p) => p.split(/[ ,]+/))
-      .filter(Boolean);
-    result.push(...splits);
-  }
-  return result;
-}
 
 async function run(): Promise<void> {
   const args = process.argv.slice(2);
@@ -104,7 +92,7 @@ async function run(): Promise<void> {
     }
   }
 
-  const patterns = parsePatterns(rawPatterns);
+  const patterns = parseGlobPatterns(rawPatterns);
 
   if (command !== 'check' && format !== 'pretty') {
     throw new CliUsageError('--format is currently only supported by zemdomu check');
@@ -126,13 +114,9 @@ async function run(): Promise<void> {
     patterns.push('**/*.{html,jsx,tsx,vue}');
   }
 
-  const files = new Set<string>();
-  for (const pattern of patterns) {
-    const matches = globSync(pattern, { nodir: true });
-    for (const m of matches) files.add(m);
-  }
+  const files = discoverFilesSync(patterns);
 
-  if (files.size === 0 && command !== 'check') {
+  if (files.length === 0 && command !== 'check') {
     throw new CliUsageError(`No files matched: ${patterns.join(', ')}`);
   }
 
@@ -146,13 +130,13 @@ async function run(): Promise<void> {
   });
 
   if (command === 'graph') {
-    const graph = await linter.buildSemanticGraph(Array.from(files));
+    const graph = await linter.buildSemanticGraph(files);
     process.stdout.write(formatSemanticGraphInspection(graph) + '\n');
     process.exitCode = EXIT_CODES.success;
     return;
   }
   if (command === 'inspect' && inspectRoute) {
-    const graph = await linter.buildSemanticGraph(Array.from(files));
+    const graph = await linter.buildSemanticGraph(files);
     const model = await composeSemanticPageModel(graph, [
       createConfiguredRouteAdapter([{ route: inspectRoute, entryFile: entryFile! }]),
     ]);
@@ -163,7 +147,7 @@ async function run(): Promise<void> {
     return;
   }
   const diagnostics = sortDiagnostics(
-    await linter.lintPageDiagnostics(Array.from(files))
+    await linter.lintPageDiagnostics(files)
   );
 
   if (format === 'json') {

@@ -7,6 +7,11 @@
 ### Chore
 
 - Chore: publish the exact verified npm tarball with matching changelog notes, public tag, and non-draft GitHub release through fail-closed release automation.
+- Chore: move React to development-only fixtures and remove unused React DOM and legacy Babel 6 typings from the installed production graph.
+
+### Bugfix
+
+- Bugfix: make CLI and component discovery deterministic across path separators while excluding hidden files, dependencies, directories, and symlink traversal.
 
 ## 1.3.21
 
