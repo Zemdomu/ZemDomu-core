@@ -54,7 +54,7 @@
   "devDependencies": {
     "@types/babel__traverse": "^7.28.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.9.1",
+    "@types/node": "^26.4.0",
     "@types/react": "^19.2.2",
     "axe-core": "4.13.0",
     "esbuild": "^0.28.1",
