@@ -29,6 +29,8 @@
     "accuracy-corpus:seed": "npm run compile && node out/tests/accuracy-corpus/seed-run.js",
     "accuracy-corpus:axe": "npm run compile && node out/tests/accuracy-corpus/axe-run.js",
     "accuracy-corpus:study": "npm run compile && node out/tests/accuracy-corpus/study-run.js",
+    "audit:production": "npm audit --omit=dev --audit-level=high",
+    "audit:all": "npm audit --audit-level=high",
     "prepublishOnly": "npm run build",
     "test": "npm run compile && mocha out/**/*.test.js",
     "posttest": "node -e \"require('fs').rmSync('out',{recursive:true,force:true});\""
