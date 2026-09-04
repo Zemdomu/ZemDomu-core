@@ -13,6 +13,10 @@
 
 - Bugfix: make CLI and component discovery deterministic across path separators while excluding hidden files, dependencies, directories, and symlink traversal.
 
+### Security
+
+- Security: add a fail-closed public-repository policy and mirror gate that reject unapproved Markdown, internal agent material, local credentials, and secret-shaped content before publication.
+
 ## 1.3.21
 
 ### Bugfix
