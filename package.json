@@ -2,6 +2,14 @@
   "name": "zemdomu",
   "version": "1.3.21",
   "description": "Semantic accessibility static analysis for HTML, JSX, TSX, and Vue, with supported cross-component structure.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zemdomu/ZemDomu-core.git"
+  },
+  "homepage": "https://zemdomu.dev/",
+  "bugs": {
+    "url": "https://github.com/Zemdomu/ZemDomu-core/issues"
+  },
   "main": "./out/index.js",
   "types": "./out/index.d.ts",
   "bin": {
@@ -36,14 +44,17 @@
     "posttest": "node -e \"require('fs').rmSync('out',{recursive:true,force:true});\""
   },
   "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "semantic-html",
     "html",
     "jsx",
     "tsx",
+    "react",
     "vue",
+    "static-analysis",
     "linter",
-    "accessibility",
-    "semantic-html",
-    "seo",
     "cli",
     "vscode",
     "github-action"

@@ -17,6 +17,10 @@
 
 - Security: add a fail-closed public-repository policy and mirror gate that reject unapproved Markdown, internal agent material, local credentials, and secret-shaped content before publication.
 
+### Docs
+
+- Docs: improve npm discovery with complete package links, an immediate `npx` quick start with real diagnostic output, and a dated comparison of complementary accessibility tools.
+
 ## 1.3.21
 
 ### Bugfix

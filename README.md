@@ -13,6 +13,21 @@ analysis can find named structural problems across statically resolvable React
 and Vue imports. It does not model every runtime state or establish
 accessibility or WCAG conformance.
 
+## Quick start: scan your source
+
+Run ZemDomu without a global install. The command exits with `1` when it finds
+diagnostics, which makes the same check useful locally and in CI.
+
+```bash
+npx zemdomu check "src/**/*.{html,jsx,tsx,vue}" --format pretty
+```
+
+Pretty output points to the authoring source and includes a stable rule code:
+
+```text
+Card.tsx:3:5 ZMD004: <img> tag missing alt attribute
+```
+
 ## What It Is
 
 ZemDomu Core is the semantic accessibility static-analysis engine for modern
@@ -49,7 +64,7 @@ one focused source model across supported frontend syntax.
 - Performance diagnostics for profiling lint runs.
 - Simple API: `lint(content, options)`.
 
-## Installation
+## Library installation
 
 ```bash
 npm install zemdomu
@@ -75,6 +90,24 @@ console.log(results);
 //   }
 // ]
 ```
+
+## How ZemDomu fits
+
+ZemDomu is one layer in an accessibility testing strategy, not a conformance
+claim or a replacement for rendered and manual testing.
+
+- [axe-core](https://github.com/dequelabs/axe-core) tests rendered web UI;
+  ZemDomu checks supported source and component relationships earlier. Use
+  both layers.
+- [eslint-plugin-jsx-a11y](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y)
+  is established static JSX linting in ESLint; ZemDomu uses one engine across
+  HTML, React, and Vue with supported cross-file relationships.
+- [Nu Html Checker](https://github.com/validator/validator) checks HTML, CSS,
+  and SVG documents for standards-related mistakes; ZemDomu focuses on named
+  semantic accessibility rules in application source.
+
+Comparison source matrix reviewed 2026-08-30; linked primary documentation
+reverified 2026-09-04.
 
 ## API
 
