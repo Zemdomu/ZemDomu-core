@@ -1,6 +1,6 @@
 {
   "name": "zemdomu",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Semantic accessibility static analysis for HTML, JSX, TSX, and Vue, with supported cross-component structure.",
   "repository": {
     "type": "git",
