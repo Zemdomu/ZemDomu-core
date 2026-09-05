@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: restore the npm repository link to the public Core source and publish from that mirror with OIDC provenance.
+
 ## 1.4.1
 
 ### Chore
