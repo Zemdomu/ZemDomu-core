@@ -1,0 +1,15 @@
+import * as t from '@babel/types';
+import { NodePath } from '@babel/traverse';
+import { ElementNode } from '../simpleHtmlParser';
+export declare function getAttr(node: ElementNode, name: string): string | undefined;
+export declare function getJsxAttr(opening: t.JSXOpeningElement, name: string): string | undefined;
+export declare function getJsxAttribute(opening: t.JSXOpeningElement, name: string): t.JSXAttribute | undefined;
+export type JsxValueState = 'missing' | 'empty' | 'possiblyEmpty' | 'present';
+export declare function getJsxExpressionState(expression: t.Expression | t.TSType | t.JSXEmptyExpression, trimText: boolean): JsxValueState;
+export declare function isJsxExpressionPossiblyEmpty(expression: t.Expression | t.JSXEmptyExpression, trimText: boolean): boolean;
+export declare function isJsxAttrValueEmpty(value: t.JSXAttribute['value'], trimText: boolean): boolean;
+export declare function getJsxAttributeState(opening: t.JSXOpeningElement, name: string, trimText: boolean): JsxValueState;
+export declare function hasHtmlLinkAttribute(attrs: Record<string, string>): boolean;
+export declare function hasJsxLinkAttribute(opening: t.JSXOpeningElement): boolean;
+export declare function getTag(path: NodePath<t.JSXElement>): string;
+export declare function getJsxRenderGroup(path: NodePath<t.Node>): string;

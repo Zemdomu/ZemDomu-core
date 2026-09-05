@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 1.4.0
+
 ### Feature
 
 - Feature: add deterministic `zemdomu graph` and `zemdomu inspect <page> --entry <file>` views for component trees, semantic facts, source paths, and explicit unknown analysis boundaries.

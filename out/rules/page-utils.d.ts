@@ -1,0 +1,12 @@
+import type { LintResult, PageRuleContext } from "../linter";
+import type { SemanticPageFact } from "../page-model";
+import type { SemanticSourceProvenance } from "../semantic-graph";
+export declare function isUnconditional(fact: SemanticPageFact): boolean;
+export declare function isResolvedPage(context: PageRuleContext): boolean;
+export declare function isCompletePage(context: PageRuleContext): boolean;
+export declare function sourceForProvenance(provenance: SemanticSourceProvenance, context: PageRuleContext): Pick<LintResult, "filePath" | "line" | "column"> | undefined;
+export declare function sourceForFact(fact: SemanticPageFact, context: PageRuleContext): Pick<LintResult, "filePath" | "line" | "column" | "pageComponentPath" | "pageCompositionPath"> | undefined;
+export declare function pageRootSource(context: PageRuleContext): Pick<LintResult, "filePath" | "line" | "column"> | undefined;
+export declare function relatedForFact(fact: SemanticPageFact, context: PageRuleContext, message: string): NonNullable<LintResult["related"]>[number] | undefined;
+export declare function relatedCompositionForFact(fact: SemanticPageFact, context: PageRuleContext, message: string): NonNullable<LintResult["related"]>[number] | undefined;
+export declare function matchingFileResult(context: PageRuleContext, rule: string, fact: SemanticPageFact): LintResult | undefined;
