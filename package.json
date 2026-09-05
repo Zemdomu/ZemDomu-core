@@ -4,7 +4,7 @@
   "description": "Semantic accessibility static analysis for HTML, JSX, TSX, and Vue, with supported cross-component structure.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zemdomu/ZemDomu-core.git"
+    "url": "git+https://github.com/Zemdomu/ZemDomu-mono.git"
   },
   "homepage": "https://zemdomu.dev/",
   "bugs": {

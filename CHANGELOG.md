@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Chore
+
+- Chore: point the npm repository link at the monorepo so OIDC trusted publishing matches the publisher-bound repository.
+
 ## 1.4.0
 
 ### Feature

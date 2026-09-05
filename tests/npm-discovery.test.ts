@@ -12,7 +12,7 @@ describe("npm discovery contract", () => {
   it("publishes complete npm package links and search vocabulary", () => {
     assert.deepStrictEqual(manifest.repository, {
       type: "git",
-      url: "git+https://github.com/Zemdomu/ZemDomu-core.git",
+      url: "git+https://github.com/Zemdomu/ZemDomu-mono.git",
     });
     assert.strictEqual(manifest.homepage, "https://zemdomu.dev/");
     assert.deepStrictEqual(manifest.bugs, {
