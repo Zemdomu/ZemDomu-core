@@ -19,7 +19,7 @@ describe("npm discovery contract", () => {
       url: "https://github.com/Zemdomu/ZemDomu-core/issues",
     });
     assert.strictEqual(manifest.funding, "https://buymeacoffee.com/zemdomu");
-    assert.strictEqual(manifest.license, "ISC");
+    assert.strictEqual(manifest.license, "MIT");
 
     const keywords = new Set(manifest.keywords);
     for (const keyword of [
