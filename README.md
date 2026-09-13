@@ -433,4 +433,6 @@ npm run build
 
 ## License
 
-MIT (c) 2025 Zacharias Eryd Berlin
+ZemDomu Core is open source under the MIT License.
+
+Copyright (c) 2025 Zacharias Eryd Berlin
