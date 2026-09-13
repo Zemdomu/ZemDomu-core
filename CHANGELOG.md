@@ -2,6 +2,7 @@
 
 ### Chore
 
+- Chore: remove the unused esbuild declaration and obsolete Jest configuration from the development toolchain.
 - Chore: standardize the package on the tracked MIT license and owner-approved copyright notice.
 
 ## 1.4.2
