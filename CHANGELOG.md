@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 1.4.3
+
 ### Chore
 
 - Chore: verify packed and published package metadata against the tracked MIT license during Core release.
