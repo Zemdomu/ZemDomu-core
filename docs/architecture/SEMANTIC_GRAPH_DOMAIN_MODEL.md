@@ -1,6 +1,6 @@
 # Semantic Graph Domain Model
 
-Status: accepted contract for schema `1.0` (ZD-05).
+Status: accepted contract for schema `1.0`.
 
 ## Decision
 

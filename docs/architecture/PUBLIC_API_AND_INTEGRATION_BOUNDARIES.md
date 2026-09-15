@@ -1,6 +1,6 @@
 # ADR: Public API and integration boundaries
 
-Status: Accepted on 2026-08-29 (ZD-04).
+Status: Accepted on 2026-08-29.
 
 ## Context
 
@@ -110,12 +110,12 @@ scope differences. The package root is the useful single boundary; `lint` and
 
 The decision avoids a breaking release and lets each surface migrate
 independently. For now, adapters still consume `LintResult`, and duplicated
-registries remain until their owning cards remove them. Boundary enforcement is
+registries remain until their owning work removes them. Boundary enforcement is
 primarily documentary until wildcard exports can be removed in a major release.
 
 Follow-up work:
 
-- [ZD-15 — Render canonical diagnostics without a parallel issue model](https://trello.com/c/Jq1r9Yz3): migrate CLI rendering while preserving terminal and exit-code ownership.
-- [ZD-16 — Map canonical diagnostics to VS Code](https://trello.com/c/a3PDqzUx): move the extension to the canonical contract and remove duplicate suppression and registry logic.
-- [ZD-17 — Map canonical diagnostics to GitHub annotations](https://trello.com/c/vTpGO99i): move the Action to the canonical contract and eliminate the sibling `out` fallback and shadowing handwritten package types.
-- [ZD-18 — Publish the diagnostic schema and integration examples](https://trello.com/c/Gpad36et): document the contract for Hub users without creating another runtime model.
+- Render canonical diagnostics without a parallel issue model: migrate CLI rendering while preserving terminal and exit-code ownership.
+- Map canonical diagnostics to VS Code: move the extension to the canonical contract and remove duplicate suppression and registry logic.
+- Map canonical diagnostics to GitHub annotations: move the Action to the canonical contract and eliminate the sibling `out` fallback and shadowing handwritten package types.
+- Publish the diagnostic schema and integration examples: document the contract for Hub users without creating another runtime model.

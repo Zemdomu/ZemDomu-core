@@ -1,6 +1,6 @@
 # Diagnostic accuracy corpus method
 
-Status: final ZD-20 tranche. The checked-in study and aggregate summary pass
+Status: final study. The checked-in study and aggregate summary pass
 the completion gates below for ZemDomu 1.3.19 plus the Unreleased accuracy fixes.
 
 ## Purpose
@@ -128,4 +128,4 @@ part of the reproducible public denominator.
 
 The deterministic metric gate lives in
 `tests/accuracy-corpus/metrics.ts`; its tests prevent a partial study from
-claiming the ZD-20 thresholds.
+claiming the study thresholds.

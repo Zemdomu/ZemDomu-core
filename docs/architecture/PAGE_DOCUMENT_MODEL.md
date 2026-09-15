@@ -1,6 +1,6 @@
 # Page / Document Model
 
-Status: accepted contract for schema `1.0` (ZD-08).
+Status: accepted contract for schema `1.0`.
 
 ## Decision
 
@@ -81,5 +81,5 @@ children remain unknown rather than producing a missing-heading claim.
 
 The page model is additive. `lint()`, `ProjectLinter.lintFile()`,
 `ProjectLinter.lintFiles()`, and `ProjectLinter.buildSemanticGraph()` retain
-their existing behavior. Page-aware rules can consume this model in ZD-11
+their existing behavior. Page-aware rules can consume this model
 without creating a second parser, resolver, or semantic rule system.
