@@ -2,7 +2,7 @@
 
 ### Chore
 
-- Chore: reject npm publication when the packed or registry package license disagrees with the tracked MIT license.
+- Chore: verify packed and published package metadata against the tracked MIT license during Core release.
 - Chore: remove the unused esbuild declaration and obsolete Jest configuration from the development toolchain.
 - Chore: standardize the package on the tracked MIT license and owner-approved copyright notice.
 

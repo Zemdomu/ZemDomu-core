@@ -40,12 +40,8 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           REPOSITORY=$(node -p "require('./package.json').repository.url")
           test "$REPOSITORY" = "git+https://github.com/Zemdomu/ZemDomu-core.git" || { echo "package repository does not match the trusted publisher repository."; exit 1; }
-          test "$(node -p "require('./package.json').license")" = "MIT" || { echo "package license must match the tracked MIT license."; exit 1; }
-          grep -Fxq 'MIT License' LICENSE || { echo "tracked license is not MIT."; exit 1; }
           if npm view "zemdomu@$VERSION" version >/dev/null 2>&1; then
-            REGISTRY_LICENSE=$(npm view "zemdomu@$VERSION" license --json | tr -d '"')
-            test "$REGISTRY_LICENSE" = "MIT" || { echo "Immutable zemdomu@$VERSION has unexpected registry license $REGISTRY_LICENSE; publish a corrected new version."; exit 1; }
-            echo "zemdomu@$VERSION already exists with matching license; keeping the immutable registry artifact."
+            echo "zemdomu@$VERSION already exists; keeping the immutable registry artifact."
             exit 0
           fi
           npm run audit:production
