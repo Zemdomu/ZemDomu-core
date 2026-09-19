@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 1.4.4
+
 ### Bugfix
 
 - Bugfix: ignore imported stylesheets and other non-code assets during cross-component dependency analysis instead of reporting parser errors for them.
