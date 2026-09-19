@@ -42,6 +42,9 @@ const path_1 = __importDefault(require("path"));
 const ts = __importStar(require("typescript"));
 const vue_sfc_1 = require("./vue-sfc");
 const EXTS = [".tsx", ".ts", ".jsx", ".js", ".vue"];
+function isSupportedSourceFile(filePath) {
+    return EXTS.includes(path_1.default.extname(filePath).toLowerCase());
+}
 function scriptKindForFile(filePath) {
     switch (path_1.default.extname(filePath).toLowerCase()) {
         case ".tsx":
@@ -57,8 +60,11 @@ function scriptKindForFile(filePath) {
     }
 }
 function resolveWithExtensions(base) {
-    if (fs_1.default.existsSync(base) && fs_1.default.statSync(base).isFile())
+    if (isSupportedSourceFile(base) &&
+        fs_1.default.existsSync(base) &&
+        fs_1.default.statSync(base).isFile()) {
         return base;
+    }
     for (const ext of EXTS) {
         const p = base + ext;
         if (fs_1.default.existsSync(p) && fs_1.default.statSync(p).isFile())

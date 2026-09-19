@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: ignore imported stylesheets and other non-code assets during cross-component dependency analysis instead of reporting parser errors for them.
+
 ### Docs
 
 - Docs: remove private project-board links from the public integration contract.

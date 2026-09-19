@@ -5,6 +5,10 @@ import { extractVueScripts } from "./vue-sfc";
 
 const EXTS = [".tsx", ".ts", ".jsx", ".js", ".vue"];
 
+function isSupportedSourceFile(filePath: string): boolean {
+  return EXTS.includes(path.extname(filePath).toLowerCase());
+}
+
 export type ResolveCtx = {
   rootDir: string;
   baseUrl?: string;
@@ -28,7 +32,13 @@ function scriptKindForFile(filePath: string): ts.ScriptKind {
 }
 
 function resolveWithExtensions(base: string): string | null {
-  if (fs.existsSync(base) && fs.statSync(base).isFile()) return base;
+  if (
+    isSupportedSourceFile(base) &&
+    fs.existsSync(base) &&
+    fs.statSync(base).isFile()
+  ) {
+    return base;
+  }
   for (const ext of EXTS) {
     const p = base + ext;
     if (fs.existsSync(p) && fs.statSync(p).isFile()) return p;
