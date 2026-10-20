@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.0.0
+
 ### Breaking
 
 - Breaking: require Node.js 22.17 or newer for built-in file discovery.

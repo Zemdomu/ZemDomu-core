@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ComponentPathResolver = void 0;
 const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
-const glob_1 = require("glob");
+const file_discovery_1 = require("./file-discovery");
 class ComponentPathResolver {
     constructor(rootDir = ComponentPathResolver.defaultRootDir) {
         this.resolveCache = new Map();
@@ -197,13 +197,7 @@ class ComponentPathResolver {
                     let alias = this.aliasCache.get(prefix);
                     if (!alias) {
                         const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js,vue}`;
-                        const files = await (0, glob_1.glob)(pattern, {
-                            cwd: this.rootDir,
-                            dot: false,
-                            follow: false,
-                            ignore: '**/node_modules/**',
-                            nodir: true,
-                        });
+                        const files = await (0, file_discovery_1.discoverFiles)([pattern], this.rootDir);
                         files.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
                         alias = new Map();
                         for (const relPath of files.slice(0, this.aliasFileLimit)) {
@@ -238,13 +232,7 @@ class ComponentPathResolver {
                                 }
                                 continue;
                             }
-                            const matches = await (0, glob_1.glob)(ptn, {
-                                cwd: this.rootDir,
-                                dot: false,
-                                follow: false,
-                                ignore: '**/node_modules/**',
-                                nodir: true,
-                            });
+                            const matches = await (0, file_discovery_1.discoverFiles)([ptn], this.rootDir);
                             matches.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
                             if (matches.length) {
                                 result = path.resolve(this.rootDir, matches[0]);
