@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { glob } from 'glob';
+import { discoverFiles } from './file-discovery';
 
 export class ComponentPathResolver {
   private static defaultRootDir = process.cwd();
@@ -164,13 +164,7 @@ export class ComponentPathResolver {
           let alias = this.aliasCache.get(prefix);
           if (!alias) {
           const pattern = `**/${prefix}/**/*.{tsx,jsx,ts,js,vue}`;
-          const files = await glob(pattern, {
-            cwd: this.rootDir,
-            dot: false,
-            follow: false,
-            ignore: '**/node_modules/**',
-            nodir: true,
-          });
+          const files = await discoverFiles([pattern], this.rootDir);
           files.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
           alias = new Map();
           for (const relPath of files.slice(0, this.aliasFileLimit)) {
@@ -203,13 +197,7 @@ export class ComponentPathResolver {
                 if (cached) { result = cached; break; }
                 continue;
               }
-              const matches = await glob(ptn, {
-                cwd: this.rootDir,
-                dot: false,
-                follow: false,
-                ignore: '**/node_modules/**',
-                nodir: true,
-              });
+              const matches = await discoverFiles([ptn], this.rootDir);
               matches.sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
               if (matches.length) {
                 result = path.resolve(this.rootDir, matches[0]);

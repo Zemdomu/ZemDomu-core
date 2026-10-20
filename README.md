@@ -15,6 +15,8 @@ accessibility or WCAG conformance.
 
 ## Quick start: scan your source
 
+Requires Node.js 22.17 or newer.
+
 Run ZemDomu without a global install. The command exits with `1` when it finds
 diagnostics, which makes the same check useful locally and in CI.
 
@@ -56,7 +58,7 @@ one focused source model across supported frontend syntax.
 ## Features
 
 - Lint semantic issues in HTML, JSX, TSX, and Vue templates.
-- Works in Node.js, CI, or any JS runtime.
+- Works in Node.js 22.17 or newer, locally and in CI.
 - Extensible rule system with simple custom rules.
 - Cross-component analysis for React/JSX and Vue projects.
 - Command line interface with `--custom` and `--cross`.

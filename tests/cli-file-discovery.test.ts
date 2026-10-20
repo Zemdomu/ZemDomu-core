@@ -3,12 +3,14 @@ import { spawnSync } from 'child_process';
 import {
   mkdirSync,
   mkdtempSync,
+  realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
-import { discoverFilesSync, parseGlobPatterns } from '../src/file-discovery';
+import { discoverFiles, discoverFilesSync, parseGlobPatterns } from '../src/file-discovery';
 
 const cliPath = path.resolve(__dirname, '../src/cli.js');
 
@@ -20,7 +22,7 @@ function runCli(cwd: string, args: string[]) {
 }
 
 describe('CLI file discovery', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'zemdomu-cli-discovery-'));
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'zemdomu-cli-discovery-')));
 
   before(() => {
     mkdirSync(path.join(root, 'nested'));
@@ -58,6 +60,29 @@ describe('CLI file discovery', () => {
       parseGlobPatterns(['**/*.{html,tsx}, nested/*.vue\nroot.html']),
       ['**/*.{html,tsx}', 'nested/*.vue', 'root.html']
     );
+  });
+
+  it('keeps async resolver discovery consistent and supports absolute patterns', async () => {
+    const patterns = ['**/*.{html,tsx}', path.join(root, 'root.html')];
+    assert.deepEqual(await discoverFiles(patterns, root), discoverFilesSync(patterns, root));
+    assert.ok(discoverFilesSync(patterns, root).includes(path.join(root, 'root.html').replace(/\\/g, '/')));
+  });
+
+  it('does not descend into symlink directories or include directories matching an extension', async () => {
+    const linked = path.join(root, 'linked');
+    const directory = path.join(root, 'directory.html');
+    mkdirSync(directory);
+    symlinkSync(path.join(root, 'nested'), linked, 'junction');
+    try {
+      for (const matches of [discoverFilesSync(['**/*'], root), await discoverFiles(['**/*'], root)]) {
+        assert.ok(!matches.some(file => file.startsWith('linked/')), JSON.stringify(matches));
+        assert.ok(!matches.includes('directory.html'));
+        assert.ok(!matches.some(file => file.includes('node_modules')));
+      }
+    } finally {
+      rmSync(linked);
+      rmSync(directory, { recursive: true });
+    }
   });
 
   it('normalizes path separators through the CLI contract', () => {

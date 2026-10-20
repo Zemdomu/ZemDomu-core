@@ -1,5 +1,13 @@
 ## Unreleased
 
+### Breaking
+
+- Breaking: require Node.js 22.17 or newer for built-in file discovery.
+
+### Security
+
+- Security: remove the runtime glob dependency chain from CLI and cross-component discovery, and update vulnerable development dependencies.
+
 ## 1.4.4
 
 ### Bugfix
