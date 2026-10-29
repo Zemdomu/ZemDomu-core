@@ -84,7 +84,15 @@ function hasFrameworkMountPoint(content: string): boolean {
 }
 
 function isFrameworkEntrySrc(src: string): boolean {
-  const normalized = src.replace(/[?#].*$/, "").replace(/\\/g, "/");
+  // Preserve suffix handling on the final line without retrying a match at
+  // every query/fragment delimiter in an untrusted script URL.
+  let suffixStart = src.length;
+  for (let i = src.length - 1; i >= 0; i -= 1) {
+    const code = src.charCodeAt(i);
+    if (code === 10 || code === 13 || code === 0x2028 || code === 0x2029) break;
+    if (code === 35 || code === 63) suffixStart = i;
+  }
+  const normalized = src.slice(0, suffixStart).replace(/\\/g, "/");
   return /(?:^|\/)(?:src\/)?(?:main|index|app)\.(?:[cm]?[jt]sx?|vue)$/i.test(
     normalized
   );

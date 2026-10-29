@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Security
+
+- Security: prevent crafted script URLs and component import paths from causing excessive processing during framework detection and component resolution.
+
 ### Docs
 
 - Docs: add contribution guidance, community conduct and private security reporting policies, bug and feature request forms, and a pull request checklist.
