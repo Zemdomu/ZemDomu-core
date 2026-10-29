@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible problem with ZemDomu Core.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before opening a report. Everything here is public: remove tokens, credentials, private source, customer data, and identifying paths from code and logs. Follow the [security policy](https://github.com/Zemdomu/ZemDomu-core/security/policy) for suspected vulnerabilities.
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions and environment
+      description: Core/npm version, Node.js version, operating system, and CLI or library usage.
+    validations:
+      required: true
+  - type: textarea
+    id: syntax
+    attributes:
+      label: Syntax and framework
+      description: HTML, JSX, TSX, or Vue; include framework/parser versions and any local component imports.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal sanitized reproduction
+      description: Include the rule ID, source location, CLI command or library call, and relevant options. For cross-component reports, include the smallest relevant component tree.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: Describe the result you expected and why, including a rule ID if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include the diagnostic, error, or missing result. Redact sensitive data from logs.
+    validations:
+      required: true

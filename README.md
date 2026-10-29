@@ -433,6 +433,12 @@ npm run build
 - VS Code extension: https://marketplace.visualstudio.com/items?itemName=ZachariasErydBerlin.zemdomu
 - GitHub Action: https://github.com/ZemDomu/ZemDomu-action
 
+## Support
+
+If ZemDomu Core helps you, you can [star the repository](https://github.com/ZemDomu/ZemDomu-core/stargazers).
+Report bugs with a minimal reproduction in [Core issues](https://github.com/ZemDomu/ZemDomu-core/issues), with secrets and private source removed.
+For feedback across ZemDomu products, use [Meta discussions](https://github.com/Zemdomu/ZemDomu/discussions).
+
 ## License
 
 ZemDomu Core is open source under the MIT License.
