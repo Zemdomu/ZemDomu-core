@@ -1,5 +1,7 @@
 # ZemDomu Core
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Zemdomu/ZemDomu-core/badge)](https://scorecard.dev/viewer/?uri=github.com/Zemdomu/ZemDomu-core)
+
 > Semantic accessibility static analysis with supported component context.
 
 ZemDomu is static analysis for semantic HTML and accessibility across supported
