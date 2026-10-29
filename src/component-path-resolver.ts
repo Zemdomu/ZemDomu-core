@@ -118,9 +118,10 @@ export class ComponentPathResolver {
   }
 
   private static normalizeKey(p: string): string {
-    return p
-      .replace(/\\/g, '/')
-      .replace(/\/+$/, '')
+    const normalized = p.replace(/\\/g, '/');
+    let end = normalized.length;
+    while (end > 0 && normalized.charCodeAt(end - 1) === 47) end -= 1;
+    return normalized.slice(0, end)
       .replace(/\.(tsx|ts|jsx|js|vue)$/, '')
       .replace(/\/index$/, '')
       .toLowerCase();
