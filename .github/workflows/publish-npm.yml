@@ -32,7 +32,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Use an npm CLI with trusted-publishing support
-        run: npm install -g "npm@^11.5.1"
+        run: npm install -g "npm@11.21.1"
       - name: Validate, build, and publish the public source
         shell: bash
         run: |
