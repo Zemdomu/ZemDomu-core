@@ -14,7 +14,7 @@ import { collectLocalDeps } from "./utils/collectLocalDeps";
 import { extractVueTemplate, isHtmlVueTemplate } from "./utils/vue-sfc";
 import { applyRuleCode } from "./rule-codes";
 import type { SemanticGraph } from "./semantic-graph";
-import type { ZemDomuDiagnostic } from "./diagnostics";
+import { toZemDomuDiagnostic, type ZemDomuDiagnostic } from "./diagnostics";
 import { createPageAwareDiagnostics } from "./contextual-diagnostics";
 import {
   composeSemanticPageModel,
@@ -304,6 +304,22 @@ export class ProjectLinter {
   async buildPageModel(filePaths: string[]): Promise<SemanticPageModel> {
     const graph = await this.buildSemanticGraph(filePaths);
     return composeSemanticPageModel(graph, this.pageModelAdapters());
+  }
+
+  /**
+   * Return canonical file and enabled cross-component diagnostics without
+   * composing pages, invoking page rules, or adding route/edit context.
+   * Uses the same analyzer lifecycle as lintFiles; use lintPageDiagnostics
+   * when configured routes or custom page rules should contribute findings.
+   */
+  async lintFileDiagnostics(filePaths: string[]): Promise<ZemDomuDiagnostic[]> {
+    const results = await this.lintFiles(filePaths);
+    await this.applyInlineDisableDirectivesForFiles(results);
+    return [...results].flatMap(([sourceFile, entries]) =>
+      deduplicateResults(entries).map(result =>
+        toZemDomuDiagnostic(result, { sourceFile })
+      )
+    );
   }
 
   /**
