@@ -69,16 +69,16 @@ function htmlImgAltPresent(node: ElementNode): boolean {
   return typeof alt === 'string' && alt.trim().length > 0;
 }
 
-function hasHtmlAccessibleText(node: Node, hidden: boolean): boolean {
+function hasHtmlAccessibleText(node: Node, hidden: boolean, includeHidden = false): boolean {
   if (hidden) return false;
   if (node.type === 'text') {
     return node.text.trim().length > 0;
   }
   if (node.type === 'element') {
-    const isHidden = hidden || isHtmlHidden(node);
+    const isHidden = hidden || (!includeHidden && isHtmlHidden(node));
     if (isHidden) return false;
     if (node.tagName === 'img') return htmlImgAltPresent(node);
-    return node.children.some((child) => hasHtmlAccessibleText(child, isHidden));
+    return node.children.some((child) => hasHtmlAccessibleText(child, isHidden, includeHidden));
   }
   return false;
 }
@@ -141,7 +141,8 @@ function hasHtmlAriaLabelledByText(
     const targets = idMap.get(id);
     if (!targets) continue;
     for (const target of targets) {
-      if (hasHtmlAccessibleText(target, false)) return true;
+      // A directly referenced hidden label contributes its subtree (Accname 1.2, Hidden Not Referenced).
+      if (hasHtmlAccessibleText(target, false, isHtmlHidden(target))) return true;
     }
   }
   return false;
@@ -195,7 +196,7 @@ function isJsxHidden(opening: t.JSXOpeningElement): boolean {
   const attr = getJsxAttribute(opening, 'hidden');
   if (!attr) return false;
   if (!attr.value) return true;
-  if (t.isStringLiteral(attr.value)) return true;
+  if (t.isStringLiteral(attr.value)) return attr.value.value.length > 0;
   if (t.isJSXExpressionContainer(attr.value)) {
     const expr = attr.value.expression;
     if (t.isBooleanLiteral(expr)) return expr.value;
@@ -247,16 +248,20 @@ function mergeStates(states: JsxValueState[]): JsxValueState {
   return 'empty';
 }
 
-function jsxChildTextState(child: JsxChild): JsxValueState {
+function jsxChildTextState(child: JsxChild, includeHidden = false): JsxValueState {
   if (t.isJSXText(child)) return child.value.trim().length > 0 ? 'present' : 'empty';
   if (t.isJSXExpressionContainer(child)) {
+    if (t.isJSXElement(child.expression) || t.isJSXFragment(child.expression)) {
+      return jsxChildTextState(child.expression, includeHidden);
+    }
     return getJsxExpressionState(child.expression, true);
   }
   if (t.isJSXElement(child)) {
-    return mergeStates(child.children.map(jsxChildTextState));
+    if (!includeHidden && isJsxHiddenFromAT(child.openingElement)) return 'empty';
+    return mergeStates(child.children.map((entry) => jsxChildTextState(entry, includeHidden)));
   }
   if (t.isJSXFragment(child)) {
-    return mergeStates(child.children.map(jsxChildTextState));
+    return mergeStates(child.children.map((entry) => jsxChildTextState(entry, includeHidden)));
   }
   if (t.isJSXSpreadChild(child)) return 'present';
   return 'empty';
@@ -268,7 +273,7 @@ function jsxTitleState(node: t.JSXElement): JsxValueState {
     if (!t.isJSXElement(child)) continue;
     const name = getJsxTagName(child.openingElement);
     if (name !== 'title') continue;
-    const titleState = mergeStates(child.children.map(jsxChildTextState));
+    const titleState = mergeStates(child.children.map((entry) => jsxChildTextState(entry)));
     if (titleState === 'present') return 'present';
     if (titleState === 'possiblyEmpty') state = 'possiblyEmpty';
     if (titleState === 'empty' && state === 'missing') state = 'empty';
@@ -321,7 +326,9 @@ function hasJsxAriaLabelledByText(
     const targets = idMap.get(id);
     if (!targets) continue;
     for (const target of targets) {
-      if (mergeStates(target.children.map(jsxChildTextState)) === 'present') return true;
+      // A directly referenced hidden label contributes its subtree (Accname 1.2, Hidden Not Referenced).
+      const includeHidden = isJsxHiddenFromAT(target.openingElement);
+      if (mergeStates(target.children.map((entry) => jsxChildTextState(entry, includeHidden))) === 'present') return true;
     }
   }
   return false;

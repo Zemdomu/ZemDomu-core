@@ -6,6 +6,15 @@ import { getJsxAttr, getJsxAttributeState } from './utils';
 
 const HTML_LANG_ATTRS = ['lang', ':lang', 'v-bind:lang'];
 
+// RFC 5646 section 2.1: grandfathered tags form a fixed, case-insensitive list.
+const GRANDFATHERED_LANG_TAGS = new Set([
+  'en-gb-oed', 'i-ami', 'i-bnn', 'i-default', 'i-enochian', 'i-hak',
+  'i-klingon', 'i-lux', 'i-mingo', 'i-navajo', 'i-pwn', 'i-tao', 'i-tay',
+  'i-tsu', 'sgn-be-fr', 'sgn-be-nl', 'sgn-ch-de', 'art-lojban',
+  'cel-gaulish', 'no-bok', 'no-nyn', 'zh-guoyu', 'zh-hakka', 'zh-min',
+  'zh-min-nan', 'zh-xiang',
+]);
+
 function isAlpha(value: string): boolean {
   return /^[A-Za-z]+$/.test(value);
 }
@@ -44,6 +53,7 @@ function isDynamicLangValue(value: string): boolean {
 function isValidLangTag(lang: string): boolean {
   if (!lang) return false;
   if (lang.includes('_')) return false;
+  if (GRANDFATHERED_LANG_TAGS.has(lang.toLowerCase())) return true;
   const parts = lang.split('-');
   if (parts.some((p) => p.length === 0)) return false;
 
@@ -88,7 +98,11 @@ function isValidLangTag(lang: string): boolean {
     index++;
   }
 
+  const extensionSingletons = new Set<string>();
   while (index < parts.length && isExtensionSingleton(parts[index])) {
+    const singleton = parts[index].toLowerCase();
+    if (extensionSingletons.has(singleton)) return false;
+    extensionSingletons.add(singleton);
     index++;
     if (index >= parts.length || !isExtensionSubtag(parts[index])) return false;
     while (index < parts.length && isExtensionSubtag(parts[index])) {
