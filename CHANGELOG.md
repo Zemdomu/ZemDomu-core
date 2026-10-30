@@ -2,6 +2,7 @@
 
 ### Security
 
+- Security: provide verifiable Sigstore signatures for GitHub release downloads.
 - Security: prevent crafted script URLs and component import paths from causing excessive processing during framework detection and component resolution.
 
 ### Docs
