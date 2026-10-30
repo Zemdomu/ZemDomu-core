@@ -308,8 +308,50 @@ function htmlCommentTagEnd(content: string, start: number): number {
   return content.length;
 }
 
+type HtmlCommentNamespace = "html" | "svg" | "math";
+type HtmlCommentTag = { name: string; closing: boolean; end: number; selfClosing: boolean; encoding?: string; hasFontBreakoutAttribute?: boolean };
+
+function readHtmlCommentTag(content: string, start: number): HtmlCommentTag | null {
+  const match = /^<(\/?)\s*([\w:-]+)(?=[\t\n\f\r />])/.exec(content.slice(start));
+  if (!match) return null;
+  const end = htmlCommentTagEnd(content, start);
+  const tag: HtmlCommentTag = { name: match[2].toLowerCase(), closing: Boolean(match[1]), end, selfClosing: false };
+  const attrs = content.slice(start + match[0].length, end - 1);
+  const attribute = /([^\t\n\f\r />=]+)(?:[\t\n\f\r ]*=[\t\n\f\r ]*(?:"([^"]*)"|'([^']*)'|([^\t\n\f\r >]+)))?/y;
+  let offset = 0;
+  while (offset < attrs.length) {
+    while (offset < attrs.length && /[\t\n\f\r ]/.test(attrs[offset])) offset += 1;
+    if (offset === attrs.length) break;
+    if (attrs[offset] === "/" && offset === attrs.length - 1) {
+      tag.selfClosing = true;
+      break;
+    }
+    attribute.lastIndex = offset;
+    const attr = attribute.exec(attrs);
+    if (!attr) { offset += 1; continue; }
+    if (["color", "face", "size"].includes(attr[1].toLowerCase())) tag.hasFontBreakoutAttribute = true;
+    if (attr[1].toLowerCase() === "encoding" && tag.encoding === undefined) {
+      tag.encoding = (attr[2] ?? attr[3] ?? attr[4] ?? "").toLowerCase();
+    }
+    offset = attribute.lastIndex;
+  }
+  return tag;
+}
+
 function getHtmlComments(content: string): SourceComment[] {
   const comments: SourceComment[] = [];
+  const stack: Array<{ name: string; namespace: HtmlCommentNamespace; childrenNamespace: HtmlCommentNamespace }> = [];
+  const positions = new Map<string, number[]>();
+  const voidHtml = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+  const rawHtml = new Set(["script", "style", "textarea", "title", "xmp", "iframe", "noembed", "noframes"]);
+  const mathText = new Set(["mi", "mo", "mn", "ms", "mtext"]);
+  const foreignBreakout = new Set(["b", "big", "blockquote", "body", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed", "h1", "h2", "h3", "h4", "h5", "h6", "head", "hr", "i", "img", "li", "listing", "menu", "meta", "nobr", "ol", "p", "pre", "ruby", "s", "small", "span", "strong", "strike", "sub", "sup", "table", "tt", "u", "ul", "var"]);
+  const popElement = () => {
+    const removed = stack.pop()!;
+    const entries = positions.get(removed.name)!;
+    entries.pop();
+    if (!entries.length) positions.delete(removed.name);
+  };
   let index = 0;
   while (index < content.length) {
     if (content.startsWith("<!--", index)) {
@@ -319,25 +361,52 @@ function getHtmlComments(content: string): SourceComment[] {
       index = end;
       continue;
     }
-    if (content[index] !== "<") {
-      index += 1;
-      continue;
-    }
+    if (content[index] !== "<") { index += 1; continue; }
+    const tag = readHtmlCommentTag(content, index);
     // A stray less-than sign is text, not the start of a tag or attribute.
-    if (!/^<\/?\s*[\w:-]/.test(content.slice(index))) {
-      index += 1;
+    if (!tag) { index += 1; continue; }
+    // Foreign-content HTML breakout tags must restore HTML raw-text handling.
+    if (stack[stack.length - 1]?.childrenNamespace !== "html" &&
+        (tag.closing ? ["br", "p"].includes(tag.name) : foreignBreakout.has(tag.name) || (tag.name === "font" && tag.hasFontBreakoutAttribute))) {
+      while (stack.length && stack[stack.length - 1].childrenNamespace !== "html") popElement();
+    }
+    if (tag.closing) {
+      const matches = positions.get(tag.name);
+      if (matches?.length) {
+        const position = matches[matches.length - 1];
+        while (stack.length > position) {
+          popElement();
+        }
+      }
+      index = tag.end;
       continue;
     }
-    const open = /^<\s*(script|style|textarea|title|xmp|iframe|noembed|noframes)(?=[\t\n\f\r />])/i.exec(content.slice(index));
-    const openEnd = htmlCommentTagEnd(content, index);
-    if (open) {
-      const closePattern = new RegExp(`</${open[1]}(?=[\\t\\n\\f\\r />])`, "ig");
-      closePattern.lastIndex = openEnd;
+    const parent = stack[stack.length - 1];
+    let namespace: HtmlCommentNamespace = parent?.childrenNamespace ?? "html";
+    if (parent?.namespace === "math" && mathText.has(parent.name) && (tag.name === "mglyph" || tag.name === "malignmark")) namespace = "math";
+    if (namespace === "html") {
+      if (tag.name === "svg") namespace = "svg";
+      else if (tag.name === "math") namespace = "math";
+    } else if (parent?.namespace === "math" && parent.name === "annotation-xml" && tag.name === "svg") namespace = "svg";
+    // Only HTML elements enter raw-text/RCDATA; a slash does not close HTML textarea/title.
+    if (namespace === "html" && rawHtml.has(tag.name)) {
+      const closePattern = new RegExp(`</${tag.name}(?=[\\t\\n\\f\\r />])`, "ig");
+      closePattern.lastIndex = tag.end;
       const close = closePattern.exec(content);
       index = close ? htmlCommentTagEnd(content, close.index) : content.length;
-    } else {
-      index = openEnd;
+      continue;
     }
+    if (!(namespace !== "html" && tag.selfClosing) && !(namespace === "html" && voidHtml.has(tag.name))) {
+      let childrenNamespace = namespace;
+      // HTML integration points affect children, not the namespace of the element itself.
+      if (namespace === "svg" && ["foreignobject", "desc", "title"].includes(tag.name)) childrenNamespace = "html";
+      if (namespace === "math" && (mathText.has(tag.name) || (tag.name === "annotation-xml" && ["text/html", "application/xhtml+xml"].includes(tag.encoding ?? "")))) childrenNamespace = "html";
+      const entries = positions.get(tag.name) ?? [];
+      entries.push(stack.length);
+      positions.set(tag.name, entries);
+      stack.push({ name: tag.name, namespace, childrenNamespace });
+    }
+    index = tag.end;
   }
   return comments;
 }
