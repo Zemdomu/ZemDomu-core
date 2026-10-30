@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.0.1
+
 ### Security
 
 - Security: restrict CLI custom-rule entry files to the project's custom-rules directory, blocking symlink escapes while accepting equivalent filesystem path aliases.
