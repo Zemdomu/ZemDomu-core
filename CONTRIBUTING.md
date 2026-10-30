@@ -34,6 +34,28 @@ npm test
 Core compiles before testing. Its `posttest` script removes `out`, so run
 `npm run build` again if you need compiled output after the tests.
 
+The normal test suite also runs bounded property fuzzing with `fast-check`:
+250 cases per property, a fixed default seed, and sources no longer than 2,048 UTF-16 code units.
+Run just these properties, or increase the search budget locally:
+
+```sh
+npm run test:fuzz
+ZEMDOMU_FUZZ_RUNS=1000 ZEMDOMU_FUZZ_SEED=12345 npm run test:fuzz
+```
+
+`ZEMDOMU_FUZZ_RUNS` accepts 1 through 10000; `ZEMDOMU_FUZZ_SEED` accepts a signed
+32-bit integer. A failure reports its seed, shrink path, and counterexample.
+Replay that property using its exact test title and the reported values:
+
+```sh
+ZEMDOMU_FUZZ_SEED=12345 ZEMDOMU_FUZZ_PATH='0:1:0' npm run test:fuzz -- --grep 'keeps malformed HTML trees finite and source positions bounded'
+```
+
+Keep replay paths scoped to the failing property. Preserve a minimized failing
+input as a focused regression test before fixing the behavior. These properties
+check crash handling, determinism, locations, and specific rule contracts; they
+do not certify accessibility compliance.
+
 Add a focused regression test under `tests/` for rule, parser, CLI, or diagnostic
 changes. Include the relevant supported syntax and a nearby valid case when
 changing a rule.
