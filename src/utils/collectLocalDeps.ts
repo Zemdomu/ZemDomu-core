@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import * as ts from "typescript";
+import type * as TypeScript from "typescript";
 import { extractVueScripts } from "./vue-sfc";
 
 const EXTS = [".tsx", ".ts", ".jsx", ".js", ".vue"];
@@ -16,7 +16,10 @@ export type ResolveCtx = {
   maxDepth?: number;
 };
 
-function scriptKindForFile(filePath: string): ts.ScriptKind {
+function scriptKindForFile(
+  filePath: string,
+  ts: typeof TypeScript
+): TypeScript.ScriptKind {
   switch (path.extname(filePath).toLowerCase()) {
     case ".tsx":
       return ts.ScriptKind.TSX;
@@ -29,6 +32,22 @@ function scriptKindForFile(filePath: string): ts.ScriptKind {
     default:
       return ts.ScriptKind.Unknown;
   }
+}
+
+/** A negative check only: ambiguous source still uses the existing parser. */
+function mayHaveModuleDependency(source: string): boolean {
+  // Escaped or non-ASCII identifiers and any dependency-looking text are
+  // deliberately left to TypeScript, including text inside comments/strings.
+  if (/[^\x00-\x7f]|\\|import|require|from/.test(source)) return true;
+
+  // `export default` produces an assignment or declaration, not an
+  // ExportDeclaration with a module specifier. Restrict both separators to
+  // ASCII whitespace so identifier prefixes and uncertain spellings defer.
+  // Keep every other export: TypeScript can recover a module specifier even
+  // from malformed declarations such as `export * './child'` (missing from).
+  return source
+    .replace(/export[ \t\r\n]+default[ \t\r\n]+/g, "")
+    .includes("export");
 }
 
 function resolveWithExtensions(base: string): string | null {
@@ -111,16 +130,22 @@ export function collectLocalDeps(entries: string[], ctx: ResolveCtx): string[] {
 
     const ext = path.extname(file).toLowerCase();
     let parseCode = code;
-    let scriptKind = scriptKindForFile(file);
+    let langs: string[] = [];
     if (ext === ".vue") {
       const scripts = extractVueScripts(code);
       if (scripts.length === 0) continue;
       parseCode = scripts.map((s) => s.content).join("\n");
-      const langs = scripts
+      langs = scripts
         .map((s) =>
           typeof s.attrs.lang === "string" ? s.attrs.lang.toLowerCase() : ""
         )
         .filter(Boolean);
+    }
+
+    if (!mayHaveModuleDependency(parseCode)) continue;
+    const ts: typeof TypeScript = require("typescript");
+    let scriptKind = scriptKindForFile(file, ts);
+    if (ext === ".vue") {
       if (langs.some((l) => l.includes("tsx") || l.includes("jsx"))) {
         scriptKind = ts.ScriptKind.TSX;
       } else if (langs.some((l) => l.includes("ts"))) {
@@ -141,9 +166,9 @@ export function collectLocalDeps(entries: string[], ctx: ResolveCtx): string[] {
     sf.forEachChild((node) => {
       let spec: string | undefined;
       if (ts.isImportDeclaration(node) && node.moduleSpecifier) {
-        spec = (node.moduleSpecifier as ts.StringLiteral).text;
+        spec = (node.moduleSpecifier as TypeScript.StringLiteral).text;
       } else if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
-        spec = (node.moduleSpecifier as ts.StringLiteral).text;
+        spec = (node.moduleSpecifier as TypeScript.StringLiteral).text;
       }
       if (!spec) return;
 
