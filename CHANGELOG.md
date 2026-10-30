@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.0.2
+
 ### Bugfix
 
 - Bugfix: ignore directive-looking text in HTML raw-text elements and attribute values so it cannot suppress real findings.
