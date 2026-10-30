@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
+import { lstatSync } from "fs";
 import path from "path";
-import * as ts from "typescript";
 import {
   applyInlineDisableDirectives,
   createActiveRules,
@@ -31,6 +31,37 @@ const FRAMEWORK_HOST_DOCUMENT_RULES = [
   "requireDocumentTitle",
   "requireSingleMain",
 ];
+
+/** Only bypass TypeScript when every possible config candidate is absent. */
+function mayHaveTsconfig(root: string): boolean {
+  try {
+    // Delegate unusual spellings to TypeScript's own path normalization.
+    if (
+      !path.isAbsolute(root) ||
+      root !== path.resolve(root) ||
+      (process.platform !== "win32" && root.includes("\\"))
+    ) {
+      return true;
+    }
+    let directory = root;
+    while (true) {
+      try {
+        // A directory or symlink at the candidate is also a reason to defer
+        // to the existing finder rather than interpret it ourselves.
+        lstatSync(path.join(directory, "tsconfig.json"));
+        return true;
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code !== "ENOENT" && code !== "ENOTDIR") return true;
+      }
+      const parent = path.dirname(directory);
+      if (parent === directory) return false;
+      directory = parent;
+    }
+  } catch {
+    return true;
+  }
+}
 
 function isHtmlFile(filePath: string): boolean {
   return /\.(html|htm)$/i.test(filePath);
@@ -333,21 +364,20 @@ export class ProjectLinter {
   ): string[] {
     const root = this.opts.rootDir ?? process.cwd();
 
-    const configPath = ts.findConfigFile(
-      root,
-      ts.sys.fileExists,
-      "tsconfig.json"
-    );
     let baseUrl: string | undefined;
     let paths: Record<string, string[]> | undefined;
 
-    if (configPath) {
-      const cfg = ts.readConfigFile(configPath, ts.sys.readFile).config;
-      const cfgDir = path.dirname(configPath);
-      baseUrl = cfg?.compilerOptions?.baseUrl
-        ? path.resolve(cfgDir, cfg.compilerOptions.baseUrl)
-        : undefined;
-      paths = cfg?.compilerOptions?.paths;
+    if (mayHaveTsconfig(root)) {
+      const ts: typeof import("typescript") = require("typescript");
+      const configPath = ts.findConfigFile(root, ts.sys.fileExists, "tsconfig.json");
+      if (configPath) {
+        const cfg = ts.readConfigFile(configPath, ts.sys.readFile).config;
+        const cfgDir = path.dirname(configPath);
+        baseUrl = cfg?.compilerOptions?.baseUrl
+          ? path.resolve(cfgDir, cfg.compilerOptions.baseUrl)
+          : undefined;
+        paths = cfg?.compilerOptions?.paths;
+      }
     }
 
     const targets = includeDependencies

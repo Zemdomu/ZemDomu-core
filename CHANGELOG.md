@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 2.0.3
+
+### Performance
+
+- Performance: defer TypeScript compiler loading during standalone analysis to reduce memory use while preserving module and configuration handling.
+
 ## 2.0.2
 
 ### Bugfix

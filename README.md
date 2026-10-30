@@ -1,6 +1,7 @@
 # ZemDomu Core
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Zemdomu/ZemDomu-core/badge)](https://scorecard.dev/viewer/?uri=github.com/Zemdomu/ZemDomu-core)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16077/badge)](https://www.bestpractices.dev/projects/16077)
 
 > Semantic accessibility static analysis with supported component context.
 
