@@ -34,6 +34,31 @@ npm test
 Core compiles before testing. Its `posttest` script removes `out`, so run
 `npm run build` again if you need compiled output after the tests.
 
+### Measure source coverage
+
+```sh
+npm run test:coverage
+```
+
+This runs the complete normal test suite first, then repeats the same functional
+tests against a separate TypeScript build with source maps and embedded source
+text. The production build is unchanged. The mapped build stays outside `out`
+and is retained until reporting and validation finish.
+
+Open `coverage/index.html` for the HTML report. Machine-readable results are in
+`coverage/coverage-summary.json`, `coverage/coverage-final.json`, and
+`coverage/coverage-verification.json`. Coverage includes every first-party
+`src/**/*.ts` file except declarations. The command rejects missing or mismatched
+maps, omitted source files, invalid counters, and empty executable counters for
+the CLI and main linting implementations. The `index.ts` export barrel remains in
+the inventory without requiring branch or function counters where none apply.
+
+A displayed 100% with zero measured branches or functions is insufficient
+evidence. These V8 source-mapped measurements describe the tested build and
+inputs; they do not prove exhaustive behavior coverage. Failed measurements keep
+their ignored `.coverage-build-*` directory for inspection. Successful runs
+remove that temporary build after validating the reports.
+
 The normal test suite also runs bounded property fuzzing with `fast-check`:
 250 cases per property, a fixed default seed, and sources no longer than 2,048 UTF-16 code units.
 Run just these properties, or increase the search budget locally:
