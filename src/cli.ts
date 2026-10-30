@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import path from 'path';
+import { realpathSync, statSync } from 'fs';
 import { discoverFilesSync, parseGlobPatterns } from './file-discovery';
 import { ProjectLinter } from './project-linter';
 import { PerformanceDiagnostics } from './performance-diagnostics';
@@ -61,10 +62,15 @@ async function run(): Promise<void> {
     } else if (arg === '--custom' || arg === '-c') {
       const file = args[++i];
       if (!file) throw new CliUsageError('Missing file for --custom');
-      const resolved = path.resolve(file);
-      const customDir = path.resolve('custom-rules');
+      // Compare and load canonical file paths so aliases are accepted, while
+      // symlinks inside custom-rules cannot redirect the load outside it.
+      const resolved = realpathSync(path.resolve(file));
+      const customDir = realpathSync(path.resolve('custom-rules'));
       const relative = path.relative(customDir, resolved);
-      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      if (
+        relative === '..' || relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative) || !statSync(resolved).isFile()
+      ) {
         throw new CliUsageError('Custom rule file must be inside ./custom-rules');
       }
       const mod = require(resolved);

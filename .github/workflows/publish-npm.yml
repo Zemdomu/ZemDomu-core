@@ -28,6 +28,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      actions: read
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,6 +45,7 @@ jobs:
         env:
           EXPECTED_COMMIT: ${{ github.event.client_payload.sha || inputs.expected_commit }}
           EXPECTED_VERSION: ${{ github.event.client_payload.version || inputs.expected_version }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "An exact public commit is required."; exit 1; }
@@ -56,6 +58,7 @@ jobs:
           test "$VERSION" = "$EXPECTED_VERSION" || { echo "Package version does not match release approval."; exit 1; }
           REPOSITORY=$(node -p "require('./package.json').repository.url")
           test "$REPOSITORY" = "git+https://github.com/Zemdomu/ZemDomu-core.git" || { echo "package repository does not match the trusted publisher repository."; exit 1; }
+          node .github/scripts/verify-release-security.mjs "$GITHUB_REPOSITORY" "$EXPECTED_COMMIT"
           if npm view "zemdomu@$VERSION" version >/dev/null 2>&1; then
             echo "zemdomu@$VERSION already exists; keeping the immutable registry artifact."
             exit 0
@@ -65,4 +68,5 @@ jobs:
           npm ci
           npm test
           npm run build
+          node .github/scripts/verify-release-security.mjs "$GITHUB_REPOSITORY" "$EXPECTED_COMMIT"
           npm publish --access public --provenance

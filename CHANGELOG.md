@@ -2,6 +2,7 @@
 
 ### Security
 
+- Security: restrict CLI custom-rule entry files to the project's custom-rules directory, blocking symlink escapes while accepting equivalent filesystem path aliases.
 - Security: provide verifiable Sigstore signatures for GitHub release downloads.
 - Security: prevent crafted script URLs and component import paths from causing excessive processing during framework detection and component resolution.
 
