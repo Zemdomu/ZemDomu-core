@@ -34,6 +34,13 @@ function assertMetric(metric, label) {
       || !Number.isFinite(metric.pct) || metric.pct < 0 || metric.pct > 100) {
     throw new Error(`Invalid coverage counters: ${label}`);
   }
+  // Match Istanbul's hundredth-percent truncation and empty-total convention.
+  const expectedPct = metric.total > 0
+    ? Math.floor(((1000 * 100 * metric.covered) / metric.total) / 10) / 100
+    : 100;
+  if (metric.pct !== expectedPct) {
+    throw new Error(`Coverage percentage disagrees with counters: ${label}`);
+  }
 }
 
 function validateCoverage({ sourceRoot, buildRoot, reportRoot, requiredEntries = REQUIRED_ENTRIES }) {

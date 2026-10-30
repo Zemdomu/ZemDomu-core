@@ -97,6 +97,27 @@ describe('coverage evidence integrity', function () {
     assert.throws(() => validateCoverage(fixture), /Invalid coverage counters/);
   });
 
+  it('rejects contradictory percentages, including false 100%, for every source and total metric', () => {
+    const fixture = measuredFixture();
+    const summaryFile = path.join(fixture.reportRoot, 'coverage-summary.json');
+    const original = JSON.parse(fs.readFileSync(summaryFile, 'utf8'));
+    const source = Object.keys(original).find(file => file !== 'total')!;
+    assert.ok(original[source].branches.covered > 0 &&
+      original[source].branches.covered < original[source].branches.total,
+    'The actual V8 fixture must leave a branch unexecuted');
+    for (const row of [source, 'total']) {
+      for (const metric of ['lines', 'statements', 'functions', 'branches']) {
+        const changed = structuredClone(original);
+        changed[row][metric].pct = changed[row][metric].pct === 100 ? 50 : 100;
+        fs.writeFileSync(summaryFile, JSON.stringify(changed));
+        assert.throws(() => validateCoverage(fixture), /percentage disagrees with counters/,
+          `Reject within-range but false ${row} ${metric} percentage`);
+      }
+    }
+    fs.writeFileSync(summaryFile, JSON.stringify(original));
+    validateCoverage(fixture);
+  });
+
   it('removes stale success reports even when the normal test suite fails first', () => {
     fs.mkdirSync(path.join(root, 'scripts'));
     fs.mkdirSync(path.join(root, 'coverage'));
