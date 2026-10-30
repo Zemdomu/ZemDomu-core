@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 2.1.0
+
+### Feature
+
+- Feature: expose canonical file diagnostics without composing pages, allowing editor and CLI integrations to avoid unnecessary page analysis when route context is not needed.
+
 ## 2.0.3
 
 ### Performance
