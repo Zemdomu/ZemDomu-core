@@ -59,6 +59,15 @@ do not certify accessibility compliance.
 Add a focused regression test under `tests/` for rule, parser, CLI, or diagnostic
 changes. Include the relevant supported syntax and a nearby valid case when
 changing a rule.
+New functionality must include automated tests for its expected behavior and
+important failure cases.
+
+Follow the surrounding TypeScript naming, formatting, and module conventions.
+Keep type checking enabled with the repository's checked-in `tsconfig.json`.
+Fix compiler errors and confirmed security-analysis findings before merging;
+document the evidence for any finding dismissed as a false positive. Do not
+disable checks or weaken configuration to make a pull request pass.
+
 Keep changes focused and include the commands and results in your pull request.
 Explain any checks you could not run. For a user-facing change, add an entry under
 `Unreleased` in `CHANGELOG.md`, grouped by category (for example, `Bugfix`,
