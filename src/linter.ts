@@ -292,26 +292,53 @@ function getJsxComments(content: string): SourceComment[] | null {
   }
 }
 
+// Comment-looking text in attributes and raw-text elements is not a directive.
+function htmlCommentTagEnd(content: string, start: number): number {
+  let quote: string | null = null;
+  for (let index = start; index < content.length; index += 1) {
+    const char = content[index];
+    if (quote) {
+      if (char === quote) quote = null;
+    } else if (char === '"' || char === "'") {
+      quote = char;
+    } else if (char === ">") {
+      return index + 1;
+    }
+  }
+  return content.length;
+}
+
 function getHtmlComments(content: string): SourceComment[] {
   const comments: SourceComment[] = [];
-  const root = parseHtmlDom(content);
-  const visit = (node: Node, excluded: boolean) => {
-    if (node.type === "comment") {
-      if (!excluded) {
-        comments.push({
-          text: node.text,
-          start: node.startIndex,
-          end: node.startIndex + 7 + node.text.length,
-        });
-      }
-      return;
+  let index = 0;
+  while (index < content.length) {
+    if (content.startsWith("<!--", index)) {
+      const close = content.indexOf("-->", index + 4);
+      const end = close === -1 ? content.length : close + 3;
+      comments.push({ text: content.slice(index + 4, close === -1 ? content.length : close), start: index, end });
+      index = end;
+      continue;
     }
-    if (node.type !== "element") return;
-    const childExcluded =
-      excluded || node.tagName === "script" || node.tagName === "style";
-    for (const child of node.children) visit(child, childExcluded);
-  };
-  visit(root, false);
+    if (content[index] !== "<") {
+      index += 1;
+      continue;
+    }
+    // A stray less-than sign is text, not the start of a tag or attribute.
+    if (!/^<\/?\s*[\w:-]/.test(content.slice(index))) {
+      index += 1;
+      continue;
+    }
+    const open = /^<\s*(script|style|textarea|title|xmp|iframe|noembed|noframes)(?=[\t\n\f\r />])/i.exec(content.slice(index));
+    const openEnd = htmlCommentTagEnd(content, index);
+    if (open) {
+      const closePattern = new RegExp(`</${open[1]}(?=[\\t\\n\\f\\r />])`, "ig");
+      closePattern.lastIndex = openEnd;
+      const close = closePattern.exec(content);
+      index = close ? htmlCommentTagEnd(content, close.index) : content.length;
+    } else {
+      index = openEnd;
+    }
+  }
   return comments;
 }
 

@@ -1,5 +1,13 @@
 ## Unreleased
 
+### Bugfix
+
+- Bugfix: ignore directive-looking text in HTML raw-text elements and attribute values so it cannot suppress real findings.
+
+- Bugfix: recognize directly referenced hidden labels without treating hidden descendants of visible labels as accessible names.
+
+- Bugfix: accept grandfathered language tags and reject repeated language extension singletons when validating document language attributes.
+
 ## 2.0.1
 
 ### Security
