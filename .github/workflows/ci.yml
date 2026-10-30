@@ -37,5 +37,8 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
+      - name: Measure and validate mapped source coverage
+        if: matrix.node == 24
+        run: npm run test:coverage
       - name: Build package
         run: npm run build

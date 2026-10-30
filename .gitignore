@@ -25,6 +25,7 @@ yarn-error.log*
 
 # Coverage and testing artifacts
 coverage/
+.coverage-build-*/
 .nyc_output/
 
 # OS files
